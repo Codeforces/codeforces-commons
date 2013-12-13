@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 @SuppressWarnings("OverloadedVarargsMethod")
 public class PropertiesUtil {
-    private static final ConcurrentMap<String, Properties> propertiesByResourceName = new ConcurrentHashMap<String, Properties>();
+    private static final ConcurrentMap<String, Properties> propertiesByResourceName = new ConcurrentHashMap<>();
 
     private PropertiesUtil() {
         throw new UnsupportedOperationException();

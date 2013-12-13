@@ -21,14 +21,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 /**
- * @author Mike Mirzayanov
+ * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
+ * @author Maxim Shipko (sladethe@gmail.com)
+ *         Date: 10.07.13
  */
 public final class StringUtil {
     private static final Pattern FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN = Pattern.compile("\\[pre\\]|\\[/pre\\]");
     private static final Pattern FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN = Pattern.compile("[\n\r][\n\r]+");
 
     private static final ConcurrentMap<Class<?>, Map<String, List<Field>>> fieldsByNameByClass
-            = new ConcurrentHashMap<Class<?>, Map<String, List<Field>>>();
+            = new ConcurrentHashMap<>();
 
     private StringUtil() {
         throw new UnsupportedOperationException();
@@ -223,7 +225,7 @@ public final class StringUtil {
         StringBuilder builder = new StringBuilder(fieldName);
 
         if (value.getClass() == boolean.class || value.getClass() == Boolean.class) {
-            if (!(boolean) (Boolean) value) {
+            if (!(boolean) value) {
                 builder.insert(0, '!');
             }
         } else {
@@ -332,7 +334,7 @@ public final class StringUtil {
         Map<String, List<Field>> fieldsByName = fieldsByNameByClass.get(clazz);
 
         if (fieldsByName == null) {
-            fieldsByName = new HashMap<String, List<Field>>();
+            fieldsByName = new HashMap<>();
             Class tempClass = clazz;
 
             while (tempClass != null) {
@@ -344,10 +346,10 @@ public final class StringUtil {
                     List<Field> fields = fieldsByName.get(field.getName());
 
                     if (fields == null) {
-                        fields = new ArrayList<Field>(1);
+                        fields = new ArrayList<>(1);
                     } else {
                         List<Field> tempFields = fields;
-                        fields = new ArrayList<Field>(tempFields.size() + 1);
+                        fields = new ArrayList<>(tempFields.size() + 1);
                         fields.addAll(tempFields);
                     }
 
@@ -413,7 +415,7 @@ public final class StringUtil {
      */
     @SuppressWarnings("OverlyNestedMethod")
     public static SortedSet<Integer> parseIntegers(String s) {
-        SortedSet<Integer> integers = new TreeSet<Integer>();
+        SortedSet<Integer> integers = new TreeSet<>();
 
         if (s != null) {
             try {
@@ -480,7 +482,7 @@ public final class StringUtil {
         Integer intervalStart = null;
         Integer previousNumber = null;
 
-        for (int number : numbers instanceof SortedSet ? numbers : new TreeSet<Integer>(numbers)) {
+        for (int number : numbers instanceof SortedSet ? numbers : new TreeSet<>(numbers)) {
             if (intervalStart == null) {
                 intervalStart = number;
             } else if (number > previousNumber + 1) {
@@ -638,35 +640,35 @@ public final class StringUtil {
      *         Returns {@code null} iff {@code s} is {@code null}.
      */
     public static String shrinkTo(String s, int maxLength) {
-        if (maxLength < 10) {
-            throw new IllegalArgumentException("Argument maxLength is expected to be at least 10.");
+        if (maxLength < 8) {
+            throw new IllegalArgumentException("Argument maxLength is expected to be at least 8.");
         }
 
         if (s == null || s.length() <= maxLength) {
             return s;
         } else {
-            int prefixLength = maxLength * 3 / 4 - 1;
+            int prefixLength = maxLength / 2;
             int suffixLength = maxLength - prefixLength - 3;
             return s.substring(0, prefixLength) + "..." + s.substring(s.length() - suffixLength);
         }
     }
 
     public static List<String> shrinkLinesTo(List<String> lines, int maxLineLength, int maxLineCount) {
-        if (maxLineCount < 10) {
-            throw new IllegalArgumentException("Argument maxLineCount is expected to be at least 10.");
+        if (maxLineCount < 8) {
+            throw new IllegalArgumentException("Argument maxLineCount is expected to be at least 8.");
         }
 
         if (lines == null) {
             return null;
         }
 
-        List<String> result = new ArrayList<String>(maxLineCount);
+        List<String> result = new ArrayList<>(maxLineCount);
         if (lines.size() <= maxLineCount) {
             for (String line : lines) {
                 result.add(shrinkTo(line, maxLineLength));
             }
         } else {
-            int prefixLineCount = maxLineCount * 3 / 4 - 1;
+            int prefixLineCount = maxLineCount / 2;
             int suffixLineCount = maxLineCount - prefixLineCount - 1;
 
             for (int lineIndex = 0; lineIndex < prefixLineCount; ++lineIndex) {
