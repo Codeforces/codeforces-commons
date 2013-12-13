@@ -47,9 +47,7 @@ public class FileUtil {
                     operation, attemptCount,
                     new ThreadUtil.ExecutionStrategy(delayTimeMillis, strategyType)
             );
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Error e) {
+        } catch (RuntimeException | Error e) {
             throw e;
         } catch (Throwable e) {
             throw new IOException(e);

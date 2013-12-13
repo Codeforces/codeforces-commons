@@ -295,7 +295,7 @@ public final class ZipUtil {
     private static ArrayList<File> deepListFilesInDirectory(
             @Nonnull File directory, @Nullable final FileFilter skipFilter, boolean ignoreHiddenFiles)
             throws IOException {
-        ArrayList<File> filesToAdd = new ArrayList<File>();
+        ArrayList<File> filesToAdd = new ArrayList<>();
 
         File[] files = skipFilter == null ? directory.listFiles() : directory.listFiles(new FileFilter() {
             @Override
