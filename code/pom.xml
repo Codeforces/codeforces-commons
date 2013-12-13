@@ -8,8 +8,8 @@
     <packaging>jar</packaging>
 
     <name>codeforces-commons</name>
-    <url>https://github.com/SladeThe/codeforces-commons</url>
-    <description>Utility classes used in CodeForces and related projects.</description>
+    <url>https://github.com/Codeforces/codeforces-commons</url>
+    <description>Commons for Codeforces and related projects.</description>
 
     <licenses>
         <license>
@@ -20,9 +20,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/SladeThe/codeforces-commons</url>
-        <connection>scm:git:git://github.com/SladeThe/codeforces-commons.git</connection>
-        <developerConnection>scm:git:git@github.com:SladeThe/codeforces-commons.git</developerConnection>
+        <url>https://github.com/Codeforces/codeforces-commons</url>
+        <connection>scm:git:git://github.com/Codeforces/codeforces-commons.git</connection>
+        <developerConnection>scm:git:git@github.com:Codeforces/codeforces-commons.git</developerConnection>
     </scm>
 
     <properties>
@@ -51,6 +51,11 @@
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.8.3</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
