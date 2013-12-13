@@ -300,8 +300,7 @@ public class UnsafeFileUtil {
             deleteTotally(file);
         }
 
-        OutputStream outputStream = new FileOutputStream(file);
-        try {
+        try (OutputStream outputStream = new FileOutputStream(file)) {
             byte[] buffer = new byte[BUFFER_SIZE];
             while (true) {
                 int size = inputStream.read(buffer);
@@ -313,7 +312,6 @@ public class UnsafeFileUtil {
                 }
             }
         } finally {
-            outputStream.close();
             inputStream.close();
         }
     }
@@ -626,7 +624,7 @@ public class UnsafeFileUtil {
      */
     public static List<File> list(File directory) {
         if (directory.isDirectory()) {
-            List<File> result = new ArrayList<File>();
+            List<File> result = new ArrayList<>();
             scanForList(directory, result);
             return result;
         } else {
