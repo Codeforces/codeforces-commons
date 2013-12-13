@@ -1,6 +1,3 @@
-*.class
-
-# Package Files #
-*.jar
-*.war
-*.ear
+/code/.idea
+/code/codeforces-commons.iml
+/code/target
