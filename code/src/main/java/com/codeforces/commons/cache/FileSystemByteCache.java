@@ -1,7 +1,8 @@
 package com.codeforces.commons.cache;
 
-import com.codeforces.commons.compress.ZipUtil;
 import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.text.StringUtil;
+import com.codeforces.commons.compress.ZipUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 
@@ -53,8 +54,8 @@ public class FileSystemByteCache extends ByteCache {
             FileUtil.ensureDirectoryExists(directory);
             FileUtil.ensureDirectoryExists(tempDirectory);
             return true;
-        } catch (IOException ignored) {
-            logger.error("Unexpected exception while validation.", ignored);
+        } catch (IOException e) {
+            logger.error("Unexpected exception while validating.", e);
             return false;
         }
     }
@@ -259,6 +260,11 @@ public class FileSystemByteCache extends ByteCache {
     @Override
     public void close() {
         // No operations.
+    }
+
+    @Override
+    public String toString() {
+        return StringUtil.toString(this, false, "directory", "useCompression");
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")

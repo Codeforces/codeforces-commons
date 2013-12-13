@@ -18,12 +18,15 @@ public class GridFsByteCache extends ByteCache {
     private static final Logger logger = Logger.getLogger(GridFsByteCache.class);
     private static final String DBNAME = "gridfs_0";
 
+    private final String host;
     private final MongoClient mongoClient;
     private GridFS fs;
 
     private long defaultLifetime = TimeUtil.MILLIS_PER_DAY;
 
     public GridFsByteCache(String host) {
+        this.host = host;
+
         try {
             mongoClient = new MongoClient(host);
         } catch (UnknownHostException e) {
@@ -58,10 +61,8 @@ public class GridFsByteCache extends ByteCache {
             try {
                 long deadlineTime = (Long) file.getMetaData().get("deadlineTime");
                 if (System.currentTimeMillis() <= deadlineTime) {
-                    // logger.info("Found cached value by [section='" + section + "', key='" + key + "'].");
                     return true;
                 } else {
-                    // logger.info("File [section='" + section + "', key='" + key + "'] is too old, removed.");
                     fs.remove(file);
                 }
             } catch (RuntimeException e) {
@@ -111,9 +112,7 @@ public class GridFsByteCache extends ByteCache {
     @Nullable
     @Override
     public byte[] get(@Nonnull String section, @Nonnull String key) {
-        // logger.info("Finding " + getFilename(section, key) + ".");
         GridFSDBFile file = fs.findOne(getFilename(section, key));
-        // logger.info("Found file=" + (file == null ? null : file.getLength()) + ".");
 
         if (file == null) {
             return null;
@@ -123,10 +122,8 @@ public class GridFsByteCache extends ByteCache {
             long deadlineTime = (Long) file.getMetaData().get("deadlineTime");
 
             if (System.currentTimeMillis() <= deadlineTime) {
-                // logger.info("In time, converting to byte[].");
                 ByteArrayOutputStream dataOutputStream = new ByteArrayOutputStream(NumberUtil.toInt(file.getLength()));
                 file.writeTo(dataOutputStream);
-                // logger.info("Done, length=" + dataOutputStream.size() + ".");
                 return dataOutputStream.toByteArray();
             }
         } catch (Exception e) {
@@ -161,5 +158,10 @@ public class GridFsByteCache extends ByteCache {
     @Override
     public void close() {
         mongoClient.close();
+    }
+
+    @Override
+    public String toString() {
+        return "GridFsByteCache {host='" + host + "'}";
     }
 }

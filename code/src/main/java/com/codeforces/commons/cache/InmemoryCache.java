@@ -32,10 +32,10 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     private static final Logger logger = Logger.getLogger(InmemoryCache.class);
 
     private final ReadWriteEvent cacheEvent = new ReadWriteEvent();
-    private final ConcurrentMap<String, ReadWriteEvent> eventBySection = new ConcurrentHashMap<String, ReadWriteEvent>();
+    private final ConcurrentMap<String, ReadWriteEvent> eventBySection = new ConcurrentHashMap<>();
 
-    private final Map<String, Map<K, CacheEntry<V>>> cacheEntryByKeyBySection = new HashMap<String, Map<K, CacheEntry<V>>>();
-    private final Map<String, Queue<CacheEntryExpirationInfo<K>>> cacheEntryExpirationInfosBySection = new HashMap<String, Queue<CacheEntryExpirationInfo<K>>>();
+    private final Map<String, Map<K, CacheEntry<V>>> cacheEntryByKeyBySection = new HashMap<>();
+    private final Map<String, Queue<CacheEntryExpirationInfo<K>>> cacheEntryExpirationInfosBySection = new HashMap<>();
 
     private final AtomicBoolean stopBackgroundThreads = new AtomicBoolean();
 
@@ -104,7 +104,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     @CacheSectionWrite
     @Override
     public void put(@CacheSection @Nonnull String section, @Nonnull K key, @Nonnull V value) {
-        ensureAndReturnCacheSection(section).put(key, new CacheEntry<V>(value));
+        ensureAndReturnCacheSection(section).put(key, new CacheEntry<>(value));
     }
 
     @Override
@@ -120,7 +120,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     public void putIfAbsent(@CacheSection @Nonnull String section, @Nonnull K key, @Nonnull V value) {
         Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
         if (!cacheEntryByKey.containsKey(key)) {
-            cacheEntryByKey.put(key, new CacheEntry<V>(value));
+            cacheEntryByKey.put(key, new CacheEntry<>(value));
         }
     }
 
@@ -197,7 +197,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         Map<K, CacheEntry<V>> cacheEntryByKey = cacheEntryByKeyBySection.get(section);
 
         if (cacheEntryByKey == null) {
-            cacheEntryByKey = new HashMap<K, CacheEntry<V>>();
+            cacheEntryByKey = new HashMap<>();
             cacheEntryByKeyBySection.put(section, cacheEntryByKey);
         }
 
@@ -223,7 +223,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         Queue<CacheEntryExpirationInfo<K>> expirationInfos = cacheEntryExpirationInfosBySection.get(section);
 
         if (expirationInfos == null) {
-            expirationInfos = new PriorityQueue<CacheEntryExpirationInfo<K>>();
+            expirationInfos = new PriorityQueue<>();
             cacheEntryExpirationInfosBySection.put(section, expirationInfos);
         }
 
@@ -236,8 +236,8 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
             Map<K, CacheEntry<V>> valueByKey, Queue<CacheEntryExpirationInfo<K>> expirationInfos) {
         long expirationTimeMillis = System.currentTimeMillis() + lifetimeMillis;
 
-        valueByKey.put(key, new CacheEntry<V>(value, expirationTimeMillis));
-        expirationInfos.add(new CacheEntryExpirationInfo<K>(section, key, expirationTimeMillis));
+        valueByKey.put(key, new CacheEntry<>(value, expirationTimeMillis));
+        expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, expirationTimeMillis));
 
         /*cacheEvent.getWriteLock().lock();
         try {
@@ -255,8 +255,8 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
             Queue<CacheEntryExpirationInfo<K>> expirationInfos = ensureAndReturnExpirationInfosSection(section);
             long expirationTimeMillis = System.currentTimeMillis() + lifetimeMillis;
 
-            cacheEntryByKey.put(key, new CacheEntry<V>(value, expirationTimeMillis));
-            expirationInfos.add(new CacheEntryExpirationInfo<K>(section, key, expirationTimeMillis));
+            cacheEntryByKey.put(key, new CacheEntry<>(value, expirationTimeMillis));
+            expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, expirationTimeMillis));
 
             /*cacheEvent.getWriteLock().lock();
             try {

@@ -1,7 +1,6 @@
 package com.codeforces.commons.cache.util;
 
 import com.codeforces.commons.cache.ByteCache;
-import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -11,8 +10,6 @@ import javax.annotation.Nullable;
  *         Date: 14.02.11
  */
 class LocalAndRemoteByteCache extends ByteCache {
-    private static final Logger logger = Logger.getLogger(LocalAndRemoteByteCache.class);
-
     private final ByteCache localCache;
     private final ByteCache remoteCache;
     private final boolean localCacheOptional;
@@ -44,48 +41,35 @@ class LocalAndRemoteByteCache extends ByteCache {
 
     @Override
     public boolean contains(@Nonnull String section, @Nonnull String key) {
-//        logger.info("Ready to invoke contains in LocalAndRemoteByteCache.");
         boolean localResult = internalContains(localCache, section, key, localCacheOptional);
         if (localResult) {
-//            logger.info("Found cached value in the local cache.");
             return true;
         } else {
-//            logger.info("Didn't find cached value in the local cache.");
             byte[] remoteValue = internalGet(remoteCache, section, key, remoteCacheOptional);
             if (remoteValue == null) {
-//                logger.info("Didn't get cached value from the remote cache [null]. Returns false.");
                 return false;
             } else {
-//                logger.info("Got cached value from the remote cache. Ready to put it locally.");
                 internalPut(localCache, section, key, remoteValue, localCacheOptional);
-//                logger.info("Completed to put cached value to the local cache. Returns true.");
                 return true;
             }
         }
     }
 
     private static boolean internalContains(ByteCache cache, String section, String key, boolean optional) {
-//        logger.info("Started internalContains.");
         try {
             if (cache != null) {
-//                logger.info("Ready to run cache.contains.");
                 return cache.contains(section, key);
             } else if (optional) {
-//                logger.info("Skipped internalContains because of optional.");
                 return false;
             } else {
                 throw new IllegalStateException("ByteCache is invalid.");
             }
         } catch (RuntimeException e) {
             if (optional) {
-//                logger.info("Skipped internalContains because of optional: "
-//                        + ExceptionUtils.getFullStackTrace(e) + ".");
                 return false;
             } else {
                 throw new IllegalStateException("ByteCache is invalid.", e);
             }
-        } finally {
-//            logger.info("Completed internalContains.");
         }
     }
 
@@ -175,46 +159,34 @@ class LocalAndRemoteByteCache extends ByteCache {
     @Override
     public byte[] get(@Nonnull String section, @Nonnull
     String key) {
-//        logger.info("Ready to internalGet from the local cache.");
         byte[] localValue = internalGet(localCache, section, key, localCacheOptional);
         if (localValue == null) {
-//            logger.info("Didn't found cached value in the local cache. Ready to internalGet from the remote cache.");
             byte[] remoteValue = internalGet(remoteCache, section, key, remoteCacheOptional);
             if (remoteValue != null) {
-//                logger.info("Found cached value in the remote cache. Put it in the local cache.");
                 internalPut(localCache, section, key, remoteValue, localCacheOptional);
-//                logger.info("Competed to put it in the local cache.");
             }
             return remoteValue;
         } else {
-//            logger.info("Found cached value in the local cache.");
             return localValue;
         }
     }
 
     @Nullable
     private static byte[] internalGet(ByteCache cache, String section, String key, boolean optional) {
-//        logger.info("Started internalGet.");
         try {
             if (cache != null) {
-//                logger.info("Ready to run cache.get.");
                 return cache.get(section, key);
             } else if (optional) {
-//                logger.info("Skipped internalGet because of optional.");
                 return null;
             } else {
                 throw new IllegalStateException("ByteCache is invalid.");
             }
         } catch (RuntimeException e) {
             if (optional) {
-//                logger.info("Skipped internalGet because of optional: "
-//                        + ExceptionUtils.getFullStackTrace(e) + ".");
                 return null;
             } else {
                 throw new IllegalStateException("ByteCache is invalid.", e);
             }
-        } finally {
-//            logger.info("Completed internalGet.");
         }
     }
 

@@ -9,10 +9,16 @@ import javax.annotation.Nullable;
 class SilentByteCache extends ByteCache {
     private static final Logger logger = Logger.getLogger(SilentByteCache.class);
 
-    private ByteCache byteCache;
+    private final ByteCache byteCache;
+    private final boolean logErrors;
 
-    public SilentByteCache(@Nonnull ByteCache byteCache) {
+    SilentByteCache(@Nonnull ByteCache byteCache, boolean logErrors) {
         this.byteCache = byteCache;
+        this.logErrors = logErrors;
+    }
+
+    SilentByteCache(@Nonnull ByteCache byteCache) {
+        this(byteCache, true);
     }
 
     @Override
@@ -20,7 +26,9 @@ class SilentByteCache extends ByteCache {
         try {
             return byteCache.validate();
         } catch (RuntimeException e) {
-            logger.warn("Can't execute validate().", e);
+            if (logErrors) {
+                logger.warn("Can't execute validate().", e);
+            }
             return false;
         }
     }
@@ -30,7 +38,9 @@ class SilentByteCache extends ByteCache {
         try {
             return byteCache.contains(section, key);
         } catch (RuntimeException e) {
-            logger.warn(String.format("Can't execute contains('%s', '%s').", section, key), e);
+            if (logErrors) {
+                logger.warn(String.format("Can't execute contains('%s', '%s').", section, key), e);
+            }
             return false;
         }
     }
@@ -40,7 +50,9 @@ class SilentByteCache extends ByteCache {
         try {
             byteCache.put(section, key, value);
         } catch (RuntimeException e) {
-            logger.warn(String.format("Can't execute put('%s', '%s', size=%d).", section, key, value.length), e);
+            if (logErrors) {
+                logger.warn(String.format("Can't execute put('%s', '%s', size=%d).", section, key, value.length), e);
+            }
         }
     }
 
@@ -49,7 +61,9 @@ class SilentByteCache extends ByteCache {
         try {
             byteCache.put(section, key, value, lifetimeMillis);
         } catch (RuntimeException e) {
-            logger.warn(String.format("Can't execute put('%s', '%s', size=%d, %d).", section, key, value.length, lifetimeMillis), e);
+            if (logErrors) {
+                logger.warn(String.format("Can't execute put('%s', '%s', size=%d, %d).", section, key, value.length, lifetimeMillis), e);
+            }
         }
     }
 
@@ -58,7 +72,9 @@ class SilentByteCache extends ByteCache {
         try {
             byteCache.putIfAbsent(section, key, value);
         } catch (RuntimeException e) {
-            logger.warn(String.format("Can't execute putIfAbsent('%s', '%s', size=%d).", section, key, value.length), e);
+            if (logErrors) {
+                logger.warn(String.format("Can't execute putIfAbsent('%s', '%s', size=%d).", section, key, value.length), e);
+            }
         }
     }
 
@@ -67,7 +83,9 @@ class SilentByteCache extends ByteCache {
         try {
             byteCache.putIfAbsent(section, key, value, lifetimeMillis);
         } catch (RuntimeException e) {
-            logger.warn(String.format("Can't execute putIfAbsent('%s', '%s', size=%d, %d).", section, key, value.length, lifetimeMillis), e);
+            if (logErrors) {
+                logger.warn(String.format("Can't execute putIfAbsent('%s', '%s', size=%d, %d).", section, key, value.length, lifetimeMillis), e);
+            }
         }
     }
 
@@ -77,7 +95,9 @@ class SilentByteCache extends ByteCache {
         try {
             return byteCache.get(section, key);
         } catch (RuntimeException e) {
-            logger.warn(String.format("Can't execute get('%s', '%s').", section, key), e);
+            if (logErrors) {
+                logger.warn(String.format("Can't execute get('%s', '%s').", section, key), e);
+            }
         }
 
         return null;
@@ -102,9 +122,10 @@ class SilentByteCache extends ByteCache {
     public void close() {
         try {
             byteCache.close();
-            byteCache = null;
         } catch (RuntimeException e) {
-            logger.warn(String.format("Can't execute close()."), e);
+            if (logErrors) {
+                logger.warn("Can't execute close().", e);
+            }
         }
     }
 }

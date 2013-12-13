@@ -32,4 +32,8 @@ public final class Caches {
             ByteCache localCache, ByteCache remoteCache, boolean localCacheOptional, boolean remoteCacheOptional) {
         return new LocalAndRemoteByteCache(localCache, remoteCache, localCacheOptional, remoteCacheOptional);
     }
+
+    public static ByteCache newLoggingByteCache(ByteCache cache) {
+        return LoggingByteCache.newInstance(cache);
+    }
 }
