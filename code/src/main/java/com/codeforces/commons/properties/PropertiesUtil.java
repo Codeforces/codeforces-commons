@@ -1,7 +1,12 @@
 package com.codeforces.commons.properties;
 
+import com.codeforces.commons.text.StringUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -46,6 +51,15 @@ public class PropertiesUtil {
 
     public static String getPropertyQuietly(String propertyName, String defaultValue, String... resourceNames) {
         return getProperty(false, propertyName, defaultValue, resourceNames);
+    }
+
+    public static List<String> getListProperty(String propertyName, String defaultValue, String... resourceNames) {
+        String propertyValue = getProperty(propertyName, defaultValue, resourceNames);
+        if (StringUtil.isBlank(propertyValue)) {
+            return Collections.emptyList();
+        }
+
+        return Collections.unmodifiableList(Arrays.asList(StringUtil.Patterns.SEMICOLON_PATTERN.split(propertyValue)));
     }
 
     private static void ensurePropertiesByResourceName(String resourceName) throws IOException {

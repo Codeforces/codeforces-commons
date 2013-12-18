@@ -1,10 +1,7 @@
 package com.codeforces.commons.properties.internal;
 
 import com.codeforces.commons.properties.PropertiesUtil;
-import com.codeforces.commons.text.StringUtil;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,12 +21,11 @@ public class CodeforcesCommonsPropertiesUtil {
     }
 
     public static List<String> getListProperty(String propertyName, String defaultValue) {
-        String propertyValue = getProperty(propertyName, defaultValue);
-        if (StringUtil.isBlank(propertyValue)) {
-            return Collections.emptyList();
-        }
-
-        return Collections.unmodifiableList(Arrays.asList(StringUtil.Patterns.SEMICOLON_PATTERN.split(propertyValue)));
+        return PropertiesUtil.getListProperty(
+                propertyName, defaultValue,
+                "/com/codeforces/commons/properties/codeforces_commons.properties",
+                "/com/codeforces/commons/properties/codeforces_commons_default.properties"
+        );
     }
 
     public static String getApplicationTempDirName() {
