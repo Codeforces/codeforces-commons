@@ -101,7 +101,7 @@ public class HttpUtil {
             );
         }
 
-        HttpClient httpClient = getDefaultHttpClient();
+        HttpClient httpClient = newDefaultHttpClient();
         HttpGet request = new HttpGet(url);
 
         return httpClient.execute(request);
@@ -164,7 +164,7 @@ public class HttpUtil {
             throws IOException {
         parameters = validateAndPreprocessParameters(false, url, parameters);
 
-        HttpClient httpClient = getDefaultHttpClient();
+        HttpClient httpClient = newDefaultHttpClient();
         HttpPost request = new HttpPost(url);
 
         List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
@@ -247,7 +247,7 @@ public class HttpUtil {
         return preprocessParameters ? parameterCopies : parameters;
     }
 
-    private static HttpClient getDefaultHttpClient() {
+    public static HttpClient newDefaultHttpClient() {
         return HttpClientBuilder.create().build();
     }
 

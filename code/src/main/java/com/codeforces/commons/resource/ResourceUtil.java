@@ -210,7 +210,7 @@ public class ResourceUtil {
         }
 
         try {
-            FileUtil.ensureDirectoryExists(cacheFile.getParentFile());
+            FileUtil.ensureParentDirectoryExists(cacheFile);
         } catch (IOException e) {
             throw new IOException(String.format("Can't create cache directory '%s'.", cacheFile.getParentFile()), e);
         }

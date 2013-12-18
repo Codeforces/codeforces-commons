@@ -28,7 +28,7 @@ public class ExceptionUtil {
     }
     
     public static String toString(Throwable e) {
-        Set<Throwable> used = new HashSet<Throwable>();
+        Set<Throwable> used = new HashSet<>();
         StringBuilder sb = new StringBuilder();
 
         while (e != null && !used.contains(e)) {

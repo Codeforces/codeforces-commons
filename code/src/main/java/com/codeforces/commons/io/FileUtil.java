@@ -136,6 +136,27 @@ public class FileUtil {
     }
 
     /**
+     * Ensures that parent directory of specified file or directory does exist and creates it if not.
+     *
+     * @param file Directory or file to get parent directory
+     * @return created directory
+     * @throws java.io.IOException if directory does not exist and can't be created
+     */
+    public static File ensureParentDirectoryExists(File file) throws IOException {
+        final File directory = file.getParentFile();
+        if (directory == null) {
+            return null;
+        }
+
+        return executeIoOperation(new ThreadUtil.Operation<File>() {
+            @Override
+            public File run() throws IOException {
+                return UnsafeFileUtil.ensureDirectoryExists(directory);
+            }
+        });
+    }
+
+    /**
      * Deletes file or directory. Finishes quietly in case of no such file.
      * Directory will be deleted with each nested element.
      *
@@ -255,7 +276,7 @@ public class FileUtil {
      * @param file File to be read.
      * @return String containing file data.
      * @throws java.io.IOException if can't read file. Possibly, file parameter
-     *                     doesn't exists, is directory or not enough permissions.
+     *                             doesn't exists, is directory or not enough permissions.
      */
     public static String readFile(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<String>() {
@@ -303,8 +324,8 @@ public class FileUtil {
      * @param file     File to be write.
      * @param content  Content to be write.
      * @param encoding File encoding.
-     * @throws java.io.IOException                  if can't read file.
-     * @throws java.io.UnsupportedEncodingException Illegal encoding.
+     * @throws java.io.IOException if can't read file.
+     * @throws java.io.UnsupportedEncodingException illegal encoding.
      */
     public static void writeFile(final File file, final String content, final String encoding) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
