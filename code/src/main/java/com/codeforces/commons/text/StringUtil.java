@@ -909,6 +909,10 @@ public final class StringUtil {
         return result;
     }
 
+    public static String toString(Object object) {
+        return object == null ? null : object.toString();
+    }
+
     public static class Patterns {
         private Patterns() {
             throw new UnsupportedOperationException();
