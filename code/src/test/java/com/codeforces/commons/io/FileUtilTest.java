@@ -86,11 +86,11 @@ public class FileUtilTest extends TestCase {
         testGetBytes(18);
     }
 
-    public void testGetBytesOfMediumlFile() throws IOException {
+    public void testGetBytesOfMediumFile() throws IOException {
         testGetBytes(286111);
     }
 
-    public void testGetBytesOfLargelFile() throws IOException {
+    public void testGetBytesOfLargeFile() throws IOException {
         testGetBytes(2171901);
     }
 

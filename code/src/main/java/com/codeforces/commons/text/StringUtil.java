@@ -909,7 +909,8 @@ public final class StringUtil {
         return result;
     }
 
-    public static String toString(Object object) {
+    @Nullable
+    public static String toString(@Nullable Object object) {
         return object == null ? null : object.toString();
     }
 

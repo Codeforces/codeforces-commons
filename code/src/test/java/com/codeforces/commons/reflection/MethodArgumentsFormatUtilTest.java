@@ -2,19 +2,20 @@ package com.codeforces.commons.reflection;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.lang.reflect.Method;
 
 public class MethodArgumentsFormatUtilTest extends TestCase {
     public void testFormatNoArgs() throws NoSuchMethodException {
-        Method testFormatMethod = MethodArgumentsFormatUtilTest.class.getDeclaredMethod("testFormatNoArgs", new Class[0]);
+        Method testFormatMethod = MethodArgumentsFormatUtilTest.class.getDeclaredMethod("testFormatNoArgs", ArrayUtils.EMPTY_CLASS_ARRAY);
 
-        Assert.assertEquals("", MethodArgumentsFormatUtil.format("", testFormatMethod, new Object[0]));
-        Assert.assertEquals("test", MethodArgumentsFormatUtil.format("test", testFormatMethod, new Object[0]));
-        Assert.assertEquals("русский", MethodArgumentsFormatUtil.format("русский", testFormatMethod, new Object[0]));
-        Assert.assertEquals("${test", MethodArgumentsFormatUtil.format("${test", testFormatMethod, new Object[0]));
-        Assert.assertEquals("{}{}$", MethodArgumentsFormatUtil.format("{}{}$", testFormatMethod, new Object[0]));
-        Assert.assertEquals("}$}", MethodArgumentsFormatUtil.format("}$}", testFormatMethod, new Object[0]));
+        Assert.assertEquals("", MethodArgumentsFormatUtil.format("", testFormatMethod, ArrayUtils.EMPTY_OBJECT_ARRAY));
+        Assert.assertEquals("test", MethodArgumentsFormatUtil.format("test", testFormatMethod, ArrayUtils.EMPTY_OBJECT_ARRAY));
+        Assert.assertEquals("русский", MethodArgumentsFormatUtil.format("русский", testFormatMethod, ArrayUtils.EMPTY_OBJECT_ARRAY));
+        Assert.assertEquals("${test", MethodArgumentsFormatUtil.format("${test", testFormatMethod, ArrayUtils.EMPTY_OBJECT_ARRAY));
+        Assert.assertEquals("{}{}$", MethodArgumentsFormatUtil.format("{}{}$", testFormatMethod, ArrayUtils.EMPTY_OBJECT_ARRAY));
+        Assert.assertEquals("}$}", MethodArgumentsFormatUtil.format("}$}", testFormatMethod, ArrayUtils.EMPTY_OBJECT_ARRAY));
     }
 
     public void testFormat() throws NoSuchMethodException {
