@@ -6,6 +6,7 @@ import java.util.List;
 
 /**
  * @author Mike Mirzayanov
+ * @author Maxim Shipko (sladethe@gmail.com)
  */
 public class CodeforcesCommonsPropertiesUtil {
     private CodeforcesCommonsPropertiesUtil() {
@@ -21,7 +22,7 @@ public class CodeforcesCommonsPropertiesUtil {
     }
 
     public static List<String> getListProperty(String propertyName, String defaultValue) {
-        return PropertiesUtil.getListProperty(
+        return PropertiesUtil.getListPropertyQuietly(
                 propertyName, defaultValue,
                 "/com/codeforces/commons/properties/codeforces_commons.properties",
                 "/com/codeforces/commons/properties/codeforces_commons_default.properties"
@@ -29,26 +30,28 @@ public class CodeforcesCommonsPropertiesUtil {
     }
 
     public static String getApplicationTempDirName() {
-        return getProperty("temp-dir.name", "temp");
+        return PropertyValuesHolder.TEMP_DIR_NAME;
     }
 
     public static List<String> getSecurePasswords() {
-        return ComplexPropertyValuesHolder.SECURE_PASSWORDS;
+        return PropertyValuesHolder.SECURE_PASSWORDS;
     }
 
     public static List<String> getSecureHosts() {
-        return ComplexPropertyValuesHolder.SECURE_HOSTS;
+        return PropertyValuesHolder.SECURE_HOSTS;
     }
 
     public static String getSubscriptionToken() {
-        return getProperty("security.subscription-token", "secret");
+        return PropertyValuesHolder.SUBSCRIPTION_TOKEN;
     }
 
-    private static final class ComplexPropertyValuesHolder {
+    private static final class PropertyValuesHolder {
+        private static final String TEMP_DIR_NAME = getProperty("temp-dir.name", "temp");
         private static final List<String> SECURE_PASSWORDS = getListProperty("security.secure-passwords", "");
         private static final List<String> SECURE_HOSTS = getListProperty("security.secure-hosts", "");
+        private static final String SUBSCRIPTION_TOKEN = getProperty("security.subscription-token", "secret");
 
-        private ComplexPropertyValuesHolder() {
+        private PropertyValuesHolder() {
             throw new UnsupportedOperationException();
         }
     }

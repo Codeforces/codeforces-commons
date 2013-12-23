@@ -1,5 +1,6 @@
 package com.codeforces.commons.io;
 
+import com.codeforces.commons.math.NumberUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -12,10 +13,14 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static java.lang.StrictMath.min;
+
 /**
  * @author Mike Mirzayanov
  */
 public class IoUtil {
+    private static final int BUFFER_SIZE = NumberUtil.toInt(4L * FileUtil.BYTES_PER_MB);
+
     private IoUtil() {
         throw new UnsupportedOperationException();
     }
@@ -25,7 +30,7 @@ public class IoUtil {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
             DigestInputStream digestInputStream = new DigestInputStream(inputStream, messageDigest);
 
-            IOUtils.copy(digestInputStream, NullOutputStream.NULL_OUTPUT_STREAM);
+            IOUtils.copyLarge(digestInputStream, NullOutputStream.NULL_OUTPUT_STREAM, new byte[BUFFER_SIZE]);
             digestInputStream.close();
 
             byte[] digest = messageDigest.digest();
@@ -48,7 +53,7 @@ public class IoUtil {
     public static byte[] toByteArray(InputStream inputStream, int maxSize, boolean throwIfExceeded) throws IOException {
         ByteArrayOutputStream outputStream = new LimitedByteArrayOutputStream(maxSize, throwIfExceeded);
         try {
-            IOUtils.copy(inputStream, outputStream);
+            IOUtils.copyLarge(inputStream, outputStream, new byte[min(maxSize, BUFFER_SIZE)]);
         } finally {
             IOUtils.closeQuietly(inputStream);
             IOUtils.closeQuietly(outputStream);
@@ -58,7 +63,7 @@ public class IoUtil {
 
     public static void transfer(InputStream inputStream, OutputStream outputStream) throws IOException {
         try {
-            IOUtils.copy(inputStream, outputStream);
+            IOUtils.copyLarge(inputStream, outputStream, new byte[BUFFER_SIZE]);
         } finally {
             inputStream.close();
         }

@@ -29,7 +29,7 @@ public class PropertiesUtil {
                 ensurePropertiesByResourceName(resourceName);
             } catch (Exception e) {
                 if (throwOnFileReadError) {
-                    throw new RuntimeException("Can't read properties from resource \"" + resourceName + "\".", e);
+                    throw new RuntimeException("Can't read properties from resource '" + resourceName + "'.", e);
                 } else {
                     continue;
                 }
@@ -53,8 +53,9 @@ public class PropertiesUtil {
         return getProperty(false, propertyName, defaultValue, resourceNames);
     }
 
-    public static List<String> getListProperty(String propertyName, String defaultValue, String... resourceNames) {
-        String propertyValue = getProperty(propertyName, defaultValue, resourceNames);
+    public static List<String> getListProperty(
+            boolean throwOnFileReadError, String propertyName, String defaultValue, String... resourceNames) {
+        String propertyValue = getProperty(throwOnFileReadError, propertyName, defaultValue, resourceNames);
         if (StringUtil.isBlank(propertyValue)) {
             return Collections.emptyList();
         }
@@ -62,12 +63,20 @@ public class PropertiesUtil {
         return Collections.unmodifiableList(Arrays.asList(StringUtil.Patterns.SEMICOLON_PATTERN.split(propertyValue)));
     }
 
+    public static List<String> getListProperty(String propertyName, String defaultValue, String... resourceNames) {
+        return getListProperty(true, propertyName, defaultValue, resourceNames);
+    }
+
+    public static List<String> getListPropertyQuietly(String propertyName, String defaultValue, String... resourceNames) {
+        return getListProperty(false, propertyName, defaultValue, resourceNames);
+    }
+
     private static void ensurePropertiesByResourceName(String resourceName) throws IOException {
         if (!propertiesByResourceName.containsKey(resourceName)) {
             Properties properties = new Properties();
-            InputStream inputStream = PropertiesUtil.class.getResourceAsStream(resourceName);
-            properties.load(inputStream);
-            inputStream.close();
+            try (InputStream inputStream = PropertiesUtil.class.getResourceAsStream(resourceName)) {
+                properties.load(inputStream);
+            }
 
             propertiesByResourceName.putIfAbsent(resourceName, properties);
         }
