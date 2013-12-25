@@ -15,6 +15,10 @@ public class ThreadUtil {
         throw new UnsupportedOperationException();
     }
 
+    public static Thread newThread(String name, Runnable runnable) {
+        return new Thread(runnable, name);
+    }
+
     public static Thread newThread(
             String name, Runnable runnable, Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
         Thread thread = new Thread(runnable, name);

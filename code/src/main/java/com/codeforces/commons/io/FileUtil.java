@@ -10,6 +10,10 @@ import org.apache.commons.io.IOUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -325,7 +329,8 @@ public class FileUtil {
      * @param content  Content to be write.
      * @param encoding File encoding.
      * @throws java.io.IOException if can't read file.
-     * @throws java.io.UnsupportedEncodingException illegal encoding.
+     * @throws java.io.UnsupportedEncodingException
+     *                             illegal encoding.
      */
     public static void writeFile(final File file, final String content, final String encoding) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -629,6 +634,29 @@ public class FileUtil {
                 return UnsafeFileUtil.getDirectorySize(directory);
             }
         });
+    }
+
+    public static File hideFile(File file) throws IOException {
+        Path path = Paths.get(file.getAbsolutePath());
+
+        Boolean dosHidden = (Boolean) Files.getAttribute(path, "dos:hidden", LinkOption.NOFOLLOW_LINKS);
+        if (dosHidden != null && !dosHidden) {
+            Files.setAttribute(path, "dos:hidden", Boolean.TRUE, LinkOption.NOFOLLOW_LINKS);
+        }
+
+        return file;
+    }
+
+    public static File hideFileQuietly(File file) {
+        try {
+            if (file != null && file.exists()) {
+                hideFile(file);
+            }
+        } catch (IOException ignored) {
+            // No operations.
+        }
+
+        return file;
     }
 
     /**
