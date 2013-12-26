@@ -5,10 +5,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,20 +23,16 @@ public class IoUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static String sha1(InputStream inputStream) throws IOException {
+    public static String sha1Hex(InputStream inputStream) throws IOException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
-            DigestInputStream digestInputStream = new DigestInputStream(inputStream, messageDigest);
-
-            IOUtils.copyLarge(digestInputStream, NullOutputStream.NULL_OUTPUT_STREAM, new byte[BUFFER_SIZE]);
-            digestInputStream.close();
-
+            transfer(new DigestInputStream(inputStream, messageDigest), NullOutputStream.NULL_OUTPUT_STREAM);
             byte[] digest = messageDigest.digest();
             return Hex.encodeHexString(digest);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } finally {
-            IOUtils.closeQuietly(inputStream);
+            inputStream.close();
         }
     }
 
@@ -55,10 +49,50 @@ public class IoUtil {
         try {
             IOUtils.copyLarge(inputStream, outputStream, new byte[min(maxSize, BUFFER_SIZE)]);
         } finally {
-            IOUtils.closeQuietly(inputStream);
-            IOUtils.closeQuietly(outputStream);
+            inputStream.close();
+            outputStream.close();
         }
         return outputStream.toByteArray();
+    }
+
+    public static String toString(InputStream inputStream) throws IOException {
+        try {
+            return IOUtils.toString(inputStream);
+        } catch (IOException e) {
+            throw new IOException("Can't read from input stream.", e);
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    public static String toString(InputStream inputStream, String charsetName) throws IOException {
+        try {
+            return IOUtils.toString(inputStream, charsetName);
+        } catch (IOException e) {
+            throw new IOException("Can't read from input stream.", e);
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    public static String toString(InputStream inputStream, Charset charset) throws IOException {
+        try {
+            return IOUtils.toString(inputStream, charset);
+        } catch (IOException e) {
+            throw new IOException("Can't read from input stream.", e);
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    public static String toString(Reader reader) throws IOException {
+        try {
+            return IOUtils.toString(reader);
+        } catch (IOException e) {
+            throw new IOException("Can't read from reader.", e);
+        } finally {
+            reader.close();
+        }
     }
 
     public static void transfer(InputStream inputStream, OutputStream outputStream) throws IOException {

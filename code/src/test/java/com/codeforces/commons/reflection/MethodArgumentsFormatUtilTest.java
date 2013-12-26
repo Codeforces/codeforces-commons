@@ -1,11 +1,12 @@
 package com.codeforces.commons.reflection;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.TestCase;
 import org.apache.commons.lang.ArrayUtils;
 
 import java.lang.reflect.Method;
 
+@SuppressWarnings("MessageMissingOnJUnitAssertion")
 public class MethodArgumentsFormatUtilTest extends TestCase {
     public void testFormatNoArgs() throws NoSuchMethodException {
         Method testFormatMethod = MethodArgumentsFormatUtilTest.class.getDeclaredMethod("testFormatNoArgs", ArrayUtils.EMPTY_CLASS_ARRAY);
@@ -55,6 +56,7 @@ public class MethodArgumentsFormatUtilTest extends TestCase {
         Assert.assertTrue(hasException);
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void justToTest(@Name("firstUser") User a, @Name("index") Integer i, @Name("value") long value, @Name("country") Country country) {
         // No operations.
     }

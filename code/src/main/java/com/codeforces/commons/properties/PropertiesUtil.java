@@ -1,5 +1,6 @@
 package com.codeforces.commons.properties;
 
+import com.codeforces.commons.exception.CantReadResourceException;
 import com.codeforces.commons.text.StringUtil;
 
 import java.io.IOException;
@@ -22,20 +23,22 @@ public class PropertiesUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static String getProperty(
-            boolean throwOnFileReadError, String propertyName, String defaultValue, String... resourceNames) {
+    public static String getProperty(boolean throwOnFileReadError, String propertyName,
+                                     String defaultValue, String... resourceNames) throws CantReadResourceException {
         for (String resourceName : resourceNames) {
+            Properties properties;
             try {
-                ensurePropertiesByResourceName(resourceName);
+                properties = ensurePropertiesByResourceName(resourceName);
             } catch (Exception e) {
                 if (throwOnFileReadError) {
-                    throw new RuntimeException("Can't read properties from resource '" + resourceName + "'.", e);
+                    throw new CantReadResourceException(String.format(
+                            "Can't read properties from resource '%s'.", resourceName
+                    ), e);
                 } else {
                     continue;
                 }
             }
 
-            Properties properties = propertiesByResourceName.get(resourceName);
             String value = properties.getProperty(propertyName);
             if (value != null) {
                 return value;
@@ -71,14 +74,18 @@ public class PropertiesUtil {
         return getListProperty(false, propertyName, defaultValue, resourceNames);
     }
 
-    private static void ensurePropertiesByResourceName(String resourceName) throws IOException {
-        if (!propertiesByResourceName.containsKey(resourceName)) {
-            Properties properties = new Properties();
+    private static Properties ensurePropertiesByResourceName(String resourceName) throws IOException {
+        Properties properties = propertiesByResourceName.get(resourceName);
+
+        if (properties == null) {
+            properties = new Properties();
             try (InputStream inputStream = PropertiesUtil.class.getResourceAsStream(resourceName)) {
                 properties.load(inputStream);
             }
-
             propertiesByResourceName.putIfAbsent(resourceName, properties);
+            properties = propertiesByResourceName.get(resourceName);
         }
+
+        return properties;
     }
 }

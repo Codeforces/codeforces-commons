@@ -2,7 +2,7 @@ package com.codeforces.commons.cache;
 
 import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.process.ThreadUtil;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;

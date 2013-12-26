@@ -67,7 +67,7 @@ public class FileUtil {
         return executeIoOperation(new ThreadUtil.Operation<String>() {
             @Override
             public String run() throws IOException {
-                return UnsafeFileUtil.sha1(file);
+                return UnsafeFileUtil.sha1Hex(file);
             }
         });
     }
@@ -265,15 +265,6 @@ public class FileUtil {
                 }
             }
         }).start();
-    }
-
-    /**
-     * @param reader Reader to be processed.
-     * @return String containing all characters from reader.
-     * @throws java.io.IOException if can't read data.
-     */
-    public static String readFromReader(Reader reader) throws IOException {
-        return UnsafeFileUtil.readFromReader(reader);
     }
 
     /**

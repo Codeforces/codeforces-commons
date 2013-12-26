@@ -42,8 +42,8 @@ public class UnsafeFileUtil {
      * @return SHA-1 hashCode in hexadecimal.
      * @throws java.io.IOException Can't perform IO.
      */
-    public static String sha1(File file) throws IOException {
-        return IoUtil.sha1(new BufferedInputStream(new FileInputStream(file)));
+    public static String sha1Hex(File file) throws IOException {
+        return IoUtil.sha1Hex(new BufferedInputStream(new FileInputStream(file)));
     }
 
     /**
@@ -218,28 +218,13 @@ public class UnsafeFileUtil {
     }
 
     /**
-     * @param reader Reader to be processed.
-     * @return String containing all characters from reader.
-     * @throws java.io.IOException if can't read data.
-     */
-    public static String readFromReader(Reader reader) throws IOException {
-        try {
-            return IOUtils.toString(reader);
-        } catch (IOException e) {
-            throw new IOException("Can't read from reader", e);
-        } finally {
-            IOUtils.closeQuietly(reader);
-        }
-    }
-
-    /**
      * @param file File to be read.
      * @return String containing file data.
      * @throws java.io.IOException if can't read file. Possibly, file parameter
      *                     doesn't exists, is directory or not enough permissions.
      */
     public static String readFile(File file) throws IOException {
-        return readFromReader(new FileReader(file));
+        return IoUtil.toString(new FileReader(file));
     }
 
     private static void ensureParentDirectoryExists(File file) throws IOException {
