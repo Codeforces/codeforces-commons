@@ -122,6 +122,7 @@ class SilentByteCache extends ByteCache {
     public void close() {
         try {
             byteCache.close();
+            byteCache = null;
         } catch (RuntimeException e) {
             if (logErrors) {
                 logger.warn("Can't execute close().", e);

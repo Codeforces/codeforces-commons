@@ -1,7 +1,10 @@
 package com.codeforces.commons.process;
 
+import com.codeforces.commons.exception.ExceptionUtil;
 import org.apache.log4j.Logger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Date;
 
 /**
@@ -15,37 +18,53 @@ public class ThreadUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static Thread newThread(String name, Runnable runnable) {
-        return new Thread(runnable, name);
-    }
-
     public static Thread newThread(
-            String name, Runnable runnable, Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
-        Thread thread = new Thread(runnable, name);
-        thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
-        return thread;
-    }
+            @Nullable String name, @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
+        if (name == null) {
+            name = "Unnamed thread by " + Thread.currentThread() + " running " + runnable.getClass().getName() + " at " + new Date() + '.';
+        }
 
-    public static Thread newThread(
-            String name, Runnable runnable, Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
         Thread thread = new Thread(null, runnable, name, stackSize);
-        thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
+
+        if (uncaughtExceptionHandler != null || Thread.getDefaultUncaughtExceptionHandler() == null) {
+            if (uncaughtExceptionHandler == null) {
+                uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
+                    @Override
+                    public void uncaughtException(Thread t, Throwable e) {
+                        System.out.println("Unexpected exception " + e.getClass() + " (" + e.getMessage() + ") in "
+                                + t.getName() + ":\n" + ExceptionUtil.toString(e));
+                        logger.error("Unexpected exception " + e.getClass() + " (" + e.getMessage() + ") in "
+                                + t.getName() + ".", e);
+                    }
+                };
+            }
+
+            thread.setUncaughtExceptionHandler(uncaughtExceptionHandler);
+        }
+
         return thread;
     }
 
-    public static Thread newThread(Runnable runnable, Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
-        return newThread(
-                "Unnamed thread created by " + Thread.currentThread().toString() + " at " + new Date() + '.',
-                runnable, uncaughtExceptionHandler
-        );
+    public static Thread newThread(@Nullable String name, @Nonnull Runnable runnable) {
+        return newThread(name, runnable, null, 0);
     }
 
     public static Thread newThread(
-            Runnable runnable, Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
-        return newThread(
-                "Unnamed thread created by " + Thread.currentThread().toString() + " at " + new Date() + '.',
-                runnable, uncaughtExceptionHandler, stackSize
-        );
+            @Nullable String name, @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+        return newThread(name, runnable, uncaughtExceptionHandler, 0);
+    }
+
+    public static Thread newThread(@Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+        return newThread(null, runnable, uncaughtExceptionHandler, 0);
+    }
+
+    public static Thread newThread(
+            @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
+        return newThread(null, runnable, uncaughtExceptionHandler, stackSize);
+    }
+
+    public static Thread newThread(@Nonnull Runnable runnable) {
+        return newThread(null, runnable, null, 0);
     }
 
     public static void sleep(long millis) {

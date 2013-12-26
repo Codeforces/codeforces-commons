@@ -12,7 +12,7 @@ import java.nio.charset.Charset;
  */
 
 /**
- * All methods of this class throws {@code {@link IllegalArgumentException }} if either section or key
+ * All methods of this class throws {@code {@link IllegalArgumentException}} if either section or key
  * is {@code null}, empty or contains illegal characters.
  * Valid characters are: 'a'..'z', 'A'..'Z', '0'..'9', ',', '-', '+', '#', '_', '~'.
  */

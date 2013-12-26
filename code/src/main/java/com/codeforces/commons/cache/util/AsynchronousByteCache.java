@@ -85,7 +85,8 @@ class AsynchronousByteCache extends ByteCache {
         if (disableOnFailMillis != 0
                 && System.currentTimeMillis() - lastValidationFail.get() < disableOnFailMillis) {
             logger.warn("AsynchronousByteCache disabled since "
-                    + lastValidationFail.get() + " [" + new Date(lastValidationFail.get()) + "].");
+                    + lastValidationFail.get() + " [" + new Date(lastValidationFail.get()) + "] for "
+                    + disableOnFailMillis + " ms.");
             return false;
         }
 
