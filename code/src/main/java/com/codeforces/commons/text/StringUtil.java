@@ -1,7 +1,7 @@
 package com.codeforces.commons.text;
 
 import com.codeforces.commons.io.FileUtil;
-import com.codeforces.commons.properties.internal.CodeforcesCommonsPropertiesUtil;
+import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -761,7 +761,7 @@ public final class StringUtil {
     }
 
     public static String subscribe(String plainText, String secretKey) {
-        String toSubscribe = plainText + CodeforcesCommonsPropertiesUtil.getSubscriptionToken() + secretKey;
+        String toSubscribe = plainText + CommonsPropertiesUtil.getSubscriptionToken() + secretKey;
         return Base64.encodeBase64URLSafeString(DigestUtils.sha1(toSubscribe)) + '*' + plainText;
     }
 
@@ -774,7 +774,7 @@ public final class StringUtil {
         String digest = subscribedText.substring(0, separatorPosition);
         String plainText = subscribedText.substring(separatorPosition + 1);
 
-        String toSubscribe = plainText + CodeforcesCommonsPropertiesUtil.getSubscriptionToken() + secretKey;
+        String toSubscribe = plainText + CommonsPropertiesUtil.getSubscriptionToken() + secretKey;
         if (!equals(digest, Base64.encodeBase64URLSafeString(DigestUtils.sha1(toSubscribe)))) {
             throw new IllegalArgumentException("Illegal digest.");
         }

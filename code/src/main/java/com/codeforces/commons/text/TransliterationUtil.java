@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentMap;
  *         Date: 18.01.12
  */
 public final class TransliterationUtil {
-    private static final ConcurrentMap<Character, String> transliterationMap = new ConcurrentHashMap<Character, String>();
+    private static final ConcurrentMap<Character, String> transliterationMap = new ConcurrentHashMap<>();
 
     private TransliterationUtil() {
         throw new UnsupportedOperationException();

@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 public class MimeUtil {
     public static final String DEFAULT_MIME_TYPE = Type.TEXT_PLAIN;
 
-    private static final ConcurrentMap<String, String> mimeTypeByExtension = new ConcurrentHashMap<String, String>();
+    private static final ConcurrentMap<String, String> mimeTypeByExtension = new ConcurrentHashMap<>();
 
     private MimeUtil() {
         throw new UnsupportedOperationException();
@@ -44,7 +44,7 @@ public class MimeUtil {
         private static final Set<String> KNOWN_MIME_TYPES;
 
         static {
-            Set<String> knownMimeTypes = new HashSet<String>(mimeTypeByExtension.values());
+            Set<String> knownMimeTypes = new HashSet<>(mimeTypeByExtension.values());
             knownMimeTypes.add(DEFAULT_MIME_TYPE);
             KNOWN_MIME_TYPES = Collections.unmodifiableSet(knownMimeTypes);
         }

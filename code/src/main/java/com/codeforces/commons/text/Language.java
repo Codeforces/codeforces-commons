@@ -86,8 +86,8 @@ public enum Language {
         Language[] languages = Language.values();
         int languageCount = languages.length;
 
-        Map<String, Language> languageByIetfTagModifiableMap = new HashMap<String, Language>(languageCount);
-        Map<String, Language> languageByIso6391CodeModifiableMap = new HashMap<String, Language>(languageCount);
+        Map<String, Language> languageByIetfTagModifiableMap = new HashMap<>(languageCount);
+        Map<String, Language> languageByIso6391CodeModifiableMap = new HashMap<>(languageCount);
 
         for (int languageIndex = 0; languageIndex < languageCount; ++languageIndex) {
             Language language = languages[languageIndex];

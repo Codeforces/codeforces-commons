@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.codeforces</groupId>
-    <artifactId>codeforces-commons</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>commons</artifactId>
+    <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>codeforces-commons</name>
+    <name>commons</name>
     <url>https://github.com/Codeforces/codeforces-commons</url>
     <description>Commons for Codeforces and related projects.</description>
 

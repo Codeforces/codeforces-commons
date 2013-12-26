@@ -1,6 +1,6 @@
 package com.codeforces.commons.io;
 
-import com.codeforces.commons.properties.internal.CodeforcesCommonsPropertiesUtil;
+import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.text.StringUtil;
 import com.codeforces.commons.text.UrlUtil;
 import org.apache.commons.io.IOUtils;
@@ -167,7 +167,7 @@ public class HttpUtil {
         HttpClient httpClient = newDefaultHttpClient();
         HttpPost request = new HttpPost(url);
 
-        List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+        List<NameValuePair> postParameters = new ArrayList<>();
 
         for (int parameterIndex = 0; parameterIndex < parameters.length; parameterIndex += 2) {
             postParameters.add(new BasicNameValuePair(
@@ -191,7 +191,7 @@ public class HttpUtil {
 
         boolean secureHost;
         try {
-            secureHost = CodeforcesCommonsPropertiesUtil.getSecureHosts().contains(new URL(url).getHost());
+            secureHost = CommonsPropertiesUtil.getSecureHosts().contains(new URL(url).getHost());
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException('\'' + url + "' is not valid URL.", e);
         }
@@ -204,7 +204,7 @@ public class HttpUtil {
             );
         }
 
-        List<String> securePasswords = CodeforcesCommonsPropertiesUtil.getSecurePasswords();
+        List<String> securePasswords = CommonsPropertiesUtil.getSecurePasswords();
         boolean preprocessParameters = encodeParameters || !secureHost && !securePasswords.isEmpty();
 
         Object[] parameterCopies = preprocessParameters ? new Object[parameterCount] : null;

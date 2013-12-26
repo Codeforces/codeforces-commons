@@ -30,7 +30,7 @@ public class FileBackup implements Closeable {
     private final boolean removeBackupDirOnClose;
     private final int concurrencyLevel;
 
-    private final ConcurrentMap<String, BackupEntry> backupEntryByOriginalPath = new ConcurrentHashMap<String, BackupEntry>();
+    private final ConcurrentMap<String, BackupEntry> backupEntryByOriginalPath = new ConcurrentHashMap<>();
     private final Semaphore semaphore;
 
     public FileBackup(

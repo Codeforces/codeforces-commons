@@ -4,7 +4,7 @@ import com.codeforces.commons.compress.ZipUtil;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.math.RandomUtil;
-import com.codeforces.commons.properties.internal.CodeforcesCommonsPropertiesUtil;
+import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.google.common.primitives.Ints;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
@@ -765,7 +765,7 @@ public class UnsafeFileUtil {
 
         private static String initializeTempDir() {
             try {
-                String tempDirName = CodeforcesCommonsPropertiesUtil.getApplicationTempDirName();
+                String tempDirName = CommonsPropertiesUtil.getApplicationTempDirName();
 
                 File dir = File.createTempFile(tempDirName, "");
                 File temp = new File(dir.getParentFile(), tempDirName);

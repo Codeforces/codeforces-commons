@@ -8,25 +8,22 @@ import java.util.List;
  * @author Mike Mirzayanov
  * @author Maxim Shipko (sladethe@gmail.com)
  */
-public class CodeforcesCommonsPropertiesUtil {
-    private CodeforcesCommonsPropertiesUtil() {
+public class CommonsPropertiesUtil {
+    private static final String[] RESOURCE_NAMES = {
+            "/com/codeforces/commons/properties/commons.properties",
+            "/com/codeforces/commons/properties/commons_default.properties"
+    };
+
+    private CommonsPropertiesUtil() {
         throw new UnsupportedOperationException();
     }
 
     public static String getProperty(String propertyName, String defaultValue) {
-        return PropertiesUtil.getPropertyQuietly(
-                propertyName, defaultValue,
-                "/com/codeforces/commons/properties/codeforces_commons.properties",
-                "/com/codeforces/commons/properties/codeforces_commons_default.properties"
-        );
+        return PropertiesUtil.getPropertyQuietly(propertyName, defaultValue, RESOURCE_NAMES);
     }
 
     public static List<String> getListProperty(String propertyName, String defaultValue) {
-        return PropertiesUtil.getListPropertyQuietly(
-                propertyName, defaultValue,
-                "/com/codeforces/commons/properties/codeforces_commons.properties",
-                "/com/codeforces/commons/properties/codeforces_commons_default.properties"
-        );
+        return PropertiesUtil.getListPropertyQuietly(propertyName, defaultValue, RESOURCE_NAMES);
     }
 
     public static String getApplicationTempDirName() {
