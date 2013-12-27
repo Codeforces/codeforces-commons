@@ -2,6 +2,7 @@ package com.codeforces.commons.properties;
 
 import com.codeforces.commons.exception.CantReadResourceException;
 import com.codeforces.commons.text.StringUtil;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +18,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 @SuppressWarnings("OverloadedVarargsMethod")
 public class PropertiesUtil {
+    private static final Logger logger = Logger.getLogger(PropertiesUtil.class);
+
     private static final ConcurrentMap<String, Properties> propertiesByResourceName = new ConcurrentHashMap<>();
 
     private PropertiesUtil() {
@@ -30,11 +33,12 @@ public class PropertiesUtil {
             try {
                 properties = ensurePropertiesByResourceName(resourceName);
             } catch (Exception e) {
+                String message = String.format("Can't read properties from resource '%s'.", resourceName);
                 if (throwOnFileReadError) {
-                    throw new CantReadResourceException(String.format(
-                            "Can't read properties from resource '%s'.", resourceName
-                    ), e);
+                    logger.error(message, e);
+                    throw new CantReadResourceException(message, e);
                 } else {
+                    logger.warn(message, e);
                     continue;
                 }
             }
