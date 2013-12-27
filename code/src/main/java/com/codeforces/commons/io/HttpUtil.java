@@ -8,13 +8,19 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.ConnectionConfig;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 
 import javax.annotation.Nullable;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -101,7 +107,7 @@ public class HttpUtil {
             );
         }
 
-        HttpClient httpClient = newDefaultHttpClient();
+        HttpClient httpClient = newHttpClient();
         HttpGet request = new HttpGet(url);
 
         return httpClient.execute(request);
@@ -164,7 +170,7 @@ public class HttpUtil {
             throws IOException {
         parameters = validateAndPreprocessParameters(false, url, parameters);
 
-        HttpClient httpClient = newDefaultHttpClient();
+        HttpClient httpClient = newHttpClient();
         HttpPost request = new HttpPost(url);
 
         List<NameValuePair> postParameters = new ArrayList<>();
@@ -247,8 +253,97 @@ public class HttpUtil {
         return preprocessParameters ? parameterCopies : parameters;
     }
 
-    public static HttpClient newDefaultHttpClient() {
+    /**
+     * @deprecated Use {@link #newHttpClient()}.
+     */
+    @Deprecated
+    public static CloseableHttpClient newDefaultHttpClient() {
         return HttpClientBuilder.create().build();
+    }
+
+    public static CloseableHttpClient newHttpClient() {
+        return HttpClientBuilder.create().build();
+    }
+
+    public static CloseableHttpClient newHttpClient(int connectionTimeoutMillis, int socketTimeoutMillis) {
+        ConnectionConfig connectionConfig = ConnectionConfig.copy(ConnectionConfig.DEFAULT).build();
+
+        SocketConfig socketConfig = SocketConfig.copy(SocketConfig.DEFAULT)
+                .setSoTimeout(socketTimeoutMillis)
+                .build();
+
+        RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+                .setConnectTimeout(connectionTimeoutMillis)
+                .build();
+
+        BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
+        connectionManager.setConnectionConfig(connectionConfig);
+        connectionManager.setSocketConfig(socketConfig);
+
+        return HttpClientBuilder.create()
+                .setDefaultConnectionConfig(connectionConfig)
+                .setDefaultSocketConfig(socketConfig)
+                .setDefaultRequestConfig(requestConfig)
+                .setConnectionManager(connectionManager)
+                .build();
+    }
+
+    public static void closeQuietly(
+            @Nullable CloseableHttpClient httpClient, @Nullable HttpPost request, @Nullable HttpResponse response) {
+        closeQuietly(response);
+        closeQuietly(request);
+        closeQuietly(httpClient);
+    }
+
+    /**
+     * @deprecated Use {@link #closeQuietly(CloseableHttpClient, HttpPost, HttpResponse)}.
+     */
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    public static void closeQuietly(
+            @Nullable HttpClient httpClient, @Nullable HttpPost request, @Nullable HttpResponse response) {
+        closeQuietly(response);
+        closeQuietly(request);
+        closeQuietly(httpClient);
+    }
+
+    public static void closeQuietly(@Nullable CloseableHttpClient httpClient) {
+        IoUtil.closeQuietly(httpClient);
+    }
+
+    /**
+     * @deprecated Use {@link #closeQuietly(CloseableHttpClient)}.
+     */
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    public static void closeQuietly(@Nullable HttpClient httpClient) {
+        if (httpClient instanceof Closeable) {
+            IoUtil.closeQuietly((Closeable) httpClient);
+        } else if (httpClient != null) {
+            httpClient.getConnectionManager().shutdown();
+        }
+    }
+
+    public static void closeQuietly(@Nullable HttpPost request) {
+        if (request != null) {
+            request.abort();
+        }
+    }
+
+    public static void closeQuietly(@Nullable HttpResponse response) {
+        if (response != null) {
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                try {
+                    InputStream content = entity.getContent();
+                    if (content != null) {
+                        content.close();
+                    }
+                } catch (IllegalStateException | IOException ignored) {
+                    // No operations.
+                }
+            }
+        }
     }
 
     public static final class Response {

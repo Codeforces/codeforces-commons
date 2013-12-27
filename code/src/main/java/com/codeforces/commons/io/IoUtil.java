@@ -5,6 +5,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.security.DigestInputStream;
@@ -26,7 +27,7 @@ public class IoUtil {
     public static String sha1Hex(InputStream inputStream) throws IOException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
-            transfer(new DigestInputStream(inputStream, messageDigest), NullOutputStream.NULL_OUTPUT_STREAM);
+            copy(new DigestInputStream(inputStream, messageDigest), NullOutputStream.NULL_OUTPUT_STREAM);
             byte[] digest = messageDigest.digest();
             return Hex.encodeHexString(digest);
         } catch (NoSuchAlgorithmException e) {
@@ -95,11 +96,36 @@ public class IoUtil {
         }
     }
 
+    /**
+     * @deprecated Use {@link #copy(InputStream, OutputStream)}.
+     */
+    @Deprecated
     public static void transfer(InputStream inputStream, OutputStream outputStream) throws IOException {
+        copy(inputStream, outputStream);
+    }
+
+    public static long copy(InputStream inputStream, OutputStream outputStream) throws IOException {
         try {
-            IOUtils.copyLarge(inputStream, outputStream, new byte[BUFFER_SIZE]);
+            return IOUtils.copyLarge(inputStream, outputStream, new byte[BUFFER_SIZE]);
         } finally {
             inputStream.close();
+        }
+    }
+
+    public static void closeQuietly(@Nullable Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException ignored) {
+                // No operations.
+            }
+        }
+    }
+
+    @SuppressWarnings("OverloadedVarargsMethod")
+    public static void closeQuietly(Closeable... closeables) {
+        for (int i = 0, count = closeables.length; i < count; ++i) {
+            closeQuietly(closeables[i]);
         }
     }
 }
