@@ -4,7 +4,6 @@ import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -405,8 +404,7 @@ public final class XmlUtil {
             throw new IOException("Can't get xpath \"" + xPath + "\" from \""
                     + StringUtil.shrinkTo(xmlString, 128) + "\".", e);
         } finally {
-            IOUtils.closeQuietly(xmlBytesInputStream);
-            IOUtils.closeQuietly(xmlInputStream);
+            IoUtil.closeQuietly(xmlBytesInputStream, xmlInputStream);
         }
     }
 
@@ -425,7 +423,7 @@ public final class XmlUtil {
         } catch (TransformerException e) {
             throw new IOException("Transformer failed.", e);
         } finally {
-            IOUtils.closeQuietly(xmlOutputStream);
+            IoUtil.closeQuietly(xmlOutputStream);
         }
     }
 
@@ -443,8 +441,7 @@ public final class XmlUtil {
         } catch (XPathExpressionException e) {
             throw new IOException("Illegal XPath.", e);
         } finally {
-            IOUtils.closeQuietly(xmlInputStream);
-            IOUtils.closeQuietly(xmlOutputStream);
+            IoUtil.closeQuietly(xmlInputStream, xmlOutputStream);
         }
     }
 
@@ -493,8 +490,7 @@ public final class XmlUtil {
         } catch (XPathExpressionException e) {
             throw new IOException("Illegal XPath.", e);
         } finally {
-            IOUtils.closeQuietly(xmlInputStream);
-            IOUtils.closeQuietly(xmlOutputStream);
+            IoUtil.closeQuietly(xmlInputStream, xmlOutputStream);
         }
     }
 
@@ -588,8 +584,7 @@ public final class XmlUtil {
         } catch (XPathExpressionException e) {
             throw new IOException("Illegal XPath.", e);
         } finally {
-            IOUtils.closeQuietly(xmlInputStream);
-            IOUtils.closeQuietly(xmlOutputStream);
+            IoUtil.closeQuietly(xmlInputStream, xmlOutputStream);
         }
     }
 
@@ -621,8 +616,7 @@ public final class XmlUtil {
         } catch (XPathExpressionException e) {
             throw new IOException("Illegal XPath.", e);
         } finally {
-            IOUtils.closeQuietly(xmlInputStream);
-            IOUtils.closeQuietly(xmlOutputStream);
+            IoUtil.closeQuietly(xmlInputStream, xmlOutputStream);
         }
     }
 

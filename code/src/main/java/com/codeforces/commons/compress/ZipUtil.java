@@ -1,6 +1,7 @@
 package com.codeforces.commons.compress;
 
 import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.text.StringUtil;
 import com.google.common.primitives.Ints;
 import de.schlichtherle.truezip.file.TFile;
@@ -13,7 +14,6 @@ import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.IOCase;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.NameFileFilter;
 
 import javax.annotation.Nonnull;
@@ -50,12 +50,12 @@ public final class ZipUtil {
             throws IOException {
         Deflater compressor = new Deflater();
         compressor.setLevel(level);
-        IOUtils.copy(new DeflaterInputStream(plainTextInputStream, compressor), compressedTextOutputStream);
+        IoUtil.copy(new DeflaterInputStream(plainTextInputStream, compressor), compressedTextOutputStream);
     }
 
     public static void decompress(InputStream compressedTextInputStream, OutputStream plainTextOutputStream)
             throws IOException {
-        IOUtils.copy(compressedTextInputStream, new InflaterOutputStream(plainTextOutputStream));
+        IoUtil.copy(compressedTextInputStream, new InflaterOutputStream(plainTextOutputStream));
     }
 
     public static byte[] compress(byte[] bytes) {
@@ -80,7 +80,7 @@ public final class ZipUtil {
             outputStream.write(buffer, 0, compressor.deflate(buffer));
         }
 
-        IOUtils.closeQuietly(outputStream);
+        IoUtil.closeQuietly(outputStream);
 
         return outputStream.toByteArray();
     }
@@ -226,8 +226,7 @@ public final class ZipUtil {
         try {
             addDirectory("", source, zipOutputStream, skipFilter, false);
         } finally {
-            IOUtils.closeQuietly(zipOutputStream);
-            IOUtils.closeQuietly(outputStream);
+            IoUtil.closeQuietly(zipOutputStream, outputStream);
         }
 
         return outputStream.toByteArray();
@@ -378,10 +377,9 @@ public final class ZipUtil {
         OutputStream outputStream = null;
         try {
             outputStream = new TFileOutputStream(trueZipFile, false);
-            IOUtils.copy(inputStream, outputStream);
+            IoUtil.copy(inputStream, outputStream);
         } finally {
-            IOUtils.closeQuietly(outputStream);
-            IOUtils.closeQuietly(inputStream);
+            IoUtil.closeQuietly(outputStream, inputStream);
             synchronizeQuietly(trueZipFile);
         }
     }
@@ -406,14 +404,14 @@ public final class ZipUtil {
                 } else {
                     inputStream = new TFileInputStream(trueZipFile);
                 }
-                IOUtils.copy(inputStream, outputStream);
+                IoUtil.copy(inputStream, outputStream);
             } catch (ZipException e) {
                 throw new IOException("Can't write ZIP-entry bytes.", e);
             } finally {
-                IOUtils.closeQuietly(inputStream);
+                IoUtil.closeQuietly(inputStream);
             }
         } finally {
-            IOUtils.closeQuietly(outputStream);
+            IoUtil.closeQuietly(outputStream);
             synchronizeQuietly(trueZipFile);
         }
     }

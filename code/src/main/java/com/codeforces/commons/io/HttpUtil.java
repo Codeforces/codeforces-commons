@@ -3,7 +3,6 @@ package com.codeforces.commons.io;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.text.StringUtil;
 import com.codeforces.commons.text.UrlUtil;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -53,9 +52,9 @@ public class HttpUtil {
             boolean encodeParameters, String url, Object... parameters) throws IOException {
         InputStream inputStream = internalExecuteGetRequest(encodeParameters, url, parameters).getEntity().getContent();
         try {
-            return IOUtils.toByteArray(inputStream);
+            return IoUtil.toByteArray(inputStream);
         } finally {
-            IOUtils.closeQuietly(inputStream);
+            IoUtil.closeQuietly(inputStream);
         }
     }
 
@@ -69,10 +68,10 @@ public class HttpUtil {
         InputStream inputStream = responseEntity.getContent();
         try {
             return responseEntity.getContentEncoding() == null
-                    ? IOUtils.toString(inputStream)
-                    : IOUtils.toString(inputStream, responseEntity.getContentEncoding().getValue());
+                    ? IoUtil.toString(inputStream)
+                    : IoUtil.toString(inputStream, responseEntity.getContentEncoding().getValue());
         } finally {
-            IOUtils.closeQuietly(inputStream);
+            IoUtil.closeQuietly(inputStream);
         }
     }
 
@@ -126,9 +125,9 @@ public class HttpUtil {
 
         InputStream inputStream = responseEntity.getContent();
         try {
-            return IOUtils.toByteArray(inputStream);
+            return IoUtil.toByteArray(inputStream);
         } finally {
-            IOUtils.closeQuietly(inputStream);
+            IoUtil.closeQuietly(inputStream);
         }
     }
 
@@ -143,10 +142,10 @@ public class HttpUtil {
         InputStream inputStream = responseEntity.getContent();
         try {
             return responseEntity.getContentEncoding() == null
-                    ? IOUtils.toString(inputStream)
-                    : IOUtils.toString(inputStream, responseEntity.getContentEncoding().getValue());
+                    ? IoUtil.toString(inputStream)
+                    : IoUtil.toString(inputStream, responseEntity.getContentEncoding().getValue());
         } finally {
-            IOUtils.closeQuietly(inputStream);
+            IoUtil.closeQuietly(inputStream);
         }
     }
 

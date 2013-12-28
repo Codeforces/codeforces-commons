@@ -1,7 +1,7 @@
 package com.codeforces.commons.xml;
 
 import com.codeforces.commons.io.FileUtil;
-import org.apache.commons.io.IOUtils;
+import com.codeforces.commons.io.IoUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.NodeList;
@@ -265,9 +265,9 @@ public class XmlUtilTest {
         );
 
         try {
-            return IOUtils.toByteArray(resourceStream);
+            return IoUtil.toByteArray(resourceStream);
         } finally {
-            IOUtils.closeQuietly(resourceStream);
+            IoUtil.closeQuietly(resourceStream);
         }
     }
 }

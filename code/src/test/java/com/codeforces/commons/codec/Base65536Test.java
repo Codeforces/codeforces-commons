@@ -1,10 +1,10 @@
 package com.codeforces.commons.codec;
 
 import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.math.RandomUtil;
 import junit.framework.TestCase;
-import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,9 +51,9 @@ public class Base65536Test extends TestCase {
         );
 
         try {
-            return IOUtils.toByteArray(resourceStream);
+            return IoUtil.toByteArray(resourceStream);
         } finally {
-            IOUtils.closeQuietly(resourceStream);
+            IoUtil.closeQuietly(resourceStream);
         }
     }
 }

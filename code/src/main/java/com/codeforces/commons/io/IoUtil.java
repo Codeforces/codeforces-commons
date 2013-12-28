@@ -1,6 +1,7 @@
 package com.codeforces.commons.io;
 
 import com.codeforces.commons.math.NumberUtil;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
@@ -12,10 +13,9 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import static java.lang.StrictMath.min;
-
 /**
  * @author Mike Mirzayanov
+ * @author Maxim Shipko (sladethe@gmail.com)
  */
 public class IoUtil {
     private static final int BUFFER_SIZE = NumberUtil.toInt(4L * FileUtil.BYTES_PER_MB);
@@ -24,17 +24,29 @@ public class IoUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static String sha1Hex(InputStream inputStream) throws IOException {
+    // TODO make it public after some time to prevent collisions with the deprecated String sha1(InputStream) method
+    private static byte[] sha1(InputStream inputStream) throws IOException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
             copy(new DigestInputStream(inputStream, messageDigest), NullOutputStream.NULL_OUTPUT_STREAM);
-            byte[] digest = messageDigest.digest();
-            return Hex.encodeHexString(digest);
+            return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } finally {
             inputStream.close();
         }
+    }
+
+    public static String sha1Hex(InputStream inputStream) throws IOException {
+        return Hex.encodeHexString(sha1(inputStream));
+    }
+
+    public static String sha1Base64(InputStream inputStream) throws IOException {
+        return Base64.encodeBase64String(sha1(inputStream));
+    }
+
+    public static String sha1Base64UrlSafe(InputStream inputStream) throws IOException {
+        return Base64.encodeBase64URLSafeString(sha1(inputStream));
     }
 
     public static byte[] toByteArray(InputStream inputStream) throws IOException {
@@ -48,7 +60,7 @@ public class IoUtil {
     public static byte[] toByteArray(InputStream inputStream, int maxSize, boolean throwIfExceeded) throws IOException {
         ByteArrayOutputStream outputStream = new LimitedByteArrayOutputStream(maxSize, throwIfExceeded);
         try {
-            IOUtils.copyLarge(inputStream, outputStream, new byte[min(maxSize, BUFFER_SIZE)]);
+            copy(inputStream, outputStream);
         } finally {
             inputStream.close();
             outputStream.close();

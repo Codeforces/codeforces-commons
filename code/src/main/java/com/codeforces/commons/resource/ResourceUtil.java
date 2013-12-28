@@ -2,6 +2,7 @@ package com.codeforces.commons.resource;
 
 import com.codeforces.commons.exception.CantReadResourceException;
 import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.io.IoUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -33,7 +34,7 @@ public class ResourceUtil {
         }
 
         try {
-            return IOUtils.toByteArray(resourceInputStream);
+            return IoUtil.toByteArray(resourceInputStream);
         } catch (IOException e) {
             throw new CantReadResourceException("Can't read resource '" + resourceName + "' for " + clazz + '.', e);
         }
@@ -193,8 +194,7 @@ public class ResourceUtil {
                     "Can't compare resource '%s' and cache file '%s'.", resource, cacheFile
             ), e);
         } finally {
-            IOUtils.closeQuietly(resourceInputStream);
-            IOUtils.closeQuietly(cacheInputStream);
+            IoUtil.closeQuietly(resourceInputStream, cacheInputStream);
         }
     }
 
@@ -243,15 +243,14 @@ public class ResourceUtil {
                 resourceInputStream = (resourceLoaderClass == null ? FileUtil.class : resourceLoaderClass)
                         .getResourceAsStream(resource);
                 cacheOutputStream = new BufferedOutputStream(new FileOutputStream(targetFile));
-                IOUtils.copyLarge(resourceInputStream, cacheOutputStream);
+                IoUtil.copy(resourceInputStream, cacheOutputStream);
             } else {
                 FileUtil.writeFile(targetFile, overrideResourceBytes);
             }
         } catch (IOException e) {
             throw new IOException(String.format("Can't save resource '%s' to the file '%s'.", resource, targetFile), e);
         } finally {
-            IOUtils.closeQuietly(resourceInputStream);
-            IOUtils.closeQuietly(cacheOutputStream);
+            IoUtil.closeQuietly(resourceInputStream, cacheOutputStream);
         }
     }
 

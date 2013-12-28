@@ -94,8 +94,7 @@ public class UnsafeFileUtil {
 
                 inChannel.transferTo(0, inChannel.size(), outChannel);
             } finally {
-                IOUtils.closeQuietly(inStream);
-                IOUtils.closeQuietly(outStream);
+                IoUtil.closeQuietly(inStream, outStream);
             }
         }
     }
@@ -334,7 +333,7 @@ public class UnsafeFileUtil {
                     : new OutputStreamWriter(new FileOutputStream(file), encoding);
             writer.write(content);
         } finally {
-            IOUtils.closeQuietly(writer);
+            IoUtil.closeQuietly(writer);
         }
     }
 
@@ -354,7 +353,7 @@ public class UnsafeFileUtil {
             outputStream = new FileOutputStream(file);
             outputStream.write(bytes);
         } finally {
-            IOUtils.closeQuietly(outputStream);
+            IoUtil.closeQuietly(outputStream);
         }
     }
 

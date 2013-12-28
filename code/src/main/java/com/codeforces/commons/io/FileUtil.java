@@ -694,8 +694,7 @@ public class FileUtil {
                                 : new FileInputStream(fileB)
                 );
             } finally {
-                IOUtils.closeQuietly(inputStreamA);
-                IOUtils.closeQuietly(inputStreamB);
+                IoUtil.closeQuietly(inputStreamA, inputStreamB);
             }
         }
 

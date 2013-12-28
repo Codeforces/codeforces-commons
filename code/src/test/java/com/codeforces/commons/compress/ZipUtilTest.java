@@ -1,13 +1,13 @@
 package com.codeforces.commons.compress;
 
 import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.math.RandomUtil;
 import com.google.common.primitives.Ints;
 import de.schlichtherle.truezip.file.TFile;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 
 import java.io.File;
@@ -357,9 +357,9 @@ public class ZipUtilTest extends TestCase {
         );
 
         try {
-            return IOUtils.toByteArray(resourceStream);
+            return IoUtil.toByteArray(resourceStream);
         } finally {
-            IOUtils.closeQuietly(resourceStream);
+            IoUtil.closeQuietly(resourceStream);
         }
     }
 }

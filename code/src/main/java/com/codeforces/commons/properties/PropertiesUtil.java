@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Mike Mirzayanov
+ * @author Maxim Shipko (sladethe@gmail.com)
  */
 @SuppressWarnings("OverloadedVarargsMethod")
 public class PropertiesUtil {
