@@ -1,4 +1,4 @@
-package com.codeforces.commons.exception;
+package com.codeforces.commons.resource;
 
 /**
  * @author Edvard Davtyan

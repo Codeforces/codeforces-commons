@@ -1,0 +1,274 @@
+package com.codeforces.commons.reflection;
+
+import com.codeforces.commons.text.StringUtil;
+import org.apache.commons.lang.StringUtils;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+/**
+ * @author Maxim Shipko (sladethe@gmail.com)
+ *         Date: 16.01.14
+ */
+public class ReflectionUtil {
+    private static final ConcurrentMap<Class<?>, Map<String, List<Field>>> fieldsByNameByClass
+            = new ConcurrentHashMap<>();
+
+    private static final ConcurrentMap<Class<?>, Map<MethodSignature, Method>> publicMethodBySignatureByClass
+            = new ConcurrentHashMap<>();
+
+    @Nullable
+    public static <T> Object getDeepValue(@Nonnull T object, String propertyName) {
+        return getDeepValue(object, propertyName, false, false, false);
+    }
+
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "ChainOfInstanceofChecks"})
+    @Nullable
+    public static <T> Object getDeepValue(
+            @Nonnull T object, String propertyName,
+            boolean ignoreGetters, boolean ignoreMapEntries, boolean ignoreCollectionItems) {
+        Object deepValue = null;
+        Object deepObject = object;
+
+        String[] pathParts = StringUtil.Patterns.DOT_PATTERN.split(propertyName);
+
+        for (int partIndex = 0, partCount = pathParts.length; partIndex < partCount; ++partIndex) {
+            String pathPart = pathParts[partIndex];
+            if (StringUtil.isBlank(pathPart)) {
+                throw new IllegalArgumentException("Field name can not be neither 'null' nor blank.");
+            }
+
+            boolean gotValue = false;
+
+            List<Field> fields = getFieldsByNameMap(deepObject.getClass()).get(pathPart);
+            if (fields != null && !fields.isEmpty()) {
+                deepValue = getFieldValue(fields.get(0), deepObject);
+                gotValue = true;
+            }
+
+            if (!gotValue && !ignoreGetters) {
+                Method getter = findPublicGetter(pathPart, deepObject.getClass());
+                try {
+                    if (getter != null) {
+                        deepValue = getter.invoke(deepObject);
+                        gotValue = true;
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("This exception is unexpected because method should be public.", e);
+                } catch (InvocationTargetException e) {
+                    if (e.getTargetException() instanceof RuntimeException) {
+                        throw (RuntimeException) e.getTargetException();
+                    } else {
+                        throw new IllegalStateException("This type of exception is unexpected.", e);
+                    }
+                }
+            }
+
+            if (!gotValue && !ignoreMapEntries) {
+                if (deepObject instanceof Map) {
+                    deepValue = ((Map) deepObject).get(pathPart);
+                    gotValue = true;
+                }
+            }
+
+            if (!gotValue && !ignoreCollectionItems) {
+                try {
+                    int itemIndex = Integer.parseInt(pathPart);
+
+                    if (deepObject instanceof List) {
+                        List list = (List) deepObject;
+                        deepValue = list.get(itemIndex < 0 ? list.size() + itemIndex : itemIndex);
+                        gotValue = true;
+                    } else if (deepObject instanceof Collection) {
+                        Collection collection = (Collection) deepObject;
+                        Iterator iterator = collection.iterator();
+
+                        if (itemIndex < 0) {
+                            itemIndex += collection.size();
+                        }
+
+                        for (int i = 0; i <= itemIndex; ++i) {
+                            deepValue = iterator.next();
+                        }
+
+                        gotValue = true;
+                    }
+                } catch (NumberFormatException ignored) {
+                    // No operations.
+                }
+            }
+
+            if (!gotValue) {
+                throw new IllegalArgumentException(String.format(
+                        "Can't find '%s' in %s.", pathPart, deepObject.getClass()
+                ));
+            }
+
+            if (deepValue == null) {
+                break;
+            }
+
+            deepObject = deepValue;
+        }
+
+        return deepValue;
+    }
+
+    @Nullable
+    public static Method findPublicGetter(@Nonnull String propertyName, @Nonnull Class<?> clazz) {
+        Map<MethodSignature, Method> publicMethodBySignature = getPublicMethodBySignatureMap(clazz);
+        String capitalizedPropertyName = StringUtils.capitalize(propertyName);
+
+        Method getter = publicMethodBySignature.get(new MethodSignature("is" + capitalizedPropertyName));
+        if (getter != null && getter.getReturnType() == boolean.class && throwsOnlyRuntimeExceptions(getter)) {
+            return getter;
+        }
+
+        getter = publicMethodBySignature.get(new MethodSignature("get" + capitalizedPropertyName));
+        if (getter != null && getter.getReturnType() != void.class && getter.getReturnType() != Void.class
+                && throwsOnlyRuntimeExceptions(getter)) {
+            return getter;
+        }
+
+        getter = publicMethodBySignature.get(new MethodSignature(propertyName));
+        if (getter != null && getter.getReturnType() != void.class && getter.getReturnType() != Void.class
+                && throwsOnlyRuntimeExceptions(getter)) {
+            return getter;
+        }
+
+        return null;
+    }
+
+    @Nonnull
+    public static Map<String, List<Field>> getFieldsByNameMap(@Nonnull Class clazz) {
+        Map<String, List<Field>> fieldsByName = fieldsByNameByClass.get(clazz);
+
+        if (fieldsByName == null) {
+            fieldsByName = new LinkedHashMap<>();
+            Class tempClass = clazz;
+
+            while (tempClass != null) {
+                for (Field field : tempClass.getDeclaredFields()) {
+                    if (field.isEnumConstant() || Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
+                        continue;
+                    }
+
+                    List<Field> fields = fieldsByName.get(field.getName());
+
+                    if (fields == null) {
+                        fields = new ArrayList<>(1);
+                    } else {
+                        List<Field> tempFields = fields;
+                        fields = new ArrayList<>(tempFields.size() + 1);
+                        fields.addAll(tempFields);
+                    }
+
+                    field.setAccessible(true);
+                    fields.add(field);
+                    fieldsByName.put(field.getName(), Collections.unmodifiableList(fields));
+                }
+
+                tempClass = tempClass.getSuperclass();
+            }
+
+            fieldsByNameByClass.putIfAbsent(clazz, Collections.unmodifiableMap(fieldsByName));
+            return fieldsByNameByClass.get(clazz);
+        } else {
+            return fieldsByName;
+        }
+    }
+
+    private static boolean throwsOnlyRuntimeExceptions(@Nonnull Method method) {
+        for (Class<?> exceptionClass : method.getExceptionTypes()) {
+            if (!RuntimeException.class.isAssignableFrom(exceptionClass)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Nonnull
+    private static Map<MethodSignature, Method> getPublicMethodBySignatureMap(@Nonnull Class clazz) {
+        Map<MethodSignature, Method> publicMethodBySignature = publicMethodBySignatureByClass.get(clazz);
+
+        if (publicMethodBySignature == null) {
+            Method[] methods = clazz.getMethods();
+            int methodCount = methods.length;
+
+            publicMethodBySignature = new LinkedHashMap<>(methodCount);
+
+            for (int methodIndex = 0; methodIndex < methodCount; ++methodIndex) {
+                Method method = methods[methodIndex];
+                method.setAccessible(true);
+                publicMethodBySignature.put(new MethodSignature(method.getName(), method.getParameterTypes()), method);
+            }
+
+            publicMethodBySignatureByClass.putIfAbsent(clazz, Collections.unmodifiableMap(publicMethodBySignature));
+            return publicMethodBySignatureByClass.get(clazz);
+        } else {
+            return publicMethodBySignature;
+        }
+    }
+
+    @Nullable
+    private static Object getFieldValue(@Nonnull Field field, @Nonnull Object object) {
+        try {
+            return field.get(object);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException("Can't get value of inaccessible field '" + field.getName() + "'.", e);
+        }
+    }
+
+    private ReflectionUtil() {
+        throw new UnsupportedOperationException();
+    }
+
+    private static final class MethodSignature {
+        private final String name;
+        private final List<Class<?>> parameterTypes;
+
+        private MethodSignature(String name, Class<?>... parameterTypes) {
+            this.name = name;
+            this.parameterTypes = Arrays.asList(parameterTypes);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<Class<?>> getParameterTypes() {
+            return Collections.unmodifiableList(parameterTypes);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            MethodSignature methodSignature = (MethodSignature) o;
+
+            return name.equals(methodSignature.name)
+                    && parameterTypes.equals(methodSignature.parameterTypes);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name.hashCode();
+            result = 31 * result + parameterTypes.hashCode();
+            return result;
+        }
+    }
+}

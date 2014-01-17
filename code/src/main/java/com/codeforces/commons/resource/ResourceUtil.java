@@ -1,6 +1,5 @@
 package com.codeforces.commons.resource;
 
-import com.codeforces.commons.exception.CantReadResourceException;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import org.apache.commons.io.IOUtils;

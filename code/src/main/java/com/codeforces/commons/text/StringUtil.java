@@ -3,6 +3,7 @@ package com.codeforces.commons.text;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
+import com.codeforces.commons.reflection.ReflectionUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -11,13 +12,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 /**
@@ -28,9 +25,6 @@ import java.util.regex.Pattern;
 public final class StringUtil {
     private static final Pattern FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN = Pattern.compile("\\[pre\\]|\\[/pre\\]");
     private static final Pattern FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN = Pattern.compile("[\n\r][\n\r]+");
-
-    private static final ConcurrentMap<Class<?>, Map<String, List<Field>>> fieldsByNameByClass
-            = new ConcurrentHashMap<>();
 
     private StringUtil() {
         throw new UnsupportedOperationException();
@@ -145,12 +139,15 @@ public final class StringUtil {
         return toString(object, skipNulls, fieldNames);
     }
 
-    @SuppressWarnings("OverloadedVarargsMethod")
+    @SuppressWarnings({"OverloadedVarargsMethod", "AssignmentToMethodParameter"})
     @Nonnull
     public static <T> String toString(@Nonnull T object, boolean skipNulls, String... fieldNames) {
-        @SuppressWarnings("unchecked") Class<? extends T> objectClass = (Class<? extends T>) object.getClass();
+        Class<?> objectClass = object.getClass();
 
-        Map<String, List<Field>> fieldsByName = getFieldsByNameMap(objectClass);
+        if (fieldNames.length == 0) {
+            Set<String> allFieldNames = ReflectionUtil.getFieldsByNameMap(objectClass).keySet();
+            fieldNames = allFieldNames.toArray(new String[allFieldNames.size()]);
+        }
 
         StringBuilder builder = new StringBuilder(objectClass.getSimpleName()).append(" {");
         boolean firstAppendix = true;
@@ -161,8 +158,7 @@ public final class StringUtil {
                 throw new IllegalArgumentException("Field name can not be neither 'null' nor blank.");
             }
 
-            Object deepValue = getDeepValue(object, fieldsByName, fieldName);
-
+            Object deepValue = ReflectionUtil.getDeepValue(object, fieldName);
             String fieldAsString;
 
             if (deepValue == null) {
@@ -187,39 +183,6 @@ public final class StringUtil {
         return builder.append('}').toString();
     }
 
-    @Nullable
-    private static <T> Object getDeepValue(@Nonnull T object, Map<String, List<Field>> fieldsByName, String fieldName) {
-        Object deepValue = null;
-        Object deepObject = object;
-        Map<String, List<Field>> deepFieldsByName = fieldsByName;
-
-        String[] pathParts = Patterns.DOT_PATTERN.split(fieldName);
-
-        for (int partIndex = 0, partCount = pathParts.length; partIndex < partCount; ++partIndex) {
-            String pathPart = pathParts[partIndex];
-            if (isBlank(pathPart)) {
-                throw new IllegalArgumentException("Field name can not be neither 'null' nor blank.");
-            }
-
-            List<Field> fields = deepFieldsByName.get(pathPart);
-            if (fields == null || fields.isEmpty()) {
-                throw new IllegalArgumentException(String.format(
-                        "There is no field '%s' in %s.", pathPart, deepObject.getClass()
-                ));
-            }
-
-            deepValue = getFieldValue(fields.get(0), deepObject);
-            if (deepValue == null) {
-                break;
-            }
-
-            deepObject = deepValue;
-            deepFieldsByName = getFieldsByNameMap(deepValue.getClass());
-        }
-
-        return deepValue;
-    }
-
     @Nonnull
     private static String fieldToString(@Nonnull Object value, @Nonnull String fieldName) {
         StringBuilder builder = new StringBuilder(fieldName);
@@ -233,15 +196,6 @@ public final class StringUtil {
         }
 
         return builder.toString();
-    }
-
-    @Nullable
-    private static Object getFieldValue(@Nonnull Field field, @Nonnull Object object) {
-        try {
-            return field.get(object);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("Can't get value of inaccessible field '" + field.getName() + "'.", e);
-        }
     }
 
     @Nullable
@@ -284,12 +238,12 @@ public final class StringUtil {
         StringBuilder builder = new StringBuilder("[");
         int length = Array.getLength(array);
 
-        for (int i = 0; i < length; ++i) {
-            if (i > 0) {
-                builder.append(", ");
-            }
+        if (length > 0) {
+            builder.append(valueToString(Array.get(array, 0)));
 
-            builder.append(valueToString(Array.get(array, i)));
+            for (int i = 1; i < length; ++i) {
+                builder.append(", ").append(valueToString(Array.get(array, i)));
+            }
         }
 
         return builder.append(']').toString();
@@ -297,16 +251,14 @@ public final class StringUtil {
 
     private static String collectionToString(Collection collection) {
         StringBuilder builder = new StringBuilder("[");
-        boolean firstItem = true;
+        Iterator iterator = collection.iterator();
 
-        for (Object item : collection) {
-            if (firstItem) {
-                firstItem = false;
-            } else {
-                builder.append(", ");
+        if (iterator.hasNext()) {
+            builder.append(valueToString(iterator.next()));
+
+            while (iterator.hasNext()) {
+                builder.append(", ").append(valueToString(iterator.next()));
             }
-
-            builder.append(valueToString(item));
         }
 
         return builder.append(']').toString();
@@ -314,58 +266,17 @@ public final class StringUtil {
 
     private static String mapToString(Map map) {
         StringBuilder builder = new StringBuilder("{");
-        boolean firstEntry = true;
+        Iterator iterator = map.entrySet().iterator();
 
-        for (Object entry : map.entrySet()) {
-            if (firstEntry) {
-                firstEntry = false;
-            } else {
-                builder.append(", ");
+        if (iterator.hasNext()) {
+            builder.append(valueToString(iterator.next()));
+
+            while (iterator.hasNext()) {
+                builder.append(", ").append(valueToString(iterator.next()));
             }
-
-            builder.append(valueToString(entry));
         }
 
         return builder.append('}').toString();
-    }
-
-    @Nonnull
-    private static Map<String, List<Field>> getFieldsByNameMap(@Nonnull Class clazz) {
-        Map<String, List<Field>> fieldsByName = fieldsByNameByClass.get(clazz);
-
-        if (fieldsByName == null) {
-            fieldsByName = new HashMap<>();
-            Class tempClass = clazz;
-
-            while (tempClass != null) {
-                for (Field field : tempClass.getDeclaredFields()) {
-                    if (field.isEnumConstant() || Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
-                        continue;
-                    }
-
-                    List<Field> fields = fieldsByName.get(field.getName());
-
-                    if (fields == null) {
-                        fields = new ArrayList<>(1);
-                    } else {
-                        List<Field> tempFields = fields;
-                        fields = new ArrayList<>(tempFields.size() + 1);
-                        fields.addAll(tempFields);
-                    }
-
-                    field.setAccessible(true);
-                    fields.add(field);
-                    fieldsByName.put(field.getName(), Collections.unmodifiableList(fields));
-                }
-
-                tempClass = tempClass.getSuperclass();
-            }
-
-            fieldsByNameByClass.putIfAbsent(clazz, Collections.unmodifiableMap(fieldsByName));
-            return fieldsByNameByClass.get(clazz);
-        } else {
-            return fieldsByName;
-        }
     }
 
     /**

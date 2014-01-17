@@ -1,6 +1,6 @@
 package com.codeforces.commons.properties;
 
-import com.codeforces.commons.exception.CantReadResourceException;
+import com.codeforces.commons.resource.CantReadResourceException;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.log4j.Logger;
 

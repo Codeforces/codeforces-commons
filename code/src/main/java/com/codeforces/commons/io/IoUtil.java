@@ -24,8 +24,7 @@ public class IoUtil {
         throw new UnsupportedOperationException();
     }
 
-    // TODO make it public after some time to prevent collisions with the deprecated String sha1(InputStream) method
-    private static byte[] sha1(InputStream inputStream) throws IOException {
+    public static byte[] sha1(InputStream inputStream) throws IOException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
             copy(new DigestInputStream(inputStream, messageDigest), NullOutputStream.NULL_OUTPUT_STREAM);
