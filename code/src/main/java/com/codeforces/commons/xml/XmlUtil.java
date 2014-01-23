@@ -796,4 +796,44 @@ public final class XmlUtil {
             expressionLock.unlock();
         }
     }
+
+    public static Object evaluateXPath(Element element, @Nonnull XPathExpression xPath, QName returnType)
+            throws XPathExpressionException {
+        expressionLock.lock();
+        try {
+            return xPath.evaluate(element, returnType);
+        } finally {
+            expressionLock.unlock();
+        }
+    }
+
+    public static Object evaluateXPath(InputStream xmlInputStream, @Nonnull XPathExpression xPath)
+            throws XPathExpressionException {
+        expressionLock.lock();
+        try {
+            return xPath.evaluate(new InputSource(xmlInputStream));
+        } finally {
+            expressionLock.unlock();
+        }
+    }
+
+    public static Object evaluateXPath(Document document, @Nonnull XPathExpression xPath)
+            throws XPathExpressionException {
+        expressionLock.lock();
+        try {
+            return xPath.evaluate(document);
+        } finally {
+            expressionLock.unlock();
+        }
+    }
+
+    public static Object evaluateXPath(Element element, @Nonnull XPathExpression xPath)
+            throws XPathExpressionException {
+        expressionLock.lock();
+        try {
+            return xPath.evaluate(element);
+        } finally {
+            expressionLock.unlock();
+        }
+    }
 }

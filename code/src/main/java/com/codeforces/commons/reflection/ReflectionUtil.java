@@ -29,6 +29,23 @@ public class ReflectionUtil {
         return getDeepValue(object, propertyName, false, false, false);
     }
 
+    /**
+     * Returns deep value of object's property specified by name.
+     * You can use long dot-separated queries to get properties of inner objects.
+     * For example: innerObject.innerInnerObject.someProperty, innerList.3, innerCollection.-25, innerMap.someKey.
+     *
+     * @param object                To get property of.
+     * @param propertyName          Object's property name.
+     * @param ignoreGetters         {@code false} iff method should find and invoke {@link Method getters} to get value
+     *                              (in case if {@link Field field} is not found).
+     * @param ignoreMapEntries      {@code false} iff method should try to get value from {@link Map map} (in case
+     *                              if {@link Method getter} is not found or {@code ignoreGetters} is {@code true}).
+     * @param ignoreCollectionItems {@code false} iff method should try to get value from {@link Collection collection}
+     *                              (in case if deep object is not {@link Map map} or {@code ignoreMapEntries}
+     *                              is {@code true}).
+     * @param <T>                   Type of specified object.
+     * @return Value of object's property.
+     */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "ChainOfInstanceofChecks"})
     @Nullable
     public static <T> Object getDeepValue(

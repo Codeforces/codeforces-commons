@@ -178,6 +178,20 @@ public class FileUtil {
     }
 
     /**
+     * Deletes file or directory. Finishes quietly in any case.
+     * Directory will be deleted with each nested element.
+     *
+     * @param file File to be deleted.
+     */
+    public static void deleteQuietly(@Nullable File file) {
+        try {
+            deleteTotally(file);
+        } catch (IOException ignored) {
+            // No operations.
+        }
+    }
+
+    /**
      * Deletes file or directory. Finishes quietly in _any_ case.
      * Will start new thread.
      *

@@ -21,6 +21,10 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -202,16 +206,28 @@ public class UnsafeFileUtil {
      * @throws java.io.IOException if can't delete file.
      */
     public static void deleteTotally(@Nullable File file) throws IOException {
-        if (file != null && file.exists()) {
-            if (file.isFile()) {
+        if (file == null) {
+            return;
+        }
+
+        Path path = Paths.get(file.toURI());
+
+        if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+            if (Files.isSymbolicLink(path)) {
+                if (!file.delete() && Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+                    throw new IOException("Can't delete symbolic link '" + file + "'.");
+                }
+            } else if (file.isFile()) {
                 if (!file.delete() && file.exists()) {
                     throw new IOException("Can't delete file '" + file + "'.");
                 }
-            } else {
+            } else if (file.isDirectory()) {
                 cleanDirectory(file, null);
                 if (!file.delete() && file.exists()) {
                     throw new IOException("Can't delete directory '" + file + "'.");
                 }
+            } else if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+                throw new IllegalArgumentException("Unsupported file system item '" + file + "'.");
             }
         }
     }
@@ -220,7 +236,7 @@ public class UnsafeFileUtil {
      * @param file File to be read.
      * @return String containing file data.
      * @throws java.io.IOException if can't read file. Possibly, file parameter
-     *                     doesn't exists, is directory or not enough permissions.
+     *                             doesn't exist, is directory or not enough permissions.
      */
     public static String readFile(File file) throws IOException {
         return IoUtil.toString(new FileReader(file));
@@ -246,26 +262,17 @@ public class UnsafeFileUtil {
         }
 
         File[] files = directory.listFiles();
-
         if (files == null) {
             throw new IOException("Failed to list files of '" + directory + "'.");
         }
 
-        int fileCount = files.length;
+        for (int fileIndex = 0, fileCount = files.length; fileIndex < fileCount; ++fileIndex) {
+            File file = files[fileIndex];
 
-        if (deleteFileFilter == null) {
-            for (int fileIndex = 0; fileIndex < fileCount; ++fileIndex) {
-                deleteTotally(files[fileIndex]);
-            }
-        } else {
-            for (int fileIndex = 0; fileIndex < fileCount; ++fileIndex) {
-                File file = files[fileIndex];
-
-                if (deleteFileFilter.accept(file)) {
-                    deleteTotally(file);
-                } else if (file.isDirectory()) {
-                    cleanDirectory(file, deleteFileFilter);
-                }
+            if (deleteFileFilter == null || deleteFileFilter.accept(file)) {
+                deleteTotally(file);
+            } else if (file.isDirectory() && !Files.isSymbolicLink(Paths.get(file.toURI()))) {
+                cleanDirectory(file, deleteFileFilter);
             }
         }
     }

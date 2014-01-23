@@ -15,6 +15,9 @@ import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 /**
@@ -25,6 +28,9 @@ import java.util.regex.Pattern;
 public final class StringUtil {
     private static final Pattern FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN = Pattern.compile("\\[pre\\]|\\[/pre\\]");
     private static final Pattern FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN = Pattern.compile("[\n\r][\n\r]+");
+
+    private static final Map<Class, ToStringConverter> toStringConverterByClass = new HashMap<>();
+    private static final ReadWriteLock toStringConverterByClassMapLock = new ReentrantReadWriteLock();
 
     private StringUtil() {
         throw new UnsupportedOperationException();
@@ -132,16 +138,34 @@ public final class StringUtil {
     @Nonnull
     public static <T> String toString(
             @Nonnull Class<? extends T> objectClass, @Nullable T object, boolean skipNulls, String... fieldNames) {
-        if (object == null) {
-            return objectClass.getSimpleName() + " {null}";
-        }
-
-        return toString(object, skipNulls, fieldNames);
+        ToStringOptions options = new ToStringOptions();
+        options.setSkipNulls(skipNulls);
+        return toString(objectClass, object, options, fieldNames);
     }
 
-    @SuppressWarnings({"OverloadedVarargsMethod", "AssignmentToMethodParameter"})
+    @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
     @Nonnull
-    public static <T> String toString(@Nonnull T object, boolean skipNulls, String... fieldNames) {
+    public static <T> String toString(
+            @Nonnull Class<? extends T> objectClass, @Nullable T object, @Nonnull ToStringOptions options,
+            String... fieldNames) {
+        if (object == null) {
+            return getSimpleName(objectClass, options.addEnclosingClassNames) + " {null}";
+        }
+
+        return toString(object, options.skipNulls, fieldNames);
+    }
+
+    @SuppressWarnings({"OverloadedVarargsMethod"})
+    @Nonnull
+    public static String toString(@Nonnull Object object, boolean skipNulls, String... fieldNames) {
+        ToStringOptions options = new ToStringOptions();
+        options.setSkipNulls(skipNulls);
+        return toString(object, options, fieldNames);
+    }
+
+    @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject", "AssignmentToMethodParameter"})
+    @Nonnull
+    public static String toString(@Nonnull Object object, @Nonnull ToStringOptions options, String... fieldNames) {
         Class<?> objectClass = object.getClass();
 
         if (fieldNames.length == 0) {
@@ -149,7 +173,8 @@ public final class StringUtil {
             fieldNames = allFieldNames.toArray(new String[allFieldNames.size()]);
         }
 
-        StringBuilder builder = new StringBuilder(objectClass.getSimpleName()).append(" {");
+        StringBuilder builder = new StringBuilder(getSimpleName(objectClass, options.addEnclosingClassNames))
+                .append(" {");
         boolean firstAppendix = true;
 
         for (int fieldIndex = 0, fieldCount = fieldNames.length; fieldIndex < fieldCount; ++fieldIndex) {
@@ -162,7 +187,7 @@ public final class StringUtil {
             String fieldAsString;
 
             if (deepValue == null) {
-                if (skipNulls) {
+                if (options.skipNulls) {
                     continue;
                 } else {
                     fieldAsString = fieldName + "=null";
@@ -183,21 +208,68 @@ public final class StringUtil {
         return builder.append('}').toString();
     }
 
-    @Nonnull
-    private static String fieldToString(@Nonnull Object value, @Nonnull String fieldName) {
-        StringBuilder builder = new StringBuilder(fieldName);
+    @SuppressWarnings("unchecked")
+    public static <T> ToStringConverter<? super T> getToStringConverter(
+            @Nonnull Class<T> valueClass, boolean checkSuperclasses) {
+        Lock readLock = toStringConverterByClassMapLock.readLock();
+        readLock.lock();
+        try {
+            if (checkSuperclasses) {
+                Class localClass = valueClass;
+                while (localClass != null) {
+                    ToStringConverter toStringConverter = toStringConverterByClass.get(localClass);
+                    if (toStringConverter != null) {
+                        return toStringConverter;
+                    }
+                    localClass = localClass.getSuperclass();
+                }
 
-        if (value.getClass() == boolean.class || value.getClass() == Boolean.class) {
-            if (!(boolean) value) {
-                builder.insert(0, '!');
+                return null;
+            } else {
+                return toStringConverterByClass.get(valueClass);
             }
-        } else {
-            builder.append('=').append(valueToString(value));
+        } finally {
+            readLock.unlock();
         }
-
-        return builder.toString();
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> ToStringConverter<T> registerToStringConverter(
+            @Nonnull Class<T> valueClass, @Nonnull ToStringConverter<T> converter, boolean overwrite) {
+        Lock writeLock = toStringConverterByClassMapLock.writeLock();
+        writeLock.lock();
+        try {
+            ToStringConverter toStringConverter = toStringConverterByClass.get(valueClass);
+            if (toStringConverter == null || overwrite) {
+                return toStringConverterByClass.put(valueClass, converter);
+            } else {
+                return toStringConverter;
+            }
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    private static String getSimpleName(@Nonnull Class clazz, boolean addEnclosingClassNames) {
+        String simpleName = clazz.getSimpleName();
+        if (addEnclosingClassNames) {
+            while ((clazz = clazz.getEnclosingClass()) != null) {
+                simpleName = String.format("%s.%s", clazz.getSimpleName(), simpleName);
+            }
+        }
+        return simpleName;
+    }
+
+    @Nonnull
+    private static String fieldToString(@Nonnull Object value, @Nonnull String fieldName) {
+        if (value.getClass() == Boolean.class || value.getClass() == boolean.class) {
+            return (boolean) value ? fieldName : '!' + fieldName;
+        }
+
+        return fieldName + '=' + valueToString(value);
+    }
+
+    @SuppressWarnings({"OverlyComplexMethod", "unchecked"})
     @Nullable
     private static String valueToString(@Nullable Object value) {
         if (value == null) {
@@ -205,9 +277,12 @@ public final class StringUtil {
         }
 
         Class<?> valueClass = value.getClass();
+        ToStringConverter toStringConverter;
 
         if (valueClass.isArray()) {
             return arrayToString(value);
+        } else if ((toStringConverter = getToStringConverter(valueClass, true)) != null) {
+            return toStringConverter.convert(value);
         } else if (value instanceof Collection) {
             return collectionToString((Collection) value);
         } else if (value instanceof Map) {
@@ -822,6 +897,40 @@ public final class StringUtil {
     @Nullable
     public static String toString(@Nullable Object object) {
         return object == null ? null : object.toString();
+    }
+
+    public interface ToStringConverter<T> {
+        @Nonnull
+        String convert(@Nullable T value);
+    }
+
+    public static final class ToStringOptions {
+        private boolean skipNulls;
+        private boolean addEnclosingClassNames;
+
+        public ToStringOptions() {
+        }
+
+        public ToStringOptions(boolean skipNulls, boolean addEnclosingClassNames) {
+            this.skipNulls = skipNulls;
+            this.addEnclosingClassNames = addEnclosingClassNames;
+        }
+
+        public boolean isSkipNulls() {
+            return skipNulls;
+        }
+
+        public void setSkipNulls(boolean skipNulls) {
+            this.skipNulls = skipNulls;
+        }
+
+        public boolean isAddEnclosingClassNames() {
+            return addEnclosingClassNames;
+        }
+
+        public void setAddEnclosingClassNames(boolean addEnclosingClassNames) {
+            this.addEnclosingClassNames = addEnclosingClassNames;
+        }
     }
 
     public static class Patterns {
