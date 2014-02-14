@@ -39,8 +39,7 @@ import java.util.concurrent.*;
 @SuppressWarnings("OverloadedVarargsMethod")
 public class HttpUtil {
     private static final ExecutorService timedRequestExecutor = new ThreadPoolExecutor(
-            0, Runtime.getRuntime().availableProcessors() * 8,
-            5L, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(100),
+            0, Short.MAX_VALUE, 5L, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(),
             new ThreadFactory() {
                 private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
 
