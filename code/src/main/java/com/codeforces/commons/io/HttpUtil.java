@@ -4,9 +4,7 @@ import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.text.StringUtil;
 import com.codeforces.commons.text.UrlUtil;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -18,6 +16,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpRequestExecutor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,6 +31,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -42,12 +43,17 @@ public class HttpUtil {
             0, Short.MAX_VALUE, 5L, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(),
             new ThreadFactory() {
                 private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+                private final AtomicLong threadIndex = new AtomicLong();
 
                 @Nonnull
                 @Override
                 public Thread newThread(@Nonnull Runnable task) {
                     Thread thread = defaultThreadFactory.newThread(task);
                     thread.setDaemon(true);
+                    thread.setName(String.format(
+                            "%s#RequestExecutionThread-%d",
+                            HttpUtil.class.getSimpleName(), threadIndex.incrementAndGet()
+                    ));
                     return thread;
                 }
             }
@@ -65,7 +71,7 @@ public class HttpUtil {
     public static void executeGetRequest(
             long executionTimeoutMillis, final HttpClient httpClient, final boolean encodeParameters,
             final String url, final Object... parameters) throws IOException {
-        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 executeGetRequest(httpClient, encodeParameters, url, parameters);
@@ -82,7 +88,7 @@ public class HttpUtil {
     public static void executeGetRequest(
             long executionTimeoutMillis, final boolean encodeParameters,
             final String url, final Object... parameters) throws IOException {
-        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 executeGetRequest(encodeParameters, url, parameters);
@@ -97,7 +103,7 @@ public class HttpUtil {
 
     public static void executeGetRequest(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
-        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 executeGetRequest(url, parameters);
@@ -117,7 +123,7 @@ public class HttpUtil {
     public static byte[] executeGetRequestAndReturnResponseBytes(
             long executionTimeoutMillis, final HttpClient httpClient, final boolean encodeParameters,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<byte[]>() {
             @Override
             public byte[] call() throws Exception {
                 return executeGetRequestAndReturnResponseBytes(httpClient, encodeParameters, url, parameters);
@@ -133,7 +139,7 @@ public class HttpUtil {
     public static byte[] executeGetRequestAndReturnResponseBytes(
             long executionTimeoutMillis, final boolean encodeParameters,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<byte[]>() {
             @Override
             public byte[] call() throws Exception {
                 return executeGetRequestAndReturnResponseBytes(encodeParameters, url, parameters);
@@ -147,7 +153,7 @@ public class HttpUtil {
 
     public static byte[] executeGetRequestAndReturnResponseBytes(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<byte[]>() {
             @Override
             public byte[] call() throws Exception {
                 return executeGetRequestAndReturnResponseBytes(url, parameters);
@@ -169,7 +175,7 @@ public class HttpUtil {
     public static String executeGetRequestAndReturnResponseAsString(
             long executionTimeoutMillis, final HttpClient httpClient, final boolean encodeParameters,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return executeGetRequestAndReturnResponseAsString(httpClient, encodeParameters, url, parameters);
@@ -185,7 +191,7 @@ public class HttpUtil {
     public static String executeGetRequestAndReturnResponseAsString(
             long executionTimeoutMillis, final boolean encodeParameters,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return executeGetRequestAndReturnResponseAsString(encodeParameters, url, parameters);
@@ -200,7 +206,7 @@ public class HttpUtil {
 
     public static String executeGetRequestAndReturnResponseAsString(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return executeGetRequestAndReturnResponseAsString(url, parameters);
@@ -224,7 +230,7 @@ public class HttpUtil {
     public static Response executeGetRequestAndReturnResponse(
             long executionTimeoutMillis, final HttpClient httpClient, final boolean encodeParameters,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Response>() {
             @Override
             public Response call() throws Exception {
                 return executeGetRequestAndReturnResponse(httpClient, encodeParameters, url, parameters);
@@ -240,7 +246,7 @@ public class HttpUtil {
     public static Response executeGetRequestAndReturnResponse(
             long executionTimeoutMillis, final boolean encodeParameters,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Response>() {
             @Override
             public Response call() throws Exception {
                 return executeGetRequestAndReturnResponse(encodeParameters, url, parameters);
@@ -254,7 +260,7 @@ public class HttpUtil {
 
     public static Response executeGetRequestAndReturnResponse(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Response>() {
             @Override
             public Response call() throws Exception {
                 return executeGetRequestAndReturnResponse(url, parameters);
@@ -286,7 +292,7 @@ public class HttpUtil {
     public static void executePostRequest(
             long executionTimeoutMillis, final HttpClient httpClient,
             final String url, final Object... parameters) throws IOException {
-        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 executePostRequest(httpClient, url, parameters);
@@ -301,7 +307,7 @@ public class HttpUtil {
 
     public static void executePostRequest(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
-        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 executePostRequest(url, parameters);
@@ -327,7 +333,7 @@ public class HttpUtil {
     public static byte[] executePostRequestAndReturnResponseBytes(
             long executionTimeoutMillis, final HttpClient httpClient,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<byte[]>() {
             @Override
             public byte[] call() throws Exception {
                 return executePostRequestAndReturnResponseBytes(httpClient, url, parameters);
@@ -343,7 +349,7 @@ public class HttpUtil {
     @Nullable
     public static byte[] executePostRequestAndReturnResponseBytes(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<byte[]>() {
             @Override
             public byte[] call() throws Exception {
                 return executePostRequestAndReturnResponseBytes(url, parameters);
@@ -370,7 +376,7 @@ public class HttpUtil {
     public static String executePostRequestAndReturnResponseAsString(
             long executionTimeoutMillis, final HttpClient httpClient,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return executePostRequestAndReturnResponseAsString(httpClient, url, parameters);
@@ -387,7 +393,7 @@ public class HttpUtil {
     @Nullable
     public static String executePostRequestAndReturnResponseAsString(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return executePostRequestAndReturnResponseAsString(url, parameters);
@@ -415,7 +421,7 @@ public class HttpUtil {
     public static Response executePostRequestAndReturnResponse(
             long executionTimeoutMillis, final HttpClient httpClient,
             final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Response>() {
             @Override
             public Response call() throws Exception {
                 return executePostRequestAndReturnResponse(httpClient, url, parameters);
@@ -429,7 +435,7 @@ public class HttpUtil {
 
     public static Response executePostRequestAndReturnResponse(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
-        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Response>() {
             @Override
             public Response call() throws Exception {
                 return executePostRequestAndReturnResponse(url, parameters);
@@ -525,13 +531,13 @@ public class HttpUtil {
     }
 
     private static <R> R internalExecuteLimitedTimeRequest(
-            final long executionTimeoutMillis, Callable<R> httpTask) throws IOException {
+            final long executionTimeoutMillis, String url, Callable<R> httpTask) throws IOException {
         final Future<R> requestFuture = timedRequestExecutor.submit(httpTask);
 
         try {
             return requestFuture.get(executionTimeoutMillis, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            requestFuture.cancel(false);
+            requestFuture.cancel(true);
             throw new IOException("Unexpectedly interrupted while executing HTTP request.", e);
         } catch (ExecutionException e) {
             if (e.getCause() instanceof IOException) {
@@ -547,7 +553,9 @@ public class HttpUtil {
                     requestFuture.cancel(true);
                 }
             }).start();
-            throw new IOException("Can't execute HTTP request in " + executionTimeoutMillis + " ms.", e);
+            throw new IOException(String.format(
+                    "Can't execute HTTP request to '%s' in %d ms.", url, executionTimeoutMillis
+            ), e);
         }
     }
 
@@ -572,17 +580,31 @@ public class HttpUtil {
 
         RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
                 .setConnectTimeout(connectionTimeoutMillis)
+                .setConnectionRequestTimeout(connectionTimeoutMillis)
                 .build();
 
         BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
         connectionManager.setConnectionConfig(connectionConfig);
         connectionManager.setSocketConfig(socketConfig);
 
+        HttpRequestExecutor httpRequestExecutor = new HttpRequestExecutor() {
+            @Override
+            public HttpResponse execute(HttpRequest request, HttpClientConnection conn, HttpContext context)
+                    throws IOException, HttpException {
+                try {
+                    return super.execute(request, conn, context);
+                } catch (IOException e) {
+                    throw new IOException("Can't execute " + request + '.', e);
+                }
+            }
+        };
+
         return HttpClientBuilder.create()
                 .setDefaultConnectionConfig(connectionConfig)
                 .setDefaultSocketConfig(socketConfig)
                 .setDefaultRequestConfig(requestConfig)
                 .setConnectionManager(connectionManager)
+                .setRequestExecutor(httpRequestExecutor)
                 .build();
     }
 
