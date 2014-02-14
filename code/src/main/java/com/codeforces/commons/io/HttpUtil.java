@@ -915,8 +915,4 @@ public class HttpUtil {
             throw new UnsupportedOperationException();
         }
     }
-
-    public static void main(String[] args) throws IOException { // TODO remove
-        System.out.println(executeGetRequestAndReturnResponseAsString(1000, false, "http://google.com/"));
-    }
 }
