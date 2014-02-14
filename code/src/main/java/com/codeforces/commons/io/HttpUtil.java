@@ -1,5 +1,6 @@
 package com.codeforces.commons.io;
 
+import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.text.StringUtil;
 import com.codeforces.commons.text.UrlUtil;
@@ -18,6 +19,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,6 +30,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -35,69 +38,234 @@ import java.util.List;
  */
 @SuppressWarnings("OverloadedVarargsMethod")
 public class HttpUtil {
+    private static final ExecutorService timedRequestExecutor = new ThreadPoolExecutor(
+            0, Runtime.getRuntime().availableProcessors() * 8,
+            5L, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(100),
+            new ThreadFactory() {
+                private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+
+                @Nonnull
+                @Override
+                public Thread newThread(@Nonnull Runnable task) {
+                    Thread thread = defaultThreadFactory.newThread(task);
+                    thread.setDaemon(true);
+                    return thread;
+                }
+            }
+    );
+
     private HttpUtil() {
         throw new UnsupportedOperationException();
     }
 
-    public static void executeGetRequest(boolean encodeParameters, String url, Object... parameters)
-            throws IOException {
-        internalExecuteGetRequest(encodeParameters, url, parameters);
+    public static void executeGetRequest(
+            HttpClient httpClient, boolean encodeParameters, String url, Object... parameters) throws IOException {
+        internalExecuteGetRequest(httpClient, encodeParameters, url, parameters);
+    }
+
+    public static void executeGetRequest(
+            long executionTimeoutMillis, final HttpClient httpClient, final boolean encodeParameters,
+            final String url, final Object... parameters) throws IOException {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                executeGetRequest(httpClient, encodeParameters, url, parameters);
+                return null;
+            }
+        });
+    }
+
+    public static void executeGetRequest(
+            boolean encodeParameters, String url, Object... parameters) throws IOException {
+        executeGetRequest(null, encodeParameters, url, parameters);
+    }
+
+    public static void executeGetRequest(
+            long executionTimeoutMillis, final boolean encodeParameters,
+            final String url, final Object... parameters) throws IOException {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                executeGetRequest(encodeParameters, url, parameters);
+                return null;
+            }
+        });
     }
 
     public static void executeGetRequest(String url, Object... parameters) throws IOException {
         executeGetRequest(false, url, parameters);
     }
 
+    public static void executeGetRequest(
+            long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                executeGetRequest(url, parameters);
+                return null;
+            }
+        });
+    }
+
+    public static byte[] executeGetRequestAndReturnResponseBytes(
+            HttpClient httpClient, boolean encodeParameters, String url, Object... parameters) throws IOException {
+        HttpResponse httpResponse = internalExecuteGetRequest(httpClient, encodeParameters, url, parameters);
+        InputStream inputStream = httpResponse.getEntity().getContent();
+
+        return IoUtil.toByteArray(inputStream);
+    }
+
+    public static byte[] executeGetRequestAndReturnResponseBytes(
+            long executionTimeoutMillis, final HttpClient httpClient, final boolean encodeParameters,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                return executeGetRequestAndReturnResponseBytes(httpClient, encodeParameters, url, parameters);
+            }
+        });
+    }
+
     public static byte[] executeGetRequestAndReturnResponseBytes(
             boolean encodeParameters, String url, Object... parameters) throws IOException {
-        InputStream inputStream = internalExecuteGetRequest(encodeParameters, url, parameters).getEntity().getContent();
-        try {
-            return IoUtil.toByteArray(inputStream);
-        } finally {
-            IoUtil.closeQuietly(inputStream);
-        }
+        return executeGetRequestAndReturnResponseBytes(null, encodeParameters, url, parameters);
+    }
+
+    public static byte[] executeGetRequestAndReturnResponseBytes(
+            long executionTimeoutMillis, final boolean encodeParameters,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                return executeGetRequestAndReturnResponseBytes(encodeParameters, url, parameters);
+            }
+        });
     }
 
     public static byte[] executeGetRequestAndReturnResponseBytes(String url, Object... parameters) throws IOException {
         return executeGetRequestAndReturnResponseBytes(false, url, parameters);
     }
 
-    public static String executeGetRequestAndReturnResponseAsString(
-            boolean encodeParameters, String url, Object... parameters) throws IOException {
-        HttpEntity responseEntity = internalExecuteGetRequest(encodeParameters, url, parameters).getEntity();
-        InputStream inputStream = responseEntity.getContent();
-        try {
-            return responseEntity.getContentEncoding() == null
-                    ? IoUtil.toString(inputStream)
-                    : IoUtil.toString(inputStream, responseEntity.getContentEncoding().getValue());
-        } finally {
-            IoUtil.closeQuietly(inputStream);
-        }
+    public static byte[] executeGetRequestAndReturnResponseBytes(
+            long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                return executeGetRequestAndReturnResponseBytes(url, parameters);
+            }
+        });
     }
 
-    public static String executeGetRequestAndReturnResponseAsString(String url, Object... parameters)
-            throws IOException {
+    public static String executeGetRequestAndReturnResponseAsString(
+            HttpClient httpClient, boolean encodeParameters, String url, Object... parameters) throws IOException {
+        HttpResponse httpResponse = internalExecuteGetRequest(httpClient, encodeParameters, url, parameters);
+        HttpEntity httpEntity = httpResponse.getEntity();
+        InputStream inputStream = httpEntity.getContent();
+
+        return httpEntity.getContentEncoding() == null
+                ? IoUtil.toString(inputStream)
+                : IoUtil.toString(inputStream, httpEntity.getContentEncoding().getValue());
+    }
+
+    public static String executeGetRequestAndReturnResponseAsString(
+            long executionTimeoutMillis, final HttpClient httpClient, final boolean encodeParameters,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return executeGetRequestAndReturnResponseAsString(httpClient, encodeParameters, url, parameters);
+            }
+        });
+    }
+
+    public static String executeGetRequestAndReturnResponseAsString(
+            boolean encodeParameters, String url, Object... parameters) throws IOException {
+        return executeGetRequestAndReturnResponseAsString(null, encodeParameters, url, parameters);
+    }
+
+    public static String executeGetRequestAndReturnResponseAsString(
+            long executionTimeoutMillis, final boolean encodeParameters,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return executeGetRequestAndReturnResponseAsString(encodeParameters, url, parameters);
+            }
+        });
+    }
+
+    public static String executeGetRequestAndReturnResponseAsString(
+            String url, Object... parameters) throws IOException {
         return executeGetRequestAndReturnResponseAsString(false, url, parameters);
+    }
+
+    public static String executeGetRequestAndReturnResponseAsString(
+            long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return executeGetRequestAndReturnResponseAsString(url, parameters);
+            }
+        });
+    }
+
+    public static Response executeGetRequestAndReturnResponse(
+            HttpClient httpClient, boolean encodeParameters, String url, Object... parameters) throws IOException {
+        HttpResponse httpResponse = internalExecuteGetRequest(httpClient, encodeParameters, url, parameters);
+        HttpEntity httpEntity = httpResponse.getEntity();
+
+        return new Response(
+                httpResponse.getStatusLine().getStatusCode(),
+                httpEntity.getContent(),
+                httpEntity.getContentEncoding() == null ? null : httpEntity.getContentEncoding().getValue(),
+                httpEntity.getContentLength()
+        );
+    }
+
+    public static Response executeGetRequestAndReturnResponse(
+            long executionTimeoutMillis, final HttpClient httpClient, final boolean encodeParameters,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+            @Override
+            public Response call() throws Exception {
+                return executeGetRequestAndReturnResponse(httpClient, encodeParameters, url, parameters);
+            }
+        });
     }
 
     public static Response executeGetRequestAndReturnResponse(
             boolean encodeParameters, String url, Object... parameters) throws IOException {
-        HttpResponse response = internalExecuteGetRequest(encodeParameters, url, parameters);
-        HttpEntity responseEntity = response.getEntity();
-        return new Response(
-                response.getStatusLine().getStatusCode(),
-                responseEntity.getContent(),
-                responseEntity.getContentEncoding() == null ? null : responseEntity.getContentEncoding().getValue(),
-                responseEntity.getContentLength()
-        );
+        return executeGetRequestAndReturnResponse(null, encodeParameters, url, parameters);
+    }
+
+    public static Response executeGetRequestAndReturnResponse(
+            long executionTimeoutMillis, final boolean encodeParameters,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+            @Override
+            public Response call() throws Exception {
+                return executeGetRequestAndReturnResponse(encodeParameters, url, parameters);
+            }
+        });
     }
 
     public static Response executeGetRequestAndReturnResponse(String url, Object... parameters) throws IOException {
         return executeGetRequestAndReturnResponse(false, url, parameters);
     }
 
-    private static HttpResponse internalExecuteGetRequest(boolean encodeParameters, String url, Object... parameters)
-            throws IOException {
+    public static Response executeGetRequestAndReturnResponse(
+            long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+            @Override
+            public Response call() throws Exception {
+                return executeGetRequestAndReturnResponse(url, parameters);
+            }
+        });
+    }
+
+    private static HttpResponse internalExecuteGetRequest(
+            @Nullable HttpClient httpClient, boolean encodeParameters,
+            String url, Object... parameters) throws IOException {
         parameters = validateAndPreprocessParameters(encodeParameters, url, parameters);
 
         for (int parameterIndex = 0; parameterIndex < parameters.length; parameterIndex += 2) {
@@ -106,71 +274,176 @@ public class HttpUtil {
             );
         }
 
-        HttpClient httpClient = newHttpClient();
+        httpClient = httpClient == null ? newHttpClient() : httpClient;
         HttpGet request = new HttpGet(url);
 
         return httpClient.execute(request);
     }
 
+    public static void executePostRequest(HttpClient httpClient, String url, Object... parameters) throws IOException {
+        internalExecutePostRequest(httpClient, url, parameters);
+    }
+
+    public static void executePostRequest(
+            long executionTimeoutMillis, final HttpClient httpClient,
+            final String url, final Object... parameters) throws IOException {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                executePostRequest(httpClient, url, parameters);
+                return null;
+            }
+        });
+    }
+
     public static void executePostRequest(String url, Object... parameters) throws IOException {
-        internalExecutePostRequest(url, parameters);
+        executePostRequest(null, url, parameters);
+    }
+
+    public static void executePostRequest(
+            long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
+        internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                executePostRequest(url, parameters);
+                return null;
+            }
+        });
+    }
+
+    @Nullable
+    public static byte[] executePostRequestAndReturnResponseBytes(
+            HttpClient httpClient, String url, Object... parameters) throws IOException {
+        HttpResponse httpResponse = internalExecutePostRequest(httpClient, url, parameters);
+        HttpEntity httpEntity = httpResponse.getEntity();
+        if (httpEntity == null) {
+            return null;
+        }
+
+        InputStream inputStream = httpEntity.getContent();
+        return IoUtil.toByteArray(inputStream);
+    }
+
+    @Nullable
+    public static byte[] executePostRequestAndReturnResponseBytes(
+            long executionTimeoutMillis, final HttpClient httpClient,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                return executePostRequestAndReturnResponseBytes(httpClient, url, parameters);
+            }
+        });
     }
 
     @Nullable
     public static byte[] executePostRequestAndReturnResponseBytes(String url, Object... parameters) throws IOException {
-        HttpEntity responseEntity = internalExecutePostRequest(url, parameters).getEntity();
-        if (responseEntity == null) {
-            return null;
-        }
-
-        InputStream inputStream = responseEntity.getContent();
-        try {
-            return IoUtil.toByteArray(inputStream);
-        } finally {
-            IoUtil.closeQuietly(inputStream);
-        }
+        return executePostRequestAndReturnResponseBytes(null, url, parameters);
     }
 
     @Nullable
-    public static String executePostRequestAndReturnResponseAsString(String url, Object... parameters)
-            throws IOException {
-        HttpEntity responseEntity = internalExecutePostRequest(url, parameters).getEntity();
-        if (responseEntity == null) {
+    public static byte[] executePostRequestAndReturnResponseBytes(
+            long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<byte[]>() {
+            @Override
+            public byte[] call() throws Exception {
+                return executePostRequestAndReturnResponseBytes(url, parameters);
+            }
+        });
+    }
+
+    @Nullable
+    public static String executePostRequestAndReturnResponseAsString(
+            HttpClient httpClient, String url, Object... parameters) throws IOException {
+        HttpResponse httpResponse = internalExecutePostRequest(httpClient, url, parameters);
+        HttpEntity httpEntity = httpResponse.getEntity();
+        if (httpEntity == null) {
             return null;
         }
 
-        InputStream inputStream = responseEntity.getContent();
-        try {
-            return responseEntity.getContentEncoding() == null
-                    ? IoUtil.toString(inputStream)
-                    : IoUtil.toString(inputStream, responseEntity.getContentEncoding().getValue());
-        } finally {
-            IoUtil.closeQuietly(inputStream);
-        }
+        InputStream inputStream = httpEntity.getContent();
+        return httpEntity.getContentEncoding() == null
+                ? IoUtil.toString(inputStream)
+                : IoUtil.toString(inputStream, httpEntity.getContentEncoding().getValue());
     }
 
-    public static Response executePostRequestAndReturnResponse(String url, Object... parameters) throws IOException {
-        HttpResponse response = internalExecutePostRequest(url, parameters);
-        HttpEntity responseEntity = response.getEntity();
+    @Nullable
+    public static String executePostRequestAndReturnResponseAsString(
+            long executionTimeoutMillis, final HttpClient httpClient,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return executePostRequestAndReturnResponseAsString(httpClient, url, parameters);
+            }
+        });
+    }
 
-        if (responseEntity == null) {
-            return new Response(response.getStatusLine().getStatusCode(), null, null, 0);
+    @Nullable
+    public static String executePostRequestAndReturnResponseAsString(
+            String url, Object... parameters) throws IOException {
+        return executePostRequestAndReturnResponseAsString(null, url, parameters);
+    }
+
+    @Nullable
+    public static String executePostRequestAndReturnResponseAsString(
+            long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return executePostRequestAndReturnResponseAsString(url, parameters);
+            }
+        });
+    }
+
+    public static Response executePostRequestAndReturnResponse(
+            HttpClient httpClient, String url, Object... parameters) throws IOException {
+        HttpResponse httpResponse = internalExecutePostRequest(httpClient, url, parameters);
+        HttpEntity httpEntity = httpResponse.getEntity();
+
+        if (httpEntity == null) {
+            return new Response(httpResponse.getStatusLine().getStatusCode(), null, null, 0);
         } else {
             return new Response(
-                    response.getStatusLine().getStatusCode(),
-                    responseEntity.getContent(),
-                    responseEntity.getContentEncoding() == null ? null : responseEntity.getContentEncoding().getValue(),
-                    responseEntity.getContentLength()
+                    httpResponse.getStatusLine().getStatusCode(),
+                    httpEntity.getContent(),
+                    httpEntity.getContentEncoding() == null ? null : httpEntity.getContentEncoding().getValue(),
+                    httpEntity.getContentLength()
             );
         }
     }
 
-    private static HttpResponse internalExecutePostRequest(String url, Object... parameters)
-            throws IOException {
+    public static Response executePostRequestAndReturnResponse(
+            long executionTimeoutMillis, final HttpClient httpClient,
+            final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+            @Override
+            public Response call() throws Exception {
+                return executePostRequestAndReturnResponse(httpClient, url, parameters);
+            }
+        });
+    }
+
+    public static Response executePostRequestAndReturnResponse(String url, Object... parameters) throws IOException {
+        return executePostRequestAndReturnResponse(null, url, parameters);
+    }
+
+    public static Response executePostRequestAndReturnResponse(
+            long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
+        return internalExecuteLimitedTimeRequest(executionTimeoutMillis, new Callable<Response>() {
+            @Override
+            public Response call() throws Exception {
+                return executePostRequestAndReturnResponse(url, parameters);
+            }
+        });
+    }
+
+    private static HttpResponse internalExecutePostRequest(
+            @Nullable HttpClient httpClient, String url, Object... parameters) throws IOException {
         parameters = validateAndPreprocessParameters(false, url, parameters);
 
-        HttpClient httpClient = newHttpClient();
-        HttpPost request = new HttpPost(url);
+        httpClient = httpClient == null ? newHttpClient() : httpClient;
+        HttpPost httpPost = new HttpPost(url);
 
         List<NameValuePair> postParameters = new ArrayList<>();
 
@@ -182,16 +455,16 @@ public class HttpUtil {
         }
 
         UrlEncodedFormEntity entity = new UrlEncodedFormEntity(postParameters, "UTF-8");
-        request.setEntity(entity);
+        httpPost.setEntity(entity);
 
-        return httpClient.execute(request);
+        return httpClient.execute(httpPost);
     }
 
     @SuppressWarnings("OverlyComplexMethod")
     private static Object[] validateAndPreprocessParameters(
             boolean encodeParameters, String url, Object... parameters) {
-        if (StringUtil.isBlank(url)) {
-            throw new IllegalArgumentException("Argument 'url' is blank.");
+        if (!UrlUtil.isValidUrl(url)) {
+            throw new IllegalArgumentException('\'' + url + "' is not valid URL.");
         }
 
         boolean secureHost;
@@ -250,6 +523,33 @@ public class HttpUtil {
         }
 
         return preprocessParameters ? parameterCopies : parameters;
+    }
+
+    private static <R> R internalExecuteLimitedTimeRequest(
+            final long executionTimeoutMillis, Callable<R> httpTask) throws IOException {
+        final Future<R> requestFuture = timedRequestExecutor.submit(httpTask);
+
+        try {
+            return requestFuture.get(executionTimeoutMillis, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            requestFuture.cancel(false);
+            throw new IOException("Unexpectedly interrupted while executing HTTP request.", e);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof IOException) {
+                throw (IOException) e.getCause();
+            } else {
+                throw new IOException("Can't execute HTTP request.", e);
+            }
+        } catch (TimeoutException e) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    ThreadUtil.sleep(executionTimeoutMillis);
+                    requestFuture.cancel(true);
+                }
+            }).start();
+            throw new IOException("Can't execute HTTP request in " + executionTimeoutMillis + " ms.", e);
+        }
     }
 
     /**
@@ -614,5 +914,9 @@ public class HttpUtil {
         private Code() {
             throw new UnsupportedOperationException();
         }
+    }
+
+    public static void main(String[] args) throws IOException { // TODO remove
+        System.out.println(executeGetRequestAndReturnResponseAsString(1000, false, "http://google.com/"));
     }
 }

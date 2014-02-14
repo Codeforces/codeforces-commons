@@ -18,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Maxim Shipko (sladethe@gmail.com)
  */
 public class IoUtil {
-    private static final int BUFFER_SIZE = NumberUtil.toInt(4L * FileUtil.BYTES_PER_MB);
+    private static final int BUFFER_SIZE = NumberUtil.toInt(8L * FileUtil.BYTES_PER_MB);
 
     private IoUtil() {
         throw new UnsupportedOperationException();
@@ -28,11 +28,13 @@ public class IoUtil {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
             copy(new DigestInputStream(inputStream, messageDigest), NullOutputStream.NULL_OUTPUT_STREAM);
+            inputStream.close();
             return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
-        } finally {
-            inputStream.close();
+        } catch (IOException e) {
+            closeQuietly(inputStream);
+            throw e;
         }
     }
 
@@ -60,50 +62,55 @@ public class IoUtil {
         ByteArrayOutputStream outputStream = new LimitedByteArrayOutputStream(maxSize, throwIfExceeded);
         try {
             copy(inputStream, outputStream);
-        } finally {
-            inputStream.close();
             outputStream.close();
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            closeQuietly(outputStream);
+            throw e;
         }
-        return outputStream.toByteArray();
     }
 
     public static String toString(InputStream inputStream) throws IOException {
         try {
-            return IOUtils.toString(inputStream);
-        } catch (IOException e) {
-            throw new IOException("Can't read from input stream.", e);
-        } finally {
+            String s = IOUtils.toString(inputStream);
             inputStream.close();
+            return s;
+        } catch (IOException e) {
+            closeQuietly(inputStream);
+            throw new IOException("Can't read from input stream.", e);
         }
     }
 
     public static String toString(InputStream inputStream, String charsetName) throws IOException {
         try {
-            return IOUtils.toString(inputStream, charsetName);
-        } catch (IOException e) {
-            throw new IOException("Can't read from input stream.", e);
-        } finally {
+            String s = IOUtils.toString(inputStream, charsetName);
             inputStream.close();
+            return s;
+        } catch (IOException e) {
+            closeQuietly(inputStream);
+            throw new IOException("Can't read from input stream.", e);
         }
     }
 
     public static String toString(InputStream inputStream, Charset charset) throws IOException {
         try {
-            return IOUtils.toString(inputStream, charset);
-        } catch (IOException e) {
-            throw new IOException("Can't read from input stream.", e);
-        } finally {
+            String s = IOUtils.toString(inputStream, charset);
             inputStream.close();
+            return s;
+        } catch (IOException e) {
+            closeQuietly(inputStream);
+            throw new IOException("Can't read from input stream.", e);
         }
     }
 
     public static String toString(Reader reader) throws IOException {
         try {
-            return IOUtils.toString(reader);
-        } catch (IOException e) {
-            throw new IOException("Can't read from reader.", e);
-        } finally {
+            String s = IOUtils.toString(reader);
             reader.close();
+            return s;
+        } catch (IOException e) {
+            closeQuietly(reader);
+            throw new IOException("Can't read from reader.", e);
         }
     }
 
@@ -117,9 +124,12 @@ public class IoUtil {
 
     public static long copy(InputStream inputStream, OutputStream outputStream) throws IOException {
         try {
-            return IOUtils.copyLarge(inputStream, outputStream, new byte[BUFFER_SIZE]);
-        } finally {
+            long byteCount = IOUtils.copyLarge(inputStream, outputStream, new byte[BUFFER_SIZE]);
             inputStream.close();
+            return byteCount;
+        } catch (IOException e) {
+            closeQuietly(inputStream);
+            throw e;
         }
     }
 

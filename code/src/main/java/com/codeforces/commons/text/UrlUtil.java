@@ -87,7 +87,7 @@ public class UrlUtil {
 
     @Nullable
     public static String extractFileName(@Nullable String url) {
-        if (StringUtil.isBlank(url)) {
+        if (!isValidUrl(url)) {
             return null;
         }
 
