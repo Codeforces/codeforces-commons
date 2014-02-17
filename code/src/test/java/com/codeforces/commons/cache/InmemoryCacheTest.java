@@ -3,7 +3,6 @@ package com.codeforces.commons.cache;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.google.common.primitives.Ints;
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import java.util.concurrent.BlockingQueue;
@@ -48,24 +47,36 @@ public class InmemoryCacheTest extends TestCase {
     public void testConcurrentStoringOfValues() throws Exception {
         final InmemoryByteCache cache = new InmemoryByteCache();
         final BlockingQueue<CachePath> cachePaths = getCachePaths();
-        final AtomicReference<AssertionFailedError> assertionFailedError = new AtomicReference<>();
+        final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+        final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
         CacheTestUtil.determineOperationTime("testConcurrentStoringOfValues", new Runnable() {
             @Override
             public void run() {
-                ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+                ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
+                    @Override
+                    public void customize(Thread thread) {
+                        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                            @Override
+                            public void uncaughtException(Thread t, Throwable e) {
+                                unexpectedThrowable.set(e);
+                            }
+                        });
+                    }
+                }));
+
                 final AtomicInteger pathIndex = new AtomicInteger();
 
                 for (int threadIndex = 0; threadIndex < THREAD_COUNT; ++threadIndex) {
                     executorService.execute(new Runnable() {
                         @Override
                         public void run() {
-                            while (assertionFailedError.get() == null
+                            while (assertionError.get() == null
                                     && pathIndex.getAndIncrement() < TOTAL_KEY_COUNT) {
                                 try {
                                     checkStoringOneValue(cache, cachePaths.poll());
-                                } catch (AssertionFailedError error) {
-                                    assertionFailedError.set(error);
+                                } catch (AssertionError error) {
+                                    assertionError.set(error);
                                 }
                             }
                         }
@@ -79,22 +90,38 @@ public class InmemoryCacheTest extends TestCase {
                     // No operations.
                 }
 
-                if (assertionFailedError.get() != null) {
-                    throw assertionFailedError.get();
+                if (assertionError.get() != null) {
+                    throw assertionError.get();
                 }
             }
         });
+
+        if (unexpectedThrowable.get() != null) {
+            throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+        }
     }
 
     public void testConcurrentStoringOfValuesWithLifetime() throws Exception {
         final InmemoryByteCache cache = new InmemoryByteCache();
         final BlockingQueue<CachePath> cachePaths = getCachePaths();
-        final AtomicReference<AssertionFailedError> assertionFailedError = new AtomicReference<>();
+        final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+        final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
         CacheTestUtil.determineOperationTime("testConcurrentStoringOfValuesWithLifetime", new Runnable() {
             @Override
             public void run() {
-                ExecutorService executorService = Executors.newFixedThreadPool(SLEEPING_THREAD_COUNT);
+                ExecutorService executorService = Executors.newFixedThreadPool(SLEEPING_THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
+                    @Override
+                    public void customize(Thread thread) {
+                        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                            @Override
+                            public void uncaughtException(Thread t, Throwable e) {
+                                unexpectedThrowable.set(e);
+                            }
+                        });
+                    }
+                }));
+
                 final AtomicInteger pathIndex = new AtomicInteger();
 
                 for (int threadIndex = 0; threadIndex < SLEEPING_THREAD_COUNT; ++threadIndex) {
@@ -105,12 +132,12 @@ public class InmemoryCacheTest extends TestCase {
                         public void run() {
                             ThreadUtil.sleep(threadSleepTime);
 
-                            while (assertionFailedError.get() == null
+                            while (assertionError.get() == null
                                     && pathIndex.getAndIncrement() < TOTAL_KEY_COUNT) {
                                 try {
                                     checkStoringOneValueWithLifetime(cache, cachePaths.poll());
-                                } catch (AssertionFailedError error) {
-                                    assertionFailedError.set(error);
+                                } catch (AssertionError error) {
+                                    assertionError.set(error);
                                 }
                             }
                         }
@@ -124,11 +151,15 @@ public class InmemoryCacheTest extends TestCase {
                     // No operations.
                 }
 
-                if (assertionFailedError.get() != null) {
-                    throw assertionFailedError.get();
+                if (assertionError.get() != null) {
+                    throw assertionError.get();
                 }
             }
         });
+
+        if (unexpectedThrowable.get() != null) {
+            throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+        }
     }
 
     private static void checkStoringOneValue(ByteCache cache, CachePath cachePath) {

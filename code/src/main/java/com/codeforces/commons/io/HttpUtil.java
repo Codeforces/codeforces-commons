@@ -19,7 +19,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestExecutor;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
@@ -41,22 +40,18 @@ import java.util.concurrent.atomic.AtomicLong;
 public class HttpUtil {
     private static final ExecutorService timedRequestExecutor = new ThreadPoolExecutor(
             0, Short.MAX_VALUE, 5L, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(),
-            new ThreadFactory() {
-                private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+            ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
                 private final AtomicLong threadIndex = new AtomicLong();
 
-                @Nonnull
                 @Override
-                public Thread newThread(@Nonnull Runnable task) {
-                    Thread thread = defaultThreadFactory.newThread(task);
+                public void customize(Thread thread) {
                     thread.setDaemon(true);
                     thread.setName(String.format(
                             "%s#RequestExecutionThread-%d",
                             HttpUtil.class.getSimpleName(), threadIndex.incrementAndGet()
                     ));
-                    return thread;
                 }
-            }
+            })
     );
 
     private HttpUtil() {
@@ -568,7 +563,7 @@ public class HttpUtil {
     }
 
     public static CloseableHttpClient newHttpClient() {
-        return HttpClientBuilder.create().build();
+        return HttpClientBuilder.create().setRequestExecutor(getHttpRequestExecutor()).build();
     }
 
     public static CloseableHttpClient newHttpClient(int connectionTimeoutMillis, int socketTimeoutMillis) {
@@ -587,7 +582,19 @@ public class HttpUtil {
         connectionManager.setConnectionConfig(connectionConfig);
         connectionManager.setSocketConfig(socketConfig);
 
-        HttpRequestExecutor httpRequestExecutor = new HttpRequestExecutor() {
+        HttpRequestExecutor httpRequestExecutor = getHttpRequestExecutor();
+
+        return HttpClientBuilder.create()
+                .setDefaultConnectionConfig(connectionConfig)
+                .setDefaultSocketConfig(socketConfig)
+                .setDefaultRequestConfig(requestConfig)
+                .setConnectionManager(connectionManager)
+                .setRequestExecutor(httpRequestExecutor)
+                .build();
+    }
+
+    private static HttpRequestExecutor getHttpRequestExecutor() {
+        return new HttpRequestExecutor() {
             @Override
             public HttpResponse execute(HttpRequest request, HttpClientConnection conn, HttpContext context)
                     throws IOException, HttpException {
@@ -598,14 +605,6 @@ public class HttpUtil {
                 }
             }
         };
-
-        return HttpClientBuilder.create()
-                .setDefaultConnectionConfig(connectionConfig)
-                .setDefaultSocketConfig(socketConfig)
-                .setDefaultRequestConfig(requestConfig)
-                .setConnectionManager(connectionManager)
-                .setRequestExecutor(httpRequestExecutor)
-                .build();
     }
 
     public static void closeQuietly(

@@ -6,7 +6,6 @@ import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.math.RandomUtil;
 import com.google.common.primitives.Ints;
 import de.schlichtherle.truezip.file.TFile;
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import org.junit.Assert;
 
@@ -227,7 +226,7 @@ public class ZipUtilTest extends TestCase {
             FileUtil.writeFile(validArchive, getBytes(validArchive.getName()));
             FileUtil.writeFile(validInnerArchive, getBytes(validInnerArchive.getName()));
 
-            List<AssertionFailedError> errors = Collections.synchronizedList(new ArrayList<AssertionFailedError>());
+            List<AssertionError> errors = Collections.synchronizedList(new ArrayList<AssertionError>());
             int iterationCount = 1000;
 
             Thread emptyArchiveTestThread = startThreadToTestIsCorrectZipFile(
@@ -263,7 +262,7 @@ public class ZipUtilTest extends TestCase {
 
             if (!errors.isEmpty()) {
                 if (errors.size() > 1) {
-                    for (AssertionFailedError error : errors) {
+                    for (AssertionError error : errors) {
                         error.printStackTrace();
                     }
                 }
@@ -275,7 +274,7 @@ public class ZipUtilTest extends TestCase {
         }
     }
 
-    private static Thread startThreadToTestGetBytes(final File validArchive, final File validInnerArchive, final List<AssertionFailedError> errors, final int iterationCount) {
+    private static Thread startThreadToTestGetBytes(final File validArchive, final File validInnerArchive, final List<AssertionError> errors, final int iterationCount) {
         Thread getBytesTestThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -292,7 +291,7 @@ public class ZipUtilTest extends TestCase {
                         } catch (IOException e) {
                             throw new AssertionError(e.toString());
                         }
-                    } catch (@SuppressWarnings("ErrorNotRethrown") AssertionFailedError e) {
+                    } catch (@SuppressWarnings("ErrorNotRethrown") AssertionError e) {
                         errors.add(e);
                         break;
                     }
@@ -304,7 +303,7 @@ public class ZipUtilTest extends TestCase {
     }
 
     private static Thread startThreadToTestIsCorrectZipFile(
-            final File zipFile, final List<AssertionFailedError> errors, final int iterationCount,
+            final File zipFile, final List<AssertionError> errors, final int iterationCount,
             final boolean isCorrectZipFile, final boolean isEmptyZipFile) {
         Thread zipFileTestThread = new Thread(new Runnable() {
             @Override
@@ -326,7 +325,7 @@ public class ZipUtilTest extends TestCase {
                                 isCorrectZipFile && !isEmptyZipFile,
                                 ZipUtil.isCorrectZipFile(zipFile)
                         );
-                    } catch (@SuppressWarnings("ErrorNotRethrown") AssertionFailedError e) {
+                    } catch (@SuppressWarnings("ErrorNotRethrown") AssertionError e) {
                         errors.add(e);
                         break;
                     }

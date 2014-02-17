@@ -6,6 +6,8 @@ import org.apache.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -18,10 +20,14 @@ public class ThreadUtil {
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings("AssignmentToMethodParameter")
     public static Thread newThread(
             @Nullable String name, @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
         if (name == null) {
-            name = "Unnamed thread by " + Thread.currentThread() + " running " + runnable.getClass().getName() + " at " + new Date() + '.';
+            name = String.format(
+                    "Unnamed thread by %s running %s at %s.",
+                    Thread.currentThread(), runnable.getClass().getName(), new Date()
+            );
         }
 
         Thread thread = new Thread(null, runnable, name, stackSize);
@@ -31,10 +37,13 @@ public class ThreadUtil {
                 uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
                     @Override
                     public void uncaughtException(Thread t, Throwable e) {
-                        System.out.println("Unexpected exception " + e.getClass() + " (" + e.getMessage() + ") in "
-                                + t.getName() + ":\n" + ExceptionUtil.toString(e));
-                        logger.error("Unexpected exception " + e.getClass() + " (" + e.getMessage() + ") in "
-                                + t.getName() + ".", e);
+                        System.out.printf(
+                                "Unexpected exception %s (%s) in %s:%n%s%n",
+                                e.getClass(), e.getMessage(), t.getName(), ExceptionUtil.toString(e)
+                        );
+                        logger.error(String.format(
+                                "Unexpected exception %s (%s) in %s.", e.getClass(), e.getMessage(), t.getName()
+                        ), e);
                     }
                 };
             }
@@ -101,6 +110,20 @@ public class ThreadUtil {
         }
 
         throw new RuntimeException("This line shouldn't be executed.");
+    }
+
+    public static ThreadFactory getCustomPoolThreadFactory(final ThreadCustomizer threadCustomizer) {
+        return new ThreadFactory() {
+            private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+
+            @Nonnull
+            @Override
+            public Thread newThread(@Nonnull Runnable task) {
+                Thread thread = defaultThreadFactory.newThread(task);
+                threadCustomizer.customize(thread);
+                return thread;
+            }
+        };
     }
 
     private static <T> void ensureArguments(Operation<T> operation, int attemptCount, ExecutionStrategy strategy) {
@@ -207,5 +230,9 @@ public class ThreadUtil {
              */
             SQUARE
         }
+    }
+
+    public interface ThreadCustomizer {
+        void customize(Thread thread);
     }
 }
