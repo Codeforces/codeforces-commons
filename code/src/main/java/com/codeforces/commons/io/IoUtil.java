@@ -114,23 +114,30 @@ public class IoUtil {
         }
     }
 
-    /**
-     * @deprecated Use {@link #copy(InputStream, OutputStream)}.
-     */
-    @Deprecated
-    public static void transfer(InputStream inputStream, OutputStream outputStream) throws IOException {
-        copy(inputStream, outputStream);
+    public static long copy(InputStream inputStream, OutputStream outputStream,
+                            boolean closeInputStream, boolean closeOutputStream) throws IOException {
+        try {
+            long byteCount = IOUtils.copyLarge(inputStream, outputStream, new byte[BUFFER_SIZE]);
+            if (closeInputStream) {
+                inputStream.close();
+            }
+            if (closeOutputStream) {
+                outputStream.close();
+            }
+            return byteCount;
+        } catch (IOException e) {
+            if (closeInputStream) {
+                closeQuietly(inputStream);
+            }
+            if (closeOutputStream) {
+                closeQuietly(outputStream);
+            }
+            throw e;
+        }
     }
 
     public static long copy(InputStream inputStream, OutputStream outputStream) throws IOException {
-        try {
-            long byteCount = IOUtils.copyLarge(inputStream, outputStream, new byte[BUFFER_SIZE]);
-            inputStream.close();
-            return byteCount;
-        } catch (IOException e) {
-            closeQuietly(inputStream);
-            throw e;
-        }
+        return copy(inputStream, outputStream, true, false);
     }
 
     public static void closeQuietly(@Nullable Closeable closeable) {
