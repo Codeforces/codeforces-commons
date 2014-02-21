@@ -2,6 +2,7 @@ package com.codeforces.commons.text;
 
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
+import com.codeforces.commons.pair.SimplePair;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.reflection.ReflectionUtil;
 import org.apache.commons.codec.binary.Base64;
@@ -10,8 +11,11 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.lang.reflect.Array;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -290,6 +294,9 @@ public final class StringUtil {
         } else if (value instanceof Map.Entry) {
             Map.Entry entry = (Map.Entry) value;
             return valueToString(entry.getKey()) + '=' + valueToString(entry.getValue());
+        } else if (value instanceof SimplePair) {
+            SimplePair pair = (SimplePair) value;
+            return valueToString(pair.getFirst()) + '=' + valueToString(pair.getSecond());
         } else if (valueClass == Character.class) {
             return "'" + value + '\'';
         } else if (valueClass == Boolean.class
@@ -743,6 +750,30 @@ public final class StringUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static byte[] hmacSha1(byte[] value, byte[] key) {
+        try {
+            SecretKeySpec signingKey = new SecretKeySpec(key, "HmacSHA1");
+
+            Mac mac = Mac.getInstance("HmacSHA1");
+            mac.init(signingKey);
+            return mac.doFinal(value);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String hmacSha1Hex(byte[] value, byte[] key) {
+        return Hex.encodeHexString(hmacSha1(value, key));
+    }
+
+    public static String hmacSha1Base64(byte[] value, byte[] key) {
+        return Base64.encodeBase64String(hmacSha1(value, key));
+    }
+
+    public static String hmacSha1Base64UrlSafe(byte[] value, byte[] key) {
+        return Base64.encodeBase64URLSafeString(hmacSha1(value, key));
     }
 
     public static String subscribe(String plainText, String secretKey) {

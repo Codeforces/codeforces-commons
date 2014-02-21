@@ -93,6 +93,30 @@ public class NumberUtil {
         return ((Double) value).longValue();
     }
 
+    public static boolean equals(@Nullable Long numberA, @Nullable Long numberB) {
+        return numberA == null ? numberB == null : numberA.equals(numberB);
+    }
+
+    public static boolean equals(@Nullable Integer numberA, @Nullable Integer numberB) {
+        return numberA == null ? numberB == null : numberA.equals(numberB);
+    }
+
+    public static boolean equals(@Nullable Short numberA, @Nullable Short numberB) {
+        return numberA == null ? numberB == null : numberA.equals(numberB);
+    }
+
+    public static boolean equals(@Nullable Byte numberA, @Nullable Byte numberB) {
+        return numberA == null ? numberB == null : numberA.equals(numberB);
+    }
+
+    public static boolean equals(@Nullable Double numberA, @Nullable Double numberB) {
+        return numberA == null ? numberB == null : numberA.equals(numberB);
+    }
+
+    public static boolean equals(@Nullable Float numberA, @Nullable Float numberB) {
+        return numberA == null ? numberB == null : numberA.equals(numberB);
+    }
+
     @SuppressWarnings("AssignmentToMethodParameter")
     public static long findGreatestCommonDivisor(long numberA, long numberB) {
         @SuppressWarnings("TooBroadScope") long temp;
