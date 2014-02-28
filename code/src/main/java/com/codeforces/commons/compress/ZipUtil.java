@@ -374,12 +374,10 @@ public final class ZipUtil {
     public static void addEntryToZipArchive(File zipFile, String zipEntryPath, InputStream inputStream)
             throws IOException {
         TFile trueZipFile = new TFile(new File(zipFile, zipEntryPath));
-        OutputStream outputStream = null;
         try {
-            outputStream = new TFileOutputStream(trueZipFile, false);
-            IoUtil.copy(inputStream, outputStream);
+            OutputStream outputStream = new TFileOutputStream(trueZipFile, false);
+            IoUtil.copy(inputStream, outputStream, true, true);
         } finally {
-            IoUtil.closeQuietly(outputStream, inputStream);
             synchronizeQuietly(trueZipFile);
         }
     }
@@ -394,8 +392,8 @@ public final class ZipUtil {
             throws IOException {
         TFile trueZipFile = new TFile(new File(zipFile, zipEntryPath));
         try {
-            InputStream inputStream = null;
             try {
+                InputStream inputStream;
                 if (trueZipFile.isArchive()) {
                     synchronizeQuietly(trueZipFile);
                     ZipFile internalZipFile = new ZipFile(zipFile);
@@ -407,8 +405,6 @@ public final class ZipUtil {
                 IoUtil.copy(inputStream, outputStream);
             } catch (ZipException e) {
                 throw new IOException("Can't write ZIP-entry bytes.", e);
-            } finally {
-                IoUtil.closeQuietly(inputStream);
             }
         } finally {
             IoUtil.closeQuietly(outputStream);

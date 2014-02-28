@@ -27,14 +27,10 @@ public class IoUtil {
     public static byte[] sha1(InputStream inputStream) throws IOException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
-            copy(new DigestInputStream(inputStream, messageDigest), NullOutputStream.NULL_OUTPUT_STREAM);
-            inputStream.close();
+            copy(new DigestInputStream(inputStream, messageDigest), NullOutputStream.NULL_OUTPUT_STREAM, true, true);
             return messageDigest.digest();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            closeQuietly(inputStream);
-            throw e;
         }
     }
 
@@ -60,14 +56,8 @@ public class IoUtil {
 
     public static byte[] toByteArray(InputStream inputStream, int maxSize, boolean throwIfExceeded) throws IOException {
         ByteArrayOutputStream outputStream = new LimitedByteArrayOutputStream(maxSize, throwIfExceeded);
-        try {
-            copy(inputStream, outputStream);
-            outputStream.close();
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            closeQuietly(outputStream);
-            throw e;
-        }
+        copy(inputStream, outputStream, true, true);
+        return outputStream.toByteArray();
     }
 
     public static String toString(InputStream inputStream) throws IOException {
