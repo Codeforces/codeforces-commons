@@ -138,12 +138,12 @@ public final class StringUtil {
         return isBlank(stringA) ? isBlank(stringB) : stringA.equalsIgnoreCase(stringB);
     }
 
-    @SuppressWarnings("OverloadedVarargsMethod")
+    @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
     @Nonnull
     public static <T> String toString(
             @Nonnull Class<? extends T> objectClass, @Nullable T object, boolean skipNulls, String... fieldNames) {
         ToStringOptions options = new ToStringOptions();
-        options.setSkipNulls(skipNulls);
+        options.skipNulls = skipNulls;
         return toString(objectClass, object, options, fieldNames);
     }
 
@@ -159,15 +159,15 @@ public final class StringUtil {
         return toString(object, options.skipNulls, fieldNames);
     }
 
-    @SuppressWarnings({"OverloadedVarargsMethod"})
+    @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
     @Nonnull
     public static String toString(@Nonnull Object object, boolean skipNulls, String... fieldNames) {
         ToStringOptions options = new ToStringOptions();
-        options.setSkipNulls(skipNulls);
+        options.skipNulls = skipNulls;
         return toString(object, options, fieldNames);
     }
 
-    @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject", "AssignmentToMethodParameter"})
+    @SuppressWarnings({"OverloadedVarargsMethod", "AssignmentToMethodParameter", "AccessingNonPublicFieldOfAnotherObject"})
     @Nonnull
     public static String toString(@Nonnull Object object, @Nonnull ToStringOptions options, String... fieldNames) {
         Class<?> objectClass = object.getClass();
@@ -191,13 +191,16 @@ public final class StringUtil {
             String fieldAsString;
 
             if (deepValue == null) {
-                if (options.skipNulls) {
+                if (options.skipNulls || options.skipEmptyStrings || options.skipBlankStrings) {
                     continue;
                 } else {
                     fieldAsString = fieldName + "=null";
                 }
             } else {
-                fieldAsString = fieldToString(deepValue, fieldName);
+                fieldAsString = fieldToString(deepValue, fieldName, options);
+                if (fieldAsString == null) {
+                    continue;
+                }
             }
 
             if (firstAppendix) {
@@ -264,13 +267,22 @@ public final class StringUtil {
         return simpleName;
     }
 
-    @Nonnull
-    private static String fieldToString(@Nonnull Object value, @Nonnull String fieldName) {
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
+    @Nullable
+    private static String fieldToString(@Nonnull Object value, @Nonnull String fieldName, ToStringOptions options) {
         if (value.getClass() == Boolean.class || value.getClass() == boolean.class) {
             return (boolean) value ? fieldName : '!' + fieldName;
         }
 
-        return fieldName + '=' + valueToString(value);
+        String stringValue = valueToString(value);
+
+        if (options.skipNulls && stringValue == null
+                || options.skipEmptyStrings && isEmpty(stringValue)
+                || options.skipBlankStrings && isBlank(stringValue)) {
+            return null;
+        }
+
+        return fieldName + '=' + stringValue;
     }
 
     @SuppressWarnings({"OverlyComplexMethod", "unchecked"})
@@ -937,13 +949,18 @@ public final class StringUtil {
 
     public static final class ToStringOptions {
         private boolean skipNulls;
+        private boolean skipEmptyStrings;
+        private boolean skipBlankStrings;
         private boolean addEnclosingClassNames;
 
         public ToStringOptions() {
         }
 
-        public ToStringOptions(boolean skipNulls, boolean addEnclosingClassNames) {
+        public ToStringOptions(
+                boolean skipNulls, boolean skipEmptyStrings, boolean skipBlankStrings, boolean addEnclosingClassNames) {
             this.skipNulls = skipNulls;
+            this.skipEmptyStrings = skipEmptyStrings;
+            this.skipBlankStrings = skipBlankStrings;
             this.addEnclosingClassNames = addEnclosingClassNames;
         }
 
@@ -953,6 +970,22 @@ public final class StringUtil {
 
         public void setSkipNulls(boolean skipNulls) {
             this.skipNulls = skipNulls;
+        }
+
+        public boolean isSkipEmptyStrings() {
+            return skipEmptyStrings;
+        }
+
+        public void setSkipEmptyStrings(boolean skipEmptyStrings) {
+            this.skipEmptyStrings = skipEmptyStrings;
+        }
+
+        public boolean isSkipBlankStrings() {
+            return skipBlankStrings;
+        }
+
+        public void setSkipBlankStrings(boolean skipBlankStrings) {
+            this.skipBlankStrings = skipBlankStrings;
         }
 
         public boolean isAddEnclosingClassNames() {
