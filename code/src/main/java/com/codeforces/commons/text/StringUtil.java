@@ -942,6 +942,58 @@ public final class StringUtil {
         return object == null ? null : object.toString();
     }
 
+    public static String escapeMySqlString(String s) {
+        StringBuilder result = new StringBuilder(s.length());
+
+        for (int i = 0; i < s.length(); ++i) {
+            char c = s.charAt(i);
+
+            switch (c) {
+                case 0x00:
+                    result.append("\\0");
+                    break;
+                case 0x08:
+                    result.append("\\b");
+                    break;
+                case 0x09:
+                    result.append("\\t");
+                    break;
+                case 0x0a:
+                    result.append("\\n");
+                    break;
+                case 0x0d:
+                    result.append("\\r");
+                    break;
+                case 0x1a:
+                    result.append("\\Z");
+                    break;
+                case 0x22:
+                    result.append("\\\"");
+                    break;
+                case 0x25:
+                    result.append("\\%");
+                    break;
+                case 0x27:
+                    result.append("\\'");
+                    break;
+                case 0x5c:
+                    result.append("\\\\");
+                    break;
+                case 0x5f:
+                    result.append("\\_");
+                    break;
+                default:
+                    if (!Character.isLetterOrDigit(c) && c < 256) {
+                        result.append('\\').append(c);
+                    } else {
+                        result.append(c);
+                    }
+            }
+        }
+
+        return result.toString();
+    }
+
     public interface ToStringConverter<T> {
         @Nonnull
         String convert(@Nullable T value);
