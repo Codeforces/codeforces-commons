@@ -167,6 +167,7 @@ public final class StringUtil {
         return toString(object, options, fieldNames);
     }
 
+    // TODO specify max length of long data (strings, arrays, collections, maps)
     @SuppressWarnings({"OverloadedVarargsMethod", "AssignmentToMethodParameter", "AccessingNonPublicFieldOfAnotherObject"})
     @Nonnull
     public static String toString(@Nonnull Object object, @Nonnull ToStringOptions options, String... fieldNames) {
@@ -942,6 +943,7 @@ public final class StringUtil {
         return object == null ? null : object.toString();
     }
 
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "SwitchStatementWithTooManyBranches"})
     public static String escapeMySqlString(String s) {
         StringBuilder result = new StringBuilder(s.length());
 
