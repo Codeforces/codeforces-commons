@@ -8,6 +8,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -16,6 +18,36 @@ import java.net.URL;
 public class UrlUtil {
     private UrlUtil() {
         throw new UnsupportedOperationException();
+    }
+
+    public static Set<String> getParameterNames(@Nonnull String url) {
+        Set<String> parameterNames = new HashSet<>();
+
+        URI uri;
+        try {
+            uri = URI.create(url);
+        } catch (IllegalArgumentException ignored) {
+            return parameterNames;
+        }
+
+        String rawQuery = uri.getRawQuery();
+        if (rawQuery != null) {
+            String[] parameters = StringUtil.Patterns.AMP_PATTERN.split(rawQuery);
+            int parameterCount = parameters.length;
+
+            for (int parameterIndex = 0; parameterIndex < parameterCount; ++parameterIndex) {
+                String parameter = parameters[parameterIndex];
+                int equalitySignPos = parameter.indexOf('=');
+                String parameterName = equalitySignPos == -1
+                        ? parameter.trim()
+                        : parameter.substring(0, equalitySignPos).trim();
+                if (!parameterName.isEmpty()) {
+                    parameterNames.add(parameterName.toLowerCase());
+                }
+            }
+        }
+
+        return parameterNames;
     }
 
     public static String removeParameterFromUrl(@Nonnull String url, @Nullable String parameterName) {
