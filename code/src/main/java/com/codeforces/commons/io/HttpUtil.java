@@ -554,16 +554,11 @@ public class HttpUtil {
         }
     }
 
-    /**
-     * @deprecated Use {@link #newHttpClient()}.
-     */
-    @Deprecated
-    public static CloseableHttpClient newDefaultHttpClient() {
-        return HttpClientBuilder.create().build();
-    }
-
     public static CloseableHttpClient newHttpClient() {
-        return HttpClientBuilder.create().setRequestExecutor(getHttpRequestExecutor()).build();
+        return HttpClientBuilder.create()
+                .setRequestExecutor(HttpClientFieldHolder.HTTP_REQUEST_EXECUTOR)
+                .setProxy(HttpClientFieldHolder.HTTP_PROXY)
+                .build();
     }
 
     public static CloseableHttpClient newHttpClient(int connectionTimeoutMillis, int socketTimeoutMillis) {
@@ -582,29 +577,14 @@ public class HttpUtil {
         connectionManager.setConnectionConfig(connectionConfig);
         connectionManager.setSocketConfig(socketConfig);
 
-        HttpRequestExecutor httpRequestExecutor = getHttpRequestExecutor();
-
         return HttpClientBuilder.create()
                 .setDefaultConnectionConfig(connectionConfig)
                 .setDefaultSocketConfig(socketConfig)
                 .setDefaultRequestConfig(requestConfig)
                 .setConnectionManager(connectionManager)
-                .setRequestExecutor(httpRequestExecutor)
+                .setRequestExecutor(HttpClientFieldHolder.HTTP_REQUEST_EXECUTOR)
+                .setProxy(HttpClientFieldHolder.HTTP_PROXY)
                 .build();
-    }
-
-    private static HttpRequestExecutor getHttpRequestExecutor() {
-        return new HttpRequestExecutor() {
-            @Override
-            public HttpResponse execute(HttpRequest request, HttpClientConnection conn, HttpContext context)
-                    throws IOException, HttpException {
-                try {
-                    return super.execute(request, conn, context);
-                } catch (IOException e) {
-                    throw new IOException("Can't execute " + request + '.', e);
-                }
-            }
-        };
     }
 
     public static void closeQuietly(
@@ -933,6 +913,51 @@ public class HttpUtil {
 
         private Code() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private static final class HttpClientFieldHolder {
+        private static final HttpRequestExecutor HTTP_REQUEST_EXECUTOR = getHttpRequestExecutor();
+        @Nullable
+        private static final HttpHost HTTP_PROXY = getHttpProxy();
+
+        private static HttpRequestExecutor getHttpRequestExecutor() {
+            return new HttpRequestExecutor() {
+                @Override
+                public HttpResponse execute(HttpRequest request, HttpClientConnection conn, HttpContext context)
+                        throws IOException, HttpException {
+                    try {
+                        return super.execute(request, conn, context);
+                    } catch (IOException e) {
+                        throw new IOException("Can't execute " + request + '.', e);
+                    }
+                }
+            };
+        }
+
+        @SuppressWarnings("AccessOfSystemProperties")
+        @Nullable
+        private static HttpHost getHttpProxy() {
+            if (!Boolean.parseBoolean(System.getProperty("proxySet"))) {
+                return null;
+            }
+
+            String proxyHost = System.getProperty("http.proxyHost");
+            if (StringUtil.isBlank(proxyHost)) {
+                return null;
+            }
+
+            int proxyPort;
+            try {
+                proxyPort = Integer.parseInt(System.getProperty("http.proxyPort"));
+                if (proxyPort <= 0 || proxyPort > 65535) {
+                    return null;
+                }
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+
+            return new HttpHost(proxyHost, proxyPort);
         }
     }
 }
