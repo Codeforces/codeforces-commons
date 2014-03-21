@@ -555,14 +555,21 @@ public class HttpUtil {
     }
 
     public static CloseableHttpClient newHttpClient() {
+        ConnectionConfig connectionConfig = ConnectionConfig.copy(ConnectionConfig.DEFAULT)
+                .setBufferSize(IoUtil.BUFFER_SIZE)
+                .build();
+
         return HttpClientBuilder.create()
+                .setDefaultConnectionConfig(connectionConfig)
                 .setRequestExecutor(HttpClientFieldHolder.HTTP_REQUEST_EXECUTOR)
                 .setProxy(HttpClientFieldHolder.HTTP_PROXY)
                 .build();
     }
 
     public static CloseableHttpClient newHttpClient(int connectionTimeoutMillis, int socketTimeoutMillis) {
-        ConnectionConfig connectionConfig = ConnectionConfig.copy(ConnectionConfig.DEFAULT).build();
+        ConnectionConfig connectionConfig = ConnectionConfig.copy(ConnectionConfig.DEFAULT)
+                .setBufferSize(IoUtil.BUFFER_SIZE)
+                .build();
 
         SocketConfig socketConfig = SocketConfig.copy(SocketConfig.DEFAULT)
                 .setSoTimeout(socketTimeoutMillis)

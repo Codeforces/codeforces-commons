@@ -18,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Maxim Shipko (sladethe@gmail.com)
  */
 public class IoUtil {
-    private static final int BUFFER_SIZE = NumberUtil.toInt(8L * FileUtil.BYTES_PER_MB);
+    public static final int BUFFER_SIZE = NumberUtil.toInt(8L * FileUtil.BYTES_PER_MB);
 
     private IoUtil() {
         throw new UnsupportedOperationException();
