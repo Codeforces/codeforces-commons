@@ -555,22 +555,14 @@ public class HttpUtil {
     }
 
     public static CloseableHttpClient newHttpClient() {
-        ConnectionConfig connectionConfig = ConnectionConfig.copy(ConnectionConfig.DEFAULT)
-                .setBufferSize(IoUtil.BUFFER_SIZE)
-                .build();
-
         return HttpClientBuilder.create()
-                .setDefaultConnectionConfig(connectionConfig)
-                .setRequestExecutor(HttpClientFieldHolder.HTTP_REQUEST_EXECUTOR)
-                .setProxy(HttpClientFieldHolder.HTTP_PROXY)
+                .setDefaultConnectionConfig(HttpClientImmutableFieldHolder.CONNECTION_CONFIG)
+                .setRequestExecutor(HttpClientImmutableFieldHolder.HTTP_REQUEST_EXECUTOR)
+                .setProxy(HttpClientImmutableFieldHolder.HTTP_PROXY)
                 .build();
     }
 
     public static CloseableHttpClient newHttpClient(int connectionTimeoutMillis, int socketTimeoutMillis) {
-        ConnectionConfig connectionConfig = ConnectionConfig.copy(ConnectionConfig.DEFAULT)
-                .setBufferSize(IoUtil.BUFFER_SIZE)
-                .build();
-
         SocketConfig socketConfig = SocketConfig.copy(SocketConfig.DEFAULT)
                 .setSoTimeout(socketTimeoutMillis)
                 .build();
@@ -581,16 +573,16 @@ public class HttpUtil {
                 .build();
 
         BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
-        connectionManager.setConnectionConfig(connectionConfig);
+        connectionManager.setConnectionConfig(HttpClientImmutableFieldHolder.CONNECTION_CONFIG);
         connectionManager.setSocketConfig(socketConfig);
 
         return HttpClientBuilder.create()
-                .setDefaultConnectionConfig(connectionConfig)
+                .setDefaultConnectionConfig(HttpClientImmutableFieldHolder.CONNECTION_CONFIG)
                 .setDefaultSocketConfig(socketConfig)
                 .setDefaultRequestConfig(requestConfig)
                 .setConnectionManager(connectionManager)
-                .setRequestExecutor(HttpClientFieldHolder.HTTP_REQUEST_EXECUTOR)
-                .setProxy(HttpClientFieldHolder.HTTP_PROXY)
+                .setRequestExecutor(HttpClientImmutableFieldHolder.HTTP_REQUEST_EXECUTOR)
+                .setProxy(HttpClientImmutableFieldHolder.HTTP_PROXY)
                 .build();
     }
 
@@ -923,8 +915,13 @@ public class HttpUtil {
         }
     }
 
-    private static final class HttpClientFieldHolder {
+    private static final class HttpClientImmutableFieldHolder {
+        private static final ConnectionConfig CONNECTION_CONFIG = ConnectionConfig.copy(ConnectionConfig.DEFAULT)
+                .setBufferSize(IoUtil.BUFFER_SIZE)
+                .build();
+
         private static final HttpRequestExecutor HTTP_REQUEST_EXECUTOR = getHttpRequestExecutor();
+
         @Nullable
         private static final HttpHost HTTP_PROXY = getHttpProxy();
 
