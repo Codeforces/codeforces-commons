@@ -570,6 +570,8 @@ public class HttpUtil {
         RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
                 .setConnectTimeout(connectionTimeoutMillis)
                 .setConnectionRequestTimeout(connectionTimeoutMillis)
+                .setSocketTimeout(socketTimeoutMillis)
+                .setProxy(HttpClientImmutableFieldHolder.HTTP_PROXY)
                 .build();
 
         BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
