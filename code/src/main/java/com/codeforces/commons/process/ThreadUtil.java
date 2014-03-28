@@ -112,6 +112,38 @@ public class ThreadUtil {
         throw new RuntimeException("This line shouldn't be executed.");
     }
 
+    public static boolean join(Thread thread) {
+        try {
+            thread.join();
+        } catch (InterruptedException ignored) {
+            // No operations.
+        }
+
+        if (thread.isAlive()) {
+            logger.warn(String.format("Can't join thread '%s'.", thread.getName()));
+            return false;
+        } else {
+            logger.info(String.format("Successfully joined thread '%s'.", thread.getName()));
+            return true;
+        }
+    }
+
+    public static boolean join(Thread thread, long timeoutMillis) {
+        try {
+            thread.join(timeoutMillis);
+        } catch (InterruptedException ignored) {
+            // No operations.
+        }
+
+        if (thread.isAlive()) {
+            logger.warn(String.format("Can't join thread '%s' in %d ms.", thread.getName(), timeoutMillis));
+            return false;
+        } else {
+            logger.info(String.format("Successfully joined thread '%s'.", thread.getName()));
+            return true;
+        }
+    }
+
     public static ThreadFactory getCustomPoolThreadFactory(final ThreadCustomizer threadCustomizer) {
         return new ThreadFactory() {
             private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();

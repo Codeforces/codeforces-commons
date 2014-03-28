@@ -111,7 +111,7 @@ public final class ZipUtil {
      * @param source      directory to compress, will not be added itself;
      *                    source directory child files will be placed in the root of archive
      * @param destination ZIP-archive
-     * @throws java.io.IOException if any IO-exception occured
+     * @throws java.io.IOException if any I/O-exception occured
      */
     public static void zipExceptSvn(File source, File destination) throws IOException {
         zipExceptSvn(source, destination, DEFAULT_COMPRESSION_LEVEL);
@@ -124,7 +124,7 @@ public final class ZipUtil {
      *                    source directory child files will be placed in the root of archive
      * @param destination ZIP-archive
      * @param skipFilter  skipped files filter or {@code null} to accept all files
-     * @throws java.io.IOException if any IO-exception occured
+     * @throws java.io.IOException if any I/O-exception occured
      */
     public static void zip(File source, File destination, @Nullable FileFilter skipFilter) throws IOException {
         zip(source, destination, DEFAULT_COMPRESSION_LEVEL, skipFilter);
@@ -137,7 +137,7 @@ public final class ZipUtil {
      *                    source directory child files will be placed in the root of archive
      * @param destination ZIP-archive
      * @param level       compression level (0-9)
-     * @throws java.io.IOException if any IO-exception occured
+     * @throws java.io.IOException if any I/O-exception occured
      */
     public static void zipExceptSvn(File source, File destination, int level) throws IOException {
         zip(source, destination, level, new NameFileFilter(".svn", IOCase.SYSTEM));
@@ -151,7 +151,7 @@ public final class ZipUtil {
      * @param destination ZIP-archive
      * @param level       compression level (0-9)
      * @param skipFilter  skipped files filter or {@code null} to accept all files
-     * @throws java.io.IOException if any IO-exception occured
+     * @throws java.io.IOException if any I/O-exception occured
      */
     public static void zip(File source, File destination, int level, @Nullable FileFilter skipFilter)
             throws IOException {
@@ -176,7 +176,7 @@ public final class ZipUtil {
      * @param source directory to compress, will not be added itself;
      *               source directory child files will be placed in the root of archive
      * @return ZIP-archive bytes
-     * @throws java.io.IOException if any IO-exception occured
+     * @throws java.io.IOException if any I/O-exception occured
      */
     public static byte[] zipExceptSvn(File source) throws IOException {
         return zipExceptSvn(source, DEFAULT_COMPRESSION_LEVEL);
@@ -189,7 +189,7 @@ public final class ZipUtil {
      *                   source directory child files will be placed in the root of archive
      * @param skipFilter skipped files filter or {@code null} to accept all files
      * @return ZIP-archive bytes
-     * @throws java.io.IOException if any IO-exception occured
+     * @throws java.io.IOException if any I/O-exception occured
      */
     public static byte[] zip(File source, @Nullable FileFilter skipFilter) throws IOException {
         return zip(source, DEFAULT_COMPRESSION_LEVEL, skipFilter);
@@ -202,7 +202,7 @@ public final class ZipUtil {
      *               source directory child files will be placed in the root of archive
      * @param level  compression level (0-9)
      * @return ZIP-archive bytes
-     * @throws java.io.IOException if any IO-exception occured
+     * @throws java.io.IOException if any I/O-exception occured
      */
     public static byte[] zipExceptSvn(File source, int level) throws IOException {
         return zip(source, level, new NameFileFilter(".svn", IOCase.SYSTEM));
@@ -216,7 +216,7 @@ public final class ZipUtil {
      * @param level      compression level (0-9)
      * @param skipFilter skipped files filter or {@code null} to accept all files
      * @return ZIP-archive bytes
-     * @throws java.io.IOException if any IO-exception occured
+     * @throws java.io.IOException if any I/O-exception occured
      */
     public static byte[] zip(File source, int level, @Nullable FileFilter skipFilter) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -288,6 +288,28 @@ public final class ZipUtil {
             }
         } catch (ZipException e) {
             throw new IOException("Can't extract ZIP-file to directory.", e);
+        }
+    }
+
+    /**
+     * Extracts ZIP-archive bytes into temporary directory
+     * and then repacks this directory to a new ZIP-archive and returns its bytes.
+     * Uses maximal level of compression.
+     * Optionally can skip some files using file filter.
+     *
+     * @param bytes      original ZIP-archive bytes
+     * @param skipFilter skipped files filter or {@code null} to accept all files
+     * @return repacked ZIP-archive bytes
+     * @throws java.io.IOException if any I/O-exception occured
+     */
+    public static byte[] rezip(byte[] bytes, @Nullable FileFilter skipFilter) throws IOException {
+        File tempDir = null;
+        try {
+            tempDir = FileUtil.createTemporaryDirectory("rezip");
+            unzip(bytes, tempDir, skipFilter);
+            return zip(tempDir, MAXIMAL_COMPRESSION_LEVEL, skipFilter);
+        } finally {
+            FileUtil.deleteTotallyAsync(tempDir);
         }
     }
 

@@ -6,7 +6,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -17,9 +20,74 @@ public class UrlUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static String appendParameterToUrl(
+    public static Set<String> getParameterNames(@Nonnull String url) {
+        Set<String> parameterNames = new HashSet<>();
+
+        URI uri;
+        try {
+            uri = URI.create(url);
+        } catch (IllegalArgumentException ignored) {
+            return parameterNames;
+        }
+
+        String rawQuery = uri.getRawQuery();
+        if (rawQuery != null) {
+            String[] parameters = StringUtil.Patterns.AMP_PATTERN.split(rawQuery);
+            int parameterCount = parameters.length;
+
+            for (int parameterIndex = 0; parameterIndex < parameterCount; ++parameterIndex) {
+                String parameter = parameters[parameterIndex];
+                int equalitySignPos = parameter.indexOf('=');
+                String parameterName = equalitySignPos == -1
+                        ? parameter.trim()
+                        : parameter.substring(0, equalitySignPos).trim();
+                if (!parameterName.isEmpty()) {
+                    parameterNames.add(parameterName.toLowerCase());
+                }
+            }
+        }
+
+        return parameterNames;
+    }
+
+    public static String removeParameterFromUrl(@Nonnull String url, @Nullable String parameterName) {
+        if (!isValidUri(url) || StringUtil.isBlank(parameterName)) {
+            return url;
+        }
+
+        int questionSignPos = url.indexOf('?');
+        int sharpPos = url.indexOf('#');
+
+        if (questionSignPos == -1 && sharpPos == -1) {
+            return url;
+        } else if (questionSignPos == -1 || sharpPos != -1 && questionSignPos > sharpPos) {
+            return url;
+        } else {
+            StringBuilder resultUrl = new StringBuilder(url.substring(0, questionSignPos));
+
+            if (url.length() > questionSignPos + 1) {
+                String query = sharpPos == -1
+                        ? url.substring(questionSignPos + 1)
+                        : url.substring(questionSignPos + 1, sharpPos);
+
+                query = removeParameterFromQuery(query, parameterName);
+
+                if (!StringUtil.isBlank(query)) {
+                    resultUrl.append('?').append(query);
+                }
+
+                if (sharpPos != -1) {
+                    resultUrl.append(url.substring(sharpPos));
+                }
+            }
+
+            return resultUrl.toString();
+        }
+    }
+
+    public static String replaceParameterInUrl(
             @Nonnull String url, @Nullable String parameterName, @Nullable String parameterValue) {
-        if (StringUtil.isBlank(parameterName)) {
+        if (!isValidUri(url) || StringUtil.isBlank(parameterName)) {
             return url;
         }
 
@@ -30,18 +98,60 @@ public class UrlUtil {
 
         if (questionSignPos == -1 && sharpPos == -1) {
             return url + '?' + parameter;
-        } else if (questionSignPos == -1 || questionSignPos > sharpPos && sharpPos != -1) {
+        } else if (questionSignPos == -1 || sharpPos != -1 && questionSignPos > sharpPos) {
             return url.substring(0, sharpPos) + '?' + parameter + url.substring(sharpPos);
         } else {
-            String resultUrl = url.substring(0, questionSignPos + 1) + parameter;
-            return url.length() > questionSignPos + 1
-                    ? resultUrl + '&' + url.substring(questionSignPos + 1)
-                    : resultUrl;
+            StringBuilder resultUrl = new StringBuilder(url.substring(0, questionSignPos + 1)).append(parameter);
+
+            if (url.length() > questionSignPos + 1) {
+                String query = sharpPos == -1
+                        ? url.substring(questionSignPos + 1)
+                        : url.substring(questionSignPos + 1, sharpPos);
+
+                query = removeParameterFromQuery(query, parameterName);
+
+                if (!StringUtil.isBlank(query)) {
+                    resultUrl.append('&').append(query);
+                }
+
+                if (sharpPos != -1) {
+                    resultUrl.append(url.substring(sharpPos));
+                }
+            }
+
+            return resultUrl.toString();
+        }
+    }
+
+    public static String appendParameterToUrl(
+            @Nonnull String url, @Nullable String parameterName, @Nullable String parameterValue) {
+        if (!isValidUri(url) || StringUtil.isBlank(parameterName)) {
+            return url;
+        }
+
+        String parameter = StringUtil.isBlank(parameterValue) ? parameterName : parameterName + '=' + parameterValue;
+
+        int questionSignPos = url.indexOf('?');
+        int sharpPos = url.indexOf('#');
+
+        if (questionSignPos == -1 && sharpPos == -1) {
+            return url + '?' + parameter;
+        } else if (questionSignPos == -1 || sharpPos != -1 && questionSignPos > sharpPos) {
+            return url.substring(0, sharpPos) + '?' + parameter + url.substring(sharpPos);
+        } else {
+            StringBuilder resultUrl = new StringBuilder(url.substring(0, questionSignPos + 1)).append(parameter);
+
+            if (url.length() > questionSignPos + 1) {
+                resultUrl.append('&').append(url.substring(questionSignPos + 1));
+            }
+
+            return resultUrl.toString();
         }
     }
 
     public static String appendRelativePathToUrl(@Nonnull String url, @Nullable String relativePath) {
-        if (StringUtil.isBlank(relativePath) || relativePath.length() == 1 && relativePath.charAt(0) == '/') {
+        if (!isValidUri(url) || StringUtil.isBlank(relativePath)
+                || relativePath.length() == 1 && relativePath.charAt(0) == '/') {
             return url;
         }
 
@@ -54,7 +164,7 @@ public class UrlUtil {
         if (questionSignPos == -1 && sharpPos == -1) {
             urlPrefix = url;
             urlPostfix = null;
-        } else if (questionSignPos == -1 || questionSignPos > sharpPos && sharpPos != -1) {
+        } else if (questionSignPos == -1 || sharpPos != -1 && questionSignPos > sharpPos) {
             urlPrefix = url.substring(0, sharpPos);
             urlPostfix = url.substring(sharpPos);
         } else {
@@ -85,6 +195,19 @@ public class UrlUtil {
         return urlValidator.isValid(url);
     }
 
+    public static boolean isValidUri(@Nullable String uri) {
+        if (uri == null) {
+            return false;
+        }
+
+        try {
+            URI.create(uri);
+            return true;
+        } catch (RuntimeException ignored) {
+            return false;
+        }
+    }
+
     @Nullable
     public static String extractFileName(@Nullable String url) {
         if (!isValidUrl(url)) {
@@ -97,5 +220,31 @@ public class UrlUtil {
         } catch (MalformedURLException ignored) {
             return null;
         }
+    }
+
+    private static String removeParameterFromQuery(@Nullable String query, @Nullable String parameterName) {
+        if (StringUtil.isBlank(query) || StringUtil.isBlank(parameterName)) {
+            return query;
+        }
+
+        String[] parameters = StringUtil.Patterns.AMP_PATTERN.split(query);
+        int parameterCount = parameters.length;
+
+        StringBuilder queryBuilder = new StringBuilder(query.length());
+
+        for (int parameterIndex = 0; parameterIndex < parameterCount; ++parameterIndex) {
+            String parameter = parameters[parameterIndex];
+            if (parameter.startsWith(parameterName + '=') || parameterName.equals(parameter)) {
+                continue;
+            }
+
+            if (queryBuilder.length() > 0) {
+                queryBuilder.append('&');
+            }
+
+            queryBuilder.append(parameter);
+        }
+
+        return queryBuilder.toString();
     }
 }

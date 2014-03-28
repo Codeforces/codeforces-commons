@@ -110,7 +110,8 @@ public class FileSystemByteCache extends ByteCache {
             FileUtil.renameFile(tempFile, storageFile, overwrite);
         } catch (IOException e) {
             logger.error(String.format(
-                    "Got I/O-exception while storing value (section='%s', key='%s') in directory " + tempDirectory + ".", section, key
+                    "Got I/O-exception while storing value (section='%s', key='%s') in directory " + tempDirectory + '.',
+                    section, key
             ), e);
         } finally {
             if (tempFile != null && tempFile.isFile()) {
