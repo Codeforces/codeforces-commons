@@ -570,6 +570,14 @@ public final class StringUtil {
         return sb.toString();
     }
 
+    /**
+     * @param s Windows and Unix styled line sequence.
+     * @return Text with unix line breaks.
+     */
+    public static String toUnixLineBreaks(String s) {
+        return Patterns.LINE_BREAK_PATTERN.matcher(s).replaceAll("\n");
+    }
+
     public static String wellformForWindows(String s) {
         String[] lines = Patterns.CR_PATTERN.split(s);
         if (lines.length == 1) {
