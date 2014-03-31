@@ -571,6 +571,14 @@ public final class StringUtil {
         return sb.toString();
     }
 
+    /**
+     * @param s Windows and Unix styled line sequence.
+     * @return Text with unix line breaks.
+     */
+    public static String toUnixLineBreaks(String s) {
+        return Patterns.LINE_BREAK_PATTERN.matcher(s).replaceAll("\n");
+    }
+
     public static String wellformForWindows(String s) {
         String[] lines = Patterns.CR_PATTERN.split(s);
         if (lines.length == 1) {
@@ -944,8 +952,18 @@ public final class StringUtil {
         return object == null ? null : object.toString();
     }
 
+    /**
+     * Escape special characters from string to safely pass it to SQL query.
+     * Does not escape % and _ characters.
+     * @param s - unescaped string
+     * @return escaped string
+     */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "SwitchStatementWithTooManyBranches"})
     public static String escapeMySqlString(String s) {
+        if (s == null) {
+            return null;
+
+        }
         StringBuilder result = new StringBuilder(s.length());
 
         for (int i = 0; i < s.length(); ++i) {
@@ -973,20 +991,14 @@ public final class StringUtil {
                 case 0x22:
                     result.append("\\\"");
                     break;
-                case 0x25:
-                    result.append("\\%");
-                    break;
                 case 0x27:
                     result.append("\\'");
                     break;
                 case 0x5c:
                     result.append("\\\\");
                     break;
-                case 0x5f:
-                    result.append("\\_");
-                    break;
                 default:
-                    if (!Character.isLetterOrDigit(c) && c < 256) {
+                    if (c != '_' && c != '%' && !Character.isLetterOrDigit(c) && c < 256) {
                         result.append('\\').append(c);
                     } else {
                         result.append(c);

@@ -118,4 +118,11 @@ public class StringUtilTest extends TestCase {
         StringUtil.sortStringsSmart(strings);
         Assert.assertArrayEquals(sortedStrings, strings);
     }
+
+    public void testToUnixLineBreaks() {
+        String text = "ABA\r\n\r\nC\rABA\nDABAC\r\r\n\nABA\r\n";
+        String expected = "ABA\n\nC\nABA\nDABAC\n\n\nABA\n";
+        String found = StringUtil.toUnixLineBreaks(text);
+        assertEquals(expected, found);
+    }
 }
