@@ -16,6 +16,8 @@ import java.util.Set;
  *         Date: 23.11.12
  */
 public class UrlUtil {
+    private static final String[] ALLOWED_SCHEMES = {"http", "https"};
+
     private UrlUtil() {
         throw new UnsupportedOperationException();
     }
@@ -182,8 +184,7 @@ public class UrlUtil {
     }
 
     public static boolean isValidUrl(@Nullable String url) {
-        String[] allowedSchemes = {"http", "https"};
-        return isValidUrl(url, allowedSchemes);
+        return isValidUrl(url, ALLOWED_SCHEMES);
     }
 
     public static boolean isValidUrl(@Nullable String url, String[] allowedSchemes) {

@@ -168,6 +168,7 @@ public final class StringUtil {
     }
 
     // TODO specify max length of long data (strings, arrays, collections, maps)
+    // TODO cglib???
     @SuppressWarnings({"OverloadedVarargsMethod", "AssignmentToMethodParameter", "AccessingNonPublicFieldOfAnotherObject"})
     @Nonnull
     public static String toString(@Nonnull Object object, @Nonnull ToStringOptions options, String... fieldNames) {
