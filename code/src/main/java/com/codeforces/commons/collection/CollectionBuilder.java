@@ -2,6 +2,7 @@ package com.codeforces.commons.collection;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedList;
 
 /**
@@ -30,11 +31,22 @@ public class CollectionBuilder<E> {
         return this;
     }
 
+    public <A extends E> CollectionBuilder<E> addAll(Enumeration<A> enumeration) {
+        while (enumeration.hasMoreElements()) {
+            this.collection.add(enumeration.nextElement());
+        }
+        return this;
+    }
+
     public Collection<E> build() {
         return collection;
     }
 
     public Collection<E> buildUnmodifiable() {
         return Collections.unmodifiableCollection(collection);
+    }
+
+    public Enumeration<E> buildEnumeration() {
+        return Collections.enumeration(collection);
     }
 }

@@ -28,11 +28,22 @@ public class SetBuilder<E> {
         return this;
     }
 
+    public <A extends E> SetBuilder<E> addAll(Enumeration<A> enumeration) {
+        while (enumeration.hasMoreElements()) {
+            this.set.add(enumeration.nextElement());
+        }
+        return this;
+    }
+
     public Set<E> build() {
         return set;
     }
 
     public Set<E> buildUnmodifiable() {
         return Collections.unmodifiableSet(set);
+    }
+
+    public Enumeration<E> buildEnumeration() {
+        return Collections.enumeration(set);
     }
 }

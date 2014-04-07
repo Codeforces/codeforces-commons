@@ -28,11 +28,22 @@ public class SortedSetBuilder<E> {
         return this;
     }
 
+    public <A extends E> SortedSetBuilder<E> addAll(Enumeration<A> enumeration) {
+        while (enumeration.hasMoreElements()) {
+            this.sortedSet.add(enumeration.nextElement());
+        }
+        return this;
+    }
+
     public SortedSet<E> build() {
         return sortedSet;
     }
 
     public SortedSet<E> buildUnmodifiable() {
         return Collections.unmodifiableSortedSet(sortedSet);
+    }
+
+    public Enumeration<E> buildEnumeration() {
+        return Collections.enumeration(sortedSet);
     }
 }

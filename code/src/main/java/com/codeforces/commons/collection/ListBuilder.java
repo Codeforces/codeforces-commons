@@ -1,9 +1,6 @@
 package com.codeforces.commons.collection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -31,11 +28,22 @@ public class ListBuilder<E> {
         return this;
     }
 
+    public <A extends E> ListBuilder<E> addAll(Enumeration<A> enumeration) {
+        while (enumeration.hasMoreElements()) {
+            this.list.add(enumeration.nextElement());
+        }
+        return this;
+    }
+
     public List<E> build() {
         return list;
     }
 
     public List<E> buildUnmodifiable() {
         return Collections.unmodifiableList(list);
+    }
+
+    public Enumeration<E> buildEnumeration() {
+        return Collections.enumeration(list);
     }
 }

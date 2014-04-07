@@ -5,6 +5,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.net.ftp.FTPClient;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -144,6 +145,16 @@ public class IoUtil {
     public static void closeQuietly(Closeable... closeables) {
         for (int i = 0, count = closeables.length; i < count; ++i) {
             closeQuietly(closeables[i]);
+        }
+    }
+
+    public static void closeQuietly(@Nullable FTPClient ftpClient) {
+        if (ftpClient != null && ftpClient.isConnected()) {
+            try {
+                ftpClient.disconnect();
+            } catch (IOException ignored) {
+                // No operations.
+            }
         }
     }
 }
