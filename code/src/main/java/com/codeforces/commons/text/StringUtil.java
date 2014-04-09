@@ -138,6 +138,67 @@ public final class StringUtil {
         return isBlank(stringA) ? isBlank(stringB) : stringA.equalsIgnoreCase(stringB);
     }
 
+    public static int length(@Nullable String s) {
+        return s == null ? 0 : s.length();
+    }
+
+    @Nonnull
+    public static String nullToEmpty(@Nullable String s) {
+        return s == null ? "" : s;
+    }
+
+    @Nullable
+    public static String emptyToNull(@Nullable String s) {
+        return s == null || s.isEmpty() ? null : s;
+    }
+
+    @Nullable
+    public static String trim(@Nullable String s) {
+        return s == null ? null : s.trim();
+    }
+
+    @Nullable
+    public static String trimToNull(@Nullable String s) {
+        return s == null ? null : (s = s.trim()).isEmpty() ? null : s;
+    }
+
+    @Nonnull
+    public static String trimToEmpty(@Nullable String s) {
+        return s == null ? "" : s.trim();
+    }
+
+    @Nullable
+    public static String trimRight(@Nullable String s) {
+        if (s == null) {
+            return null;
+        }
+
+        int lastIndex = s.length() - 1;
+        int index = lastIndex;
+
+        while (index >= 0 && s.charAt(index) <= ' ') {
+            --index;
+        }
+
+        return index == lastIndex ? s : s.substring(0, index + 1);
+    }
+
+    @Nullable
+    public static String trimLeft(@Nullable String s) {
+        if (s == null) {
+            return null;
+        }
+
+        int lastIndex = s.length() - 1;
+        int index = 0;
+
+        while (index <= lastIndex && s.charAt(index) <= ' ') {
+            ++index;
+        }
+
+        return index == 0 ? s : s.substring(index, lastIndex + 1);
+    }
+
     @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
     @Nonnull
     public static <T> String toString(
@@ -380,40 +441,32 @@ public final class StringUtil {
      * @return {@code s} without spaces or {@code null} if {@code s} is {@code null}
      */
     @Nullable
-    public static String stripSpaces(String s) {
+    public static String stripSpaces(@Nullable String s) {
+        return removeCharOccurrences(s, ' ');
+    }
+
+    @Nullable
+    public static String removeCharOccurrences(@Nullable String s, char charToRemove) {
         if (s == null) {
             return null;
         }
 
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); ++i) {
-            if (s.charAt(i) != ' ') {
-                sb.append(s.charAt(i));
+        int length = s.length();
+        if (length == 0) {
+            return s;
+        }
+
+        char[] chars = new char[length];
+        int pos = -1;
+
+        for (int i = 0; i < length; ++i) {
+            char c = s.charAt(i);
+            if (c != charToRemove) {
+                chars[++pos] = c;
             }
         }
-        return sb.toString();
-    }
 
-    public static String trimRight(String s) {
-        int lastIndex = s.length() - 1;
-        int index = lastIndex;
-
-        while (index >= 0 && s.charAt(index) <= ' ') {
-            --index;
-        }
-
-        return index == lastIndex ? s : s.substring(0, index + 1);
-    }
-
-    public static String trimLeft(String s) {
-        int lastIndex = s.length() - 1;
-        int index = 0;
-
-        while (index <= lastIndex && s.charAt(index) <= ' ') {
-            ++index;
-        }
-
-        return index == 0 ? s : s.substring(index, lastIndex + 1);
+        return pos == length - 1 ? s : new String(chars, 0, pos + 1);
     }
 
     /**
@@ -426,11 +479,11 @@ public final class StringUtil {
 
         if (s != null) {
             try {
-                String[] tokens = Patterns.COMMA_PATTERN.split(s);
+                String[] tokens = com.codeforces.commons.text.Patterns.COMMA_PATTERN.split(s);
                 for (int tokenIndex = 0, tokenCount = tokens.length; tokenIndex < tokenCount; ++tokenIndex) {
                     String token = tokens[tokenIndex].trim();
                     if (!token.isEmpty()) {
-                        String[] tt = Patterns.MINUS_PATTERN.split(token);
+                        String[] tt = com.codeforces.commons.text.Patterns.MINUS_PATTERN.split(token);
                         if (tt.length == 1) {
                             integers.add(Integer.parseInt(tt[0]));
                         } else if (tt.length == 2) {
@@ -441,7 +494,7 @@ public final class StringUtil {
                                 throw new IllegalArgumentException("Illegal range in integer list: '" + s + "'.");
                             }
 
-                            for (int i = from; i <= to; i++) {
+                            for (int i = from; i <= to; ++i) {
                                 integers.add(i);
                             }
                         } else {
@@ -529,9 +582,9 @@ public final class StringUtil {
      * @return Replaces "<", ">" and "&" with entities.
      */
     public static String quoteHtml(String html) {
-        html = Patterns.AMP_PATTERN.matcher(html).replaceAll("&amp;");
-        html = Patterns.LT_PATTERN.matcher(html).replaceAll("&lt;");
-        html = Patterns.GT_PATTERN.matcher(html).replaceAll("&gt;");
+        html = com.codeforces.commons.text.Patterns.AMP_PATTERN.matcher(html).replaceAll("&amp;");
+        html = com.codeforces.commons.text.Patterns.LT_PATTERN.matcher(html).replaceAll("&lt;");
+        html = com.codeforces.commons.text.Patterns.GT_PATTERN.matcher(html).replaceAll("&gt;");
         return html;
     }
 
@@ -576,13 +629,13 @@ public final class StringUtil {
      * @return Text with unix line breaks.
      */
     public static String toUnixLineBreaks(String s) {
-        return Patterns.LINE_BREAK_PATTERN.matcher(s).replaceAll("\n");
+        return com.codeforces.commons.text.Patterns.LINE_BREAK_PATTERN.matcher(s).replaceAll("\n");
     }
 
     public static String wellformForWindows(String s) {
-        String[] lines = Patterns.CR_PATTERN.split(s);
+        String[] lines = com.codeforces.commons.text.Patterns.CR_PATTERN.split(s);
         if (lines.length == 1) {
-            lines = Patterns.LF_PATTERN.split(s);
+            lines = com.codeforces.commons.text.Patterns.LF_PATTERN.split(s);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -594,7 +647,7 @@ public final class StringUtil {
         int pos = sb.length() - 4;
         while (pos >= 0 && "\r\n\r\n".equals(sb.substring(pos, pos + 4))) {
             pos -= 2;
-            count++;
+            ++count;
         }
 
         if (count == 0) {
@@ -613,7 +666,7 @@ public final class StringUtil {
     private static String wellformSingleLineForWindows(String line) {
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < line.length(); i++) {
+        for (int i = 0; i < line.length(); ++i) {
             char c = line.charAt(i);
             if (c < ' ') {
                 c = ' ';
@@ -704,7 +757,7 @@ public final class StringUtil {
             return input;
         }
 
-        String[] lines = Patterns.LINE_BREAK_PATTERN.split(input);
+        String[] lines = com.codeforces.commons.text.Patterns.LINE_BREAK_PATTERN.split(input);
         StringBuilder result = new StringBuilder((maxLineLength + 5) * maxLineNumber + 5);
 
         for (int i = 0; i < maxLineNumber && i < lines.length; ++i) {
@@ -955,6 +1008,7 @@ public final class StringUtil {
     /**
      * Escape special characters from string to safely pass it to SQL query.
      * Does not escape % and _ characters.
+     *
      * @param s - unescaped string
      * @return escaped string
      */
@@ -962,8 +1016,8 @@ public final class StringUtil {
     public static String escapeMySqlString(String s) {
         if (s == null) {
             return null;
-
         }
+
         StringBuilder result = new StringBuilder(s.length());
 
         for (int i = 0; i < s.length(); ++i) {
@@ -1064,6 +1118,10 @@ public final class StringUtil {
         }
     }
 
+    /**
+     * @deprecated Use {@link com.codeforces.commons.text.Patterns}.
+     */
+    @Deprecated
     public static class Patterns {
         private Patterns() {
             throw new UnsupportedOperationException();

@@ -1,6 +1,7 @@
 package com.codeforces.commons.properties;
 
 import com.codeforces.commons.resource.CantReadResourceException;
+import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.log4j.Logger;
 
@@ -68,7 +69,7 @@ public class PropertiesUtil {
             return Collections.emptyList();
         }
 
-        return Collections.unmodifiableList(Arrays.asList(StringUtil.Patterns.SEMICOLON_PATTERN.split(propertyValue)));
+        return Collections.unmodifiableList(Arrays.asList(Patterns.SEMICOLON_PATTERN.split(propertyValue)));
     }
 
     public static List<String> getListProperty(String propertyName, String defaultValue, String... resourceNames) {

@@ -1,5 +1,6 @@
 package com.codeforces.commons.reflection;
 
+import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import net.sf.cglib.reflect.FastClass;
 import net.sf.cglib.reflect.FastMethod;
@@ -83,7 +84,7 @@ public class MethodArgumentsFormatUtil {
 
     private static Object getNamedParameterValue(String expression, int namedParameterCount,
                                                  String[] parameterNames, Object[] namedParameterValues) {
-        String[] tokens = StringUtil.Patterns.DOT_PATTERN.split(expression);
+        String[] tokens = Patterns.DOT_PATTERN.split(expression);
 
         if (tokens.length == 0) {
             throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");

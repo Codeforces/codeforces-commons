@@ -1,5 +1,6 @@
 package com.codeforces.commons.reflection;
 
+import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -54,7 +55,7 @@ public class ReflectionUtil {
         Object deepValue = null;
         Object deepObject = object;
 
-        String[] pathParts = StringUtil.Patterns.DOT_PATTERN.split(propertyName);
+        String[] pathParts = Patterns.DOT_PATTERN.split(propertyName);
 
         for (int partIndex = 0, partCount = pathParts.length; partIndex < partCount; ++partIndex) {
             String pathPart = pathParts[partIndex];

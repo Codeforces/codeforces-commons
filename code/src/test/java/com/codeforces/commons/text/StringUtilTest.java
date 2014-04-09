@@ -68,7 +68,7 @@ public class StringUtilTest extends TestCase {
     }
 
     public void testLineBreakPattern() {
-        Pattern lineBreakPattern = StringUtil.Patterns.LINE_BREAK_PATTERN;
+        Pattern lineBreakPattern = Patterns.LINE_BREAK_PATTERN;
 
         assertTrue(Arrays.equals(
                 new String[]{"", "cabaca", "abacaba", "b", "c", "", "s"},
