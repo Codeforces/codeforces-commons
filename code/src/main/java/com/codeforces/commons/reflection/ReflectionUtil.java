@@ -214,7 +214,12 @@ public class ReflectionUtil {
     }
 
     @Nonnull
-    private static Map<MethodSignature, Method> getPublicMethodBySignatureMap(@Nonnull Class clazz) {
+    public static Collection<Method> getPublicMethods(@Nonnull Class clazz) {
+        return getPublicMethodBySignatureMap(clazz).values();
+    }
+
+    @Nonnull
+    public static Map<MethodSignature, Method> getPublicMethodBySignatureMap(@Nonnull Class clazz) {
         Map<MethodSignature, Method> publicMethodBySignature = publicMethodBySignatureByClass.get(clazz);
 
         if (publicMethodBySignature == null) {
@@ -249,7 +254,7 @@ public class ReflectionUtil {
         throw new UnsupportedOperationException();
     }
 
-    private static final class MethodSignature {
+    public static final class MethodSignature {
         private final String name;
         private final List<Class<?>> parameterTypes;
 
