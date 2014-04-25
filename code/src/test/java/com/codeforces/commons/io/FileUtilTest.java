@@ -167,12 +167,18 @@ public class FileUtilTest extends TestCase {
                  ("line1" + lineSep
                 + "line2" + lineSep
                 + "line3" + lineSep
+                + "line21" + lineSep
+                + "line11" + lineSep
+                + "line31" + lineSep
                 + "line10").getBytes()
         );
 
         FileUtil.FirstBytes found = FileUtil.removeLinesStartingWith(text, "line1".getBytes());
         FileUtil.FirstBytes expected = new FileUtil.FirstBytes(true,
-                ("line2" + lineSep + "line3" + lineSep).getBytes()
+                 ("line2" + lineSep
+                + "line3" + lineSep
+                + "line21" + lineSep
+                + "line31" + lineSep).getBytes()
         );
 
         assertEquals(expected, found);
