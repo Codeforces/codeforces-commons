@@ -136,6 +136,48 @@ public class FileUtilTest extends TestCase {
         assertSameFiles(binaryFile, targetFile);
     }
 
+    public void testFirstBytesConcat() {
+        String lineSep = System.getProperty("line.separator");
+
+        {
+            FileUtil.FirstBytes first = new FileUtil.FirstBytes(false, "first".getBytes());
+            FileUtil.FirstBytes second = new FileUtil.FirstBytes(true, "second".getBytes());
+
+            FileUtil.FirstBytes expected = new FileUtil.FirstBytes(true, ("first" + lineSep + "second").getBytes());
+            FileUtil.FirstBytes found = FileUtil.concatenate(first, second);
+
+            assertEquals(expected, found);
+        }
+
+        {
+            FileUtil.FirstBytes first = new FileUtil.FirstBytes(false, ("first" + lineSep).getBytes());
+            FileUtil.FirstBytes second = new FileUtil.FirstBytes(true, "second".getBytes());
+
+            FileUtil.FirstBytes expected = new FileUtil.FirstBytes(true, ("first" + lineSep + "second").getBytes());
+            FileUtil.FirstBytes found = FileUtil.concatenate(first, second);
+
+            assertEquals(expected, found);
+        }
+    }
+
+    public void testFirstBytesRemoveLineStartingWith() {
+        String lineSep = System.getProperty("line.separator");
+
+        FileUtil.FirstBytes text = new FileUtil.FirstBytes(true,
+                 ("line1" + lineSep
+                + "line2" + lineSep
+                + "line3" + lineSep
+                + "line10").getBytes()
+        );
+
+        FileUtil.FirstBytes found = FileUtil.removeLinesStartingWith(text, "line1".getBytes());
+        FileUtil.FirstBytes expected = new FileUtil.FirstBytes(true,
+                ("line2" + lineSep + "line3" + lineSep).getBytes()
+        );
+
+        assertEquals(expected, found);
+    }
+
     private static void assertSameFiles(File a, File b) throws IOException {
         assertTrue(a.isFile());
         assertTrue(b.isFile());

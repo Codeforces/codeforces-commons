@@ -6,6 +6,7 @@ import com.codeforces.commons.process.ThreadUtil;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -766,6 +768,84 @@ public class FileUtil {
         public byte[] getBytes() {
             return bytes;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            FirstBytes that = (FirstBytes) o;
+
+            if (truncated != that.truncated) return false;
+            if (!Arrays.equals(bytes, that.bytes)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (truncated ? 1 : 0);
+            result = 31 * result + (bytes != null ? Arrays.hashCode(bytes) : 0);
+            return result;
+        }
+    }
+
+    public static FirstBytes concatenate(FirstBytes first, FirstBytes second) {
+        if (ArrayUtils.isEmpty(first.bytes)) {
+            return second;
+        }
+        if (ArrayUtils.isEmpty(second.bytes)) {
+            return first;
+        }
+
+        byte[] result;
+
+        if (first.bytes[first.bytes.length - 1] == 10) { // ends with \n
+            result = new byte[first.bytes.length + second.bytes.length];
+            System.arraycopy(first.bytes, 0, result, 0, first.bytes.length);
+            System.arraycopy(second.bytes, 0, result, first.bytes.length, second.bytes.length);
+        } else {
+            byte[] lineSep = System.getProperty("line.separator").getBytes();
+            result = new byte[first.bytes.length + lineSep.length + second.bytes.length];
+            System.arraycopy(first.bytes, 0, result, 0, first.bytes.length);
+            System.arraycopy(lineSep, 0, result, first.bytes.length, lineSep.length);
+            System.arraycopy(second.bytes, 0, result, first.bytes.length + lineSep.length, second.bytes.length);
+        }
+
+        return new FirstBytes(first.isTruncated() || second.isTruncated(), result);
+    }
+
+    public static FirstBytes removeLinesStartingWith(FirstBytes lines, byte[] prefix) {
+        if (ArrayUtils.isEmpty(lines.bytes)) {
+            return lines;
+        }
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream(lines.bytes.length);
+        for (int lineStart = 0; lineStart < lines.bytes.length; ) {
+            int linePos = 0;
+            boolean startsWithPrefix = true;
+            while (lineStart + linePos < lines.bytes.length) {
+                if (linePos < prefix.length
+                        && lines.bytes[lineStart + linePos] != prefix[linePos]) {
+                    startsWithPrefix = false;
+                }
+
+                if (lines.bytes[lineStart + linePos] == 10) {
+                    linePos++;
+                    break;
+                }
+
+                linePos++;
+            }
+
+            if (!startsWithPrefix) {
+                output.write(lines.bytes, lineStart, linePos);
+            }
+
+            lineStart += linePos;
+        }
+
+        return new FirstBytes(lines.truncated, output.toByteArray());
     }
 
     /**
