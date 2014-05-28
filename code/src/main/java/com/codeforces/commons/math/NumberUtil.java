@@ -153,4 +153,36 @@ public class NumberUtil {
 
         return leastCommonMultiple;
     }
+
+    public static int avg(int numberA, int numberB) {
+        return numberA / 2 + numberB / 2 + (numberA % 2 + numberB % 2) / 2;
+    }
+
+    public static int avg(int numberA, int numberB, int numberC) {
+        return numberA / 3 + numberB / 3 + numberC / 3 + (numberA % 3 + numberB % 3 + numberC % 3) / 3;
+    }
+
+    public static long avg(long numberA, long numberB) {
+        return numberA / 2L + numberB / 2L + (numberA % 2L + numberB % 2L) / 2L;
+    }
+
+    public static long avg(long numberA, long numberB, long numberC) {
+        return numberA / 3L + numberB / 3L + numberC / 3L + (numberA % 3L + numberB % 3L + numberC % 3L) / 3L;
+    }
+
+    public static float avg(float numberA, float numberB) {
+        return numberA * 0.5F + numberB * 0.5F;
+    }
+
+    public static float avg(float numberA, float numberB, float numberC) {
+        return numberA / 3.0F + numberB / 3.0F + numberC / 3.0F;
+    }
+
+    public static double avg(double numberA, double numberB) {
+        return numberA * 0.5D + numberB * 0.5D;
+    }
+
+    public static double avg(double numberA, double numberB, double numberC) {
+        return numberA / 3.0D + numberB / 3.0D + numberC / 3.0D;
+    }
 }
