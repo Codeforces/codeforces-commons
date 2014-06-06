@@ -1,5 +1,7 @@
 package com.codeforces.commons.geometry;
 
+import com.codeforces.commons.text.StringUtil;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -90,7 +92,9 @@ public class Line2D {
     @Nullable
     public Point2D getIntersectionPoint(@Nonnull Line2D line, double epsilon) {
         double d = a * line.b - line.a * b;
-        return abs(d) <= abs(epsilon) ? null : new Point2D((b * line.c - line.b * c) / d, (line.a * c - a * line.c) / d);
+        return abs(d) <= abs(epsilon)
+                ? null
+                : new Point2D((b * line.c - line.b * c) / d, (line.a * c - a * line.c) / d);
     }
 
     /**
@@ -105,6 +109,10 @@ public class Line2D {
         return getIntersectionPoint(line, DEFAULT_EPSILON);
     }
 
+    @Override
+    public String toString() {
+        return StringUtil.toString(this, false, "a", "b", "c");
+    }
 
     public static Line2D getLineByTwoPoints(double x1, double y1, double x2, double y2) {
         return new Line2D(y2 - y1, x1 - x2, (y1 - y2) * x1 + (x2 - x1) * y1);
