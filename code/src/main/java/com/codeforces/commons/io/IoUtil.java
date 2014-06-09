@@ -106,9 +106,9 @@ public class IoUtil {
     }
 
     public static long copy(InputStream inputStream, OutputStream outputStream,
-                            boolean closeInputStream, boolean closeOutputStream) throws IOException {
+                            boolean closeInputStream, boolean closeOutputStream, int maxSize) throws IOException {
         try {
-            long byteCount = IOUtils.copyLarge(inputStream, outputStream, new byte[BUFFER_SIZE]);
+            long byteCount = IOUtils.copyLarge(inputStream, outputStream, 0, maxSize, new byte[BUFFER_SIZE]);
             if (closeInputStream) {
                 inputStream.close();
             }
@@ -125,6 +125,11 @@ public class IoUtil {
             }
             throw e;
         }
+    }
+
+    public static long copy(InputStream inputStream, OutputStream outputStream,
+                            boolean closeInputStream, boolean closeOutputStream) throws IOException {
+        return copy(inputStream, outputStream, closeInputStream, closeOutputStream, Integer.MAX_VALUE);
     }
 
     public static long copy(InputStream inputStream, OutputStream outputStream) throws IOException {

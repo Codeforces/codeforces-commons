@@ -9,6 +9,10 @@ import javax.annotation.Nullable;
  *         Date: 24.07.13
  */
 public class NumberUtil {
+    public static final double PI = StrictMath.PI;
+    public static final double HALF_PI = 0.5D * PI;
+    public static final double DOUBLE_PI = 2.0D * PI;
+
     private NumberUtil() {
         throw new UnsupportedOperationException();
     }
@@ -184,5 +188,17 @@ public class NumberUtil {
 
     public static double avg(double numberA, double numberB, double numberC) {
         return numberA / 3.0D + numberB / 3.0D + numberC / 3.0D;
+    }
+
+    public static double sqr(double value) {
+        return value * value;
+    }
+
+    public static double sumSqr(double numberA, double numberB) {
+        return numberA * numberA + numberB * numberB;
+    }
+
+    public static double sumSqr(double numberA, double numberB, double numberC) {
+        return numberA * numberA + numberB * numberB + numberC * numberC;
     }
 }
