@@ -31,6 +31,15 @@ public class SortedMapBuilder<K, V> {
         return this;
     }
 
+    public <A extends K, B extends V> SortedMapBuilder<K, V> putAll(Map<A, B> map, EntryFilter<A, B> filter) {
+        for (Map.Entry<A, B> entry : map.entrySet()) {
+            if (filter.matches(entry.getKey(), entry.getValue())) {
+                this.sortedMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return this;
+    }
+
     public SortedMap<K, V> build() {
         return sortedMap;
     }

@@ -38,6 +38,25 @@ public class CollectionBuilder<E> {
         return this;
     }
 
+    public <A extends E> CollectionBuilder<E> addAll(Collection<A> collection, ElementFilter<A> filter) {
+        for (A element : collection) {
+            if (filter.matches(element)) {
+                this.collection.add(element);
+            }
+        }
+        return this;
+    }
+
+    public <A extends E> CollectionBuilder<E> addAll(Enumeration<A> enumeration, ElementFilter<A> filter) {
+        while (enumeration.hasMoreElements()) {
+            A element = enumeration.nextElement();
+            if (filter.matches(element)) {
+                this.collection.add(element);
+            }
+        }
+        return this;
+    }
+
     public Collection<E> build() {
         return collection;
     }

@@ -35,6 +35,25 @@ public class SortedSetBuilder<E> {
         return this;
     }
 
+    public <A extends E> SortedSetBuilder<E> addAll(Collection<A> collection, ElementFilter<A> filter) {
+        for (A element : collection) {
+            if (filter.matches(element)) {
+                this.sortedSet.add(element);
+            }
+        }
+        return this;
+    }
+
+    public <A extends E> SortedSetBuilder<E> addAll(Enumeration<A> enumeration, ElementFilter<A> filter) {
+        while (enumeration.hasMoreElements()) {
+            A element = enumeration.nextElement();
+            if (filter.matches(element)) {
+                this.sortedSet.add(element);
+            }
+        }
+        return this;
+    }
+
     public SortedSet<E> build() {
         return sortedSet;
     }

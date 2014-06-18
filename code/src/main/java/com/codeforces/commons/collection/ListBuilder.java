@@ -35,6 +35,25 @@ public class ListBuilder<E> {
         return this;
     }
 
+    public <A extends E> ListBuilder<E> addAll(Collection<A> collection, ElementFilter<A> filter) {
+        for (A element : collection) {
+            if (filter.matches(element)) {
+                this.list.add(element);
+            }
+        }
+        return this;
+    }
+
+    public <A extends E> ListBuilder<E> addAll(Enumeration<A> enumeration, ElementFilter<A> filter) {
+        while (enumeration.hasMoreElements()) {
+            A element = enumeration.nextElement();
+            if (filter.matches(element)) {
+                this.list.add(element);
+            }
+        }
+        return this;
+    }
+
     public List<E> build() {
         return list;
     }

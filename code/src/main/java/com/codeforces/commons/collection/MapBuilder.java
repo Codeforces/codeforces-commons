@@ -30,6 +30,15 @@ public class MapBuilder<K, V> {
         return this;
     }
 
+    public <A extends K, B extends V> MapBuilder<K, V> putAll(Map<A, B> map, EntryFilter<A, B> filter) {
+        for (Map.Entry<A, B> entry : map.entrySet()) {
+            if (filter.matches(entry.getKey(), entry.getValue())) {
+                this.map.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return this;
+    }
+
     public Map<K, V> build() {
         return map;
     }

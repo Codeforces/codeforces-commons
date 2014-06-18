@@ -30,6 +30,15 @@ public class ConcurrentMapBuilder<K, V> {
         return this;
     }
 
+    public <A extends K, B extends V> ConcurrentMapBuilder<K, V> putAll(Map<A, B> map, EntryFilter<A, B> filter) {
+        for (Map.Entry<A, B> entry : map.entrySet()) {
+            if (filter.matches(entry.getKey(), entry.getValue())) {
+                this.concurrentMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return this;
+    }
+
     public ConcurrentMap<K, V> build() {
         return concurrentMap;
     }
