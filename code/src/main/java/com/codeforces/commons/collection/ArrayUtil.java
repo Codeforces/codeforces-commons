@@ -1,6 +1,6 @@
 package com.codeforces.commons.collection;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import java.util.Random;
 
 /**
@@ -60,10 +60,7 @@ public class ArrayUtil {
         }
     }
 
-    /**
-     * @return dimension count or {@code 0} if {@code arrayClass} is not representing array
-     */
-    public static int getDimensionCount(@Nullable Class arrayClass) {
+    public static int getDimensionCount(@Nonnull Class arrayClass) {
         int dimensionCount = 0;
 
         while (arrayClass.isArray()) {
@@ -74,10 +71,19 @@ public class ArrayUtil {
         return dimensionCount;
     }
 
-    /**
-     * @return dimension count or {@code 0} if {@code arrayObject} is not representing array
-     */
-    public static int getDimensionCount(@Nullable Object arrayObject) {
+    public static int getDimensionCount(@Nonnull Object arrayObject) {
         return getDimensionCount(arrayObject.getClass());
+    }
+
+    public static Class getComponentType(@Nonnull Class arrayClass) {
+        while (arrayClass.isArray()) {
+            arrayClass = arrayClass.getComponentType();
+        }
+
+        return arrayClass;
+    }
+
+    public static Class getComponentType(@Nonnull Object arrayObject) {
+        return getComponentType(arrayObject.getClass());
     }
 }
