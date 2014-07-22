@@ -178,7 +178,9 @@ public class ReflectionUtil {
                         continue;
                     }
 
-                    List<Field> fields = fieldsByName.get(field.getName());
+                    Name nameAnnotation = field.getAnnotation(Name.class);
+                    String fieldName = nameAnnotation == null ? field.getName() : nameAnnotation.value();
+                    List<Field> fields = fieldsByName.get(fieldName);
 
                     if (fields == null) {
                         fields = new ArrayList<>(1);
@@ -190,7 +192,7 @@ public class ReflectionUtil {
 
                     field.setAccessible(true);
                     fields.add(field);
-                    fieldsByName.put(field.getName(), Collections.unmodifiableList(fields));
+                    fieldsByName.put(fieldName, Collections.unmodifiableList(fields));
                 }
 
                 tempClass = tempClass.getSuperclass();
@@ -230,8 +232,10 @@ public class ReflectionUtil {
 
             for (int methodIndex = 0; methodIndex < methodCount; ++methodIndex) {
                 Method method = methods[methodIndex];
+                Name nameAnnotation = method.getAnnotation(Name.class);
+                String methodName = nameAnnotation == null ? method.getName() : nameAnnotation.value();
                 method.setAccessible(true);
-                publicMethodBySignature.put(new MethodSignature(method.getName(), method.getParameterTypes()), method);
+                publicMethodBySignature.put(new MethodSignature(methodName, method.getParameterTypes()), method);
             }
 
             publicMethodBySignatureByClass.putIfAbsent(clazz, Collections.unmodifiableMap(publicMethodBySignature));
@@ -246,7 +250,9 @@ public class ReflectionUtil {
         try {
             return field.get(object);
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("Can't get value of inaccessible field '" + field.getName() + "'.", e);
+            Name nameAnnotation = field.getAnnotation(Name.class);
+            String fieldName = nameAnnotation == null ? field.getName() : nameAnnotation.value();
+            throw new IllegalArgumentException("Can't get value of inaccessible field '" + fieldName + "'.", e);
         }
     }
 
