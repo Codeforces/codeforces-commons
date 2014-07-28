@@ -35,7 +35,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     private final ConcurrentMap<String, ReadWriteEvent> eventBySection = new ConcurrentHashMap<>();
 
     private final Map<String, Map<K, CacheEntry<V>>> cacheEntryByKeyBySection = new HashMap<>();
-    private final Map<String, Queue<CacheEntryExpirationInfo<K>>> cacheEntryExpirationInfosBySection = new HashMap<>();
+    private final Map<String, Queue<CacheEntryExpirationInfo<K, V>>> cacheEntryExpirationInfosBySection = new HashMap<>();
 
     private final AtomicBoolean stopBackgroundThreads = new AtomicBoolean();
 
@@ -43,25 +43,17 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         @Override
         public void run() {
             while (!stopBackgroundThreads.get()) {
-                /*TODO Lock cacheWriteLock = cacheEvent.getWriteLock();
-                cacheWriteLock.lock();*/
-
                 try {
                     if (hasExpirationInfos()) {
-                        CacheEntryExpirationInfo<K> expirationInfo = getFirstExpirationInfo();
+                        CacheEntryExpirationInfo<K, V> expirationInfo = getFirstExpirationInfo();
                         long currentTimeMillis = System.currentTimeMillis();
 
                         if (currentTimeMillis < expirationInfo.getExpirationTimeMillis()) {
-                            //cacheEvent.await(expirationInfo.getExpirationTimeMillis() - currentTimeMillis);
                             ThreadUtil.sleep(expirationInfo.getExpirationTimeMillis() - currentTimeMillis);
                         } else {
-                            removeCacheEntryWithLifetimeIfNeeded(
-                                    expirationInfo.getSection(), expirationInfo.getKey(),
-                                    expirationInfo.getExpirationTimeMillis()
-                            );
+                            removeCacheEntryWithLifetimeIfNeeded(expirationInfo.getSection(), expirationInfo);
                         }
                     } else {
-                        //cacheEvent.await(Long.MAX_VALUE);
                         ThreadUtil.sleep(Long.MAX_VALUE);
                     }
                 } catch (RuntimeException e) {
@@ -69,8 +61,6 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
                             "Got unexpected exception while removing expired entries in '%s' #%d.",
                             InmemoryCache.class, getIndex()
                     ), e);
-                } finally {
-                    /*cacheWriteLock.unlock();*/
                 }
             }
         }
@@ -111,7 +101,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     public void put(
             @CacheSection @Nonnull String section, @Nonnull K key, @Nonnull V value, long lifetimeMillis) {
         Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
-        Queue<CacheEntryExpirationInfo<K>> expirationInfos = ensureAndReturnExpirationInfosSection(section);
+        Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = ensureAndReturnExpirationInfosSection(section);
         addCacheEntryWithLifetime(section, key, value, lifetimeMillis, cacheEntryByKey, expirationInfos);
     }
 
@@ -168,12 +158,6 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     @Override
     public void close() {
         if (!stopBackgroundThreads.getAndSet(true)) {
-            /*cacheEvent.getWriteLock().lock();
-            try {
-                cacheEvent.signalAll();
-            } finally {
-                cacheEvent.getWriteLock().unlock();
-            }*/
             cacheEntryRemovalThread.interrupt();
         }
     }
@@ -204,8 +188,8 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         return cacheEntryByKey;
     }
 
-    Queue<CacheEntryExpirationInfo<K>> ensureAndReturnExpirationInfosSection(@CacheSection String section) {
-        Queue<CacheEntryExpirationInfo<K>> expirationInfos = getExpirationInfosBySection(section);
+    Queue<CacheEntryExpirationInfo<K, V>> ensureAndReturnExpirationInfosSection(@CacheSection String section) {
+        Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = getExpirationInfosBySection(section);
         if (expirationInfos == null) {
             return createExpirationInfosSection(section);
         } else {
@@ -214,13 +198,13 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     }
 
     @CacheRead
-    Queue<CacheEntryExpirationInfo<K>> getExpirationInfosBySection(@CacheSection String section) {
+    Queue<CacheEntryExpirationInfo<K, V>> getExpirationInfosBySection(@CacheSection String section) {
         return cacheEntryExpirationInfosBySection.get(section);
     }
 
     @CacheWrite
-    Queue<CacheEntryExpirationInfo<K>> createExpirationInfosSection(@CacheSection String section) {
-        Queue<CacheEntryExpirationInfo<K>> expirationInfos = cacheEntryExpirationInfosBySection.get(section);
+    Queue<CacheEntryExpirationInfo<K, V>> createExpirationInfosSection(@CacheSection String section) {
+        Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = cacheEntryExpirationInfosBySection.get(section);
 
         if (expirationInfos == null) {
             expirationInfos = new PriorityQueue<>();
@@ -233,18 +217,13 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     @CacheSectionWrite
     void addCacheEntryWithLifetime(
             @CacheSection String section, K key, V value, long lifetimeMillis,
-            Map<K, CacheEntry<V>> valueByKey, Queue<CacheEntryExpirationInfo<K>> expirationInfos) {
+            Map<K, CacheEntry<V>> valueByKey, Queue<CacheEntryExpirationInfo<K, V>> expirationInfos) {
         long expirationTimeMillis = System.currentTimeMillis() + lifetimeMillis;
 
-        valueByKey.put(key, new CacheEntry<>(value, expirationTimeMillis));
-        expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, expirationTimeMillis));
+        CacheEntry<V> cacheEntry = new CacheEntry<>(value, expirationTimeMillis);
+        valueByKey.put(key, cacheEntry);
+        expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, cacheEntry, expirationTimeMillis));
 
-        /*cacheEvent.getWriteLock().lock();
-        try {
-            cacheEvent.signalAll();
-        } finally {
-            cacheEvent.getWriteLock().unlock();
-        }*/
         cacheEntryRemovalThread.interrupt();
     }
 
@@ -252,18 +231,13 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     void addCacheEntryWithLifetimeIfAbsent(
             @CacheSection String section, K key, V value, long lifetimeMillis, Map<K, CacheEntry<V>> cacheEntryByKey) {
         if (!cacheEntryByKey.containsKey(key)) {
-            Queue<CacheEntryExpirationInfo<K>> expirationInfos = ensureAndReturnExpirationInfosSection(section);
+            Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = ensureAndReturnExpirationInfosSection(section);
             long expirationTimeMillis = System.currentTimeMillis() + lifetimeMillis;
 
-            cacheEntryByKey.put(key, new CacheEntry<>(value, expirationTimeMillis));
-            expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, expirationTimeMillis));
+            CacheEntry<V> cacheEntry = new CacheEntry<>(value, expirationTimeMillis);
+            cacheEntryByKey.put(key, cacheEntry);
+            expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, cacheEntry, expirationTimeMillis));
 
-            /*cacheEvent.getWriteLock().lock();
-            try {
-                cacheEvent.signalAll();
-            } finally {
-                cacheEvent.getWriteLock().unlock();
-            }*/
             cacheEntryRemovalThread.interrupt();
         }
     }
@@ -286,15 +260,15 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         return !ensureAndReturnExpirationInfosSection(section).isEmpty();
     }
 
-    CacheEntryExpirationInfo<K> getFirstExpirationInfo() {
-        CacheEntryExpirationInfo<K> firstExpirationInfo = null;
+    CacheEntryExpirationInfo<K, V> getFirstExpirationInfo() {
+        CacheEntryExpirationInfo<K, V> firstExpirationInfo = null;
 
         String[] expirationInfoSections = getExpirationInfoSections();
         int sectionsCount = expirationInfoSections.length;
 
         for (int sectionIndex = 0; sectionIndex < sectionsCount; ++sectionIndex) {
             String section = expirationInfoSections[sectionIndex];
-            CacheEntryExpirationInfo<K> expirationInfo = getFirstExpirationInfoInSection(section);
+            CacheEntryExpirationInfo<K, V> expirationInfo = getFirstExpirationInfoInSection(section);
 
             if (firstExpirationInfo == null || expirationInfo != null
                     && expirationInfo.getExpirationTimeMillis() < firstExpirationInfo.getExpirationTimeMillis()) {
@@ -306,7 +280,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     }
 
     @CacheSectionRead
-    CacheEntryExpirationInfo<K> getFirstExpirationInfoInSection(@CacheSection String section) {
+    CacheEntryExpirationInfo<K, V> getFirstExpirationInfoInSection(@CacheSection String section) {
         return ensureAndReturnExpirationInfosSection(section).peek();
     }
 
@@ -318,12 +292,13 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     }
 
     @CacheSectionWrite
-    void removeCacheEntryWithLifetimeIfNeeded(@CacheSection String section, K key, long expirationTimeMillis) {
+    void removeCacheEntryWithLifetimeIfNeeded(
+            @CacheSection String section, CacheEntryExpirationInfo<K, V> expirationInfo) {
         Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
-        CacheEntry<V> cacheEntry = cacheEntryByKey.get(key);
+        CacheEntry<V> cacheEntry = cacheEntryByKey.get(expirationInfo.getKey());
         if (cacheEntry != null && cacheEntry.getExpirationTimeMillis() != -1
-                && cacheEntry.getExpirationTimeMillis() <= expirationTimeMillis) {
-            cacheEntryByKey.remove(key);
+                && cacheEntry.equals(expirationInfo.getEntry())) {
+            cacheEntryByKey.remove(expirationInfo.getKey());
         }
         ensureAndReturnExpirationInfosSection(section).poll();
     }
@@ -367,14 +342,17 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     }
 
     @SuppressWarnings("PackageVisibleInnerClass")
-    static final class CacheEntryExpirationInfo<K> implements Comparable<CacheEntryExpirationInfo<K>> {
+    static final class CacheEntryExpirationInfo<K, V> implements Comparable<CacheEntryExpirationInfo<K, V>> {
         private final String section;
         private final K key;
+        private final CacheEntry<V> entry;
         private final long expirationTimeMillis;
 
-        private CacheEntryExpirationInfo(@Nonnull String section, @Nonnull K key, long expirationTimeMillis) {
+        private CacheEntryExpirationInfo(
+                @Nonnull String section, @Nonnull K key, CacheEntry<V> entry, long expirationTimeMillis) {
             this.section = section;
             this.key = key;
+            this.entry = entry;
             this.expirationTimeMillis = expirationTimeMillis;
         }
 
@@ -386,12 +364,16 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
             return key;
         }
 
+        CacheEntry<V> getEntry() {
+            return entry;
+        }
+
         public long getExpirationTimeMillis() {
             return expirationTimeMillis;
         }
 
         @Override
-        public int compareTo(CacheEntryExpirationInfo<K> o) {
+        public int compareTo(CacheEntryExpirationInfo<K, V> o) {
             if (expirationTimeMillis > o.expirationTimeMillis) {
                 return 1;
             }
@@ -417,12 +399,14 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
 
             return section.equals(cacheEntryExpirationInfo.section)
                     && key.equals(cacheEntryExpirationInfo.key)
+                    && entry.equals(cacheEntryExpirationInfo.entry)
                     && expirationTimeMillis == cacheEntryExpirationInfo.expirationTimeMillis;
         }
 
         @Override
         public int hashCode() {
             int result = Long.valueOf(expirationTimeMillis).hashCode();
+            result = 31 * result + entry.hashCode();
             result = 31 * result + section.hashCode();
             result = 31 * result + key.hashCode();
             return result;

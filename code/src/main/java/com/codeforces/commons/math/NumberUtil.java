@@ -10,6 +10,7 @@ import static java.lang.StrictMath.abs;
  *         Date: 24.07.13
  */
 public class NumberUtil {
+    public static final double E = StrictMath.E;
     public static final double PI = StrictMath.PI;
     public static final double HALF_PI = 0.5D * PI;
     public static final double DOUBLE_PI = 2.0D * PI;
@@ -275,6 +276,7 @@ public class NumberUtil {
     @SuppressWarnings("AssignmentToMethodParameter")
     public static long findGreatestCommonDivisor(long numberA, long numberB) {
         @SuppressWarnings("TooBroadScope") long temp;
+
         while (numberA != 0 && numberB != 0) {
             numberA %= numberB;
             temp = numberA;

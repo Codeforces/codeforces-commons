@@ -1,10 +1,13 @@
 package com.codeforces.commons.cache;
 
 import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.google.common.primitives.Ints;
 import junit.framework.TestCase;
+import org.junit.Assert;
 
+import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,6 +43,32 @@ public class InmemoryCacheTest extends TestCase {
                 for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
                     checkStoringOneValue(cache, cachePaths.poll());
                 }
+            }
+        });
+    }
+
+    public void testOverridingOfValuesWithLifetime() throws Exception {
+        final InmemoryByteCache cache = new InmemoryByteCache();
+
+        CacheTestUtil.determineOperationTime("testOverridingOfValuesWithLifetime", new Runnable() {
+            @Override
+            public void run() {
+                byte[] temporaryBytes = RandomUtil.getRandomBytes(VALUE_LENGTH);
+                byte[] finalBytes = RandomUtil.getRandomBytes(VALUE_LENGTH);
+
+                cache.put("S", "K", temporaryBytes, 500L);
+                Assert.assertTrue(
+                        "Restored value (with lifetime) does not equal to original value.",
+                        Arrays.equals(temporaryBytes, cache.get("S", "K"))
+                );
+
+                cache.put("S", "K", finalBytes, 1000L);
+                ThreadUtil.sleep(500L);
+                Assert.assertNotNull("Value is 'null' after previous value lifetime expiration.", cache.get("S", "K"));
+                Assert.assertEquals("Restored value does not equal to original value.", finalBytes, cache.get("S", "K"));
+
+                ThreadUtil.sleep(1000L);
+                Assert.assertNull("Value is not 'null' after lifetime expiration.", cache.get("S", "K"));
             }
         });
     }

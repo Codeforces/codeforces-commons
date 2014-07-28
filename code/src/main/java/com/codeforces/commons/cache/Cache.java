@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * All methods of this class throws {@code {@link IllegalArgumentException}} if either section or key is {@code null}.
  */
-//TODO timed entries in in-memory cache
 public abstract class Cache<K, V> implements Closeable {
     private static final AtomicLong cacheIndex = new AtomicLong();
 
