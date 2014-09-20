@@ -264,7 +264,7 @@ public class ReflectionUtil {
         private final String name;
         private final List<Class<?>> parameterTypes;
 
-        private MethodSignature(String name, Class<?>... parameterTypes) {
+        public MethodSignature(String name, Class<?>... parameterTypes) {
             this.name = name;
             this.parameterTypes = Arrays.asList(parameterTypes);
         }
