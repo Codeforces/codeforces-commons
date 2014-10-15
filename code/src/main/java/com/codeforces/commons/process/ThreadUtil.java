@@ -90,21 +90,21 @@ public class ThreadUtil {
         for (int attemptIndex = 1; attemptIndex <= attemptCount; ++attemptIndex) {
             try {
                 return operation.run();
-            } catch (Throwable e) {
+            } catch (Throwable t) {
                 if (strategy.getUnsuccessHandler() != null) {
-                    strategy.getUnsuccessHandler().handle(attemptIndex);
+                    strategy.getUnsuccessHandler().handle(attemptIndex, t);
                 }
 
                 if (attemptIndex < attemptCount) {
                     if (attemptIndex == 1) {
-                        logger.info("Iteration #1 has been failed: " + e.getMessage(), e);
+                        logger.info("Iteration #1 has been failed: " + t.getMessage(), t);
                     } else {
-                        logger.warn("Iteration #" + attemptIndex + " has been failed: " + e.getMessage(), e);
+                        logger.warn("Iteration #" + attemptIndex + " has been failed: " + t.getMessage(), t);
                     }
                     sleep(strategy.getDelayTimeMillis(attemptIndex));
                 } else {
-                    logger.error("Iteration #" + attemptIndex + " has been failed: " + e.getMessage(), e);
-                    throw e;
+                    logger.error("Iteration #" + attemptIndex + " has been failed: " + t.getMessage(), t);
+                    throw t;
                 }
             }
         }
@@ -179,8 +179,9 @@ public class ThreadUtil {
     /**
      * Action to be executed after each unsuccessful attempt to execute operation.
      */
+    @SuppressWarnings("InterfaceNeverImplemented")
     public interface UnsuccessHandler {
-        void handle(int attemptIndex);
+        void handle(int attemptIndex, Throwable t);
     }
 
     public static class ExecutionStrategy {

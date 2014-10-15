@@ -20,18 +20,28 @@ import java.util.List;
 
 /**
  * @author Mike Mirzayanov
+ * @author Maxim Shipko (sladethe@gmail.com)
  */
 public class FileUtil {
+    public static final long TB_PER_PB = 1024L;
+
     public static final long GB_PER_TB = 1024L;
+    public static final long GB_PER_PB = GB_PER_TB * TB_PER_PB;
+
     public static final long MB_PER_GB = 1024L;
     public static final long MB_PER_TB = MB_PER_GB * GB_PER_TB;
+    public static final long MB_PER_PB = MB_PER_TB * TB_PER_PB;
+
     public static final long KB_PER_MB = 1024L;
     public static final long KB_PER_GB = KB_PER_MB * MB_PER_GB;
     public static final long KB_PER_TB = KB_PER_GB * GB_PER_TB;
+    public static final long KB_PER_PB = KB_PER_TB * TB_PER_PB;
+
     public static final long BYTES_PER_KB = 1024L;
     public static final long BYTES_PER_MB = BYTES_PER_KB * KB_PER_MB;
     public static final long BYTES_PER_GB = BYTES_PER_MB * MB_PER_GB;
     public static final long BYTES_PER_TB = BYTES_PER_GB * GB_PER_TB;
+    public static final long BYTES_PER_PB = BYTES_PER_TB * TB_PER_PB;
 
     private FileUtil() {
         throw new UnsupportedOperationException();
@@ -335,9 +345,8 @@ public class FileUtil {
      * @param file     File to be write.
      * @param content  Content to be write.
      * @param encoding File encoding.
-     * @throws java.io.IOException if can't read file.
-     * @throws java.io.UnsupportedEncodingException
-     *                             illegal encoding.
+     * @throws java.io.IOException                  if can't read file.
+     * @throws java.io.UnsupportedEncodingException illegal encoding.
      */
     public static void writeFile(final File file, final String content, final String encoding) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -607,7 +616,7 @@ public class FileUtil {
 
     /**
      * @return System temporary directory. It expected that current process
-     *         has permissions for read, write and execution in it.
+     * has permissions for read, write and execution in it.
      * @throws java.io.IOException error.
      */
     public static File getTemporaryDirectory() throws IOException {
@@ -622,7 +631,7 @@ public class FileUtil {
     /**
      * @param directory Directory to be scanned.
      * @return List of nested files (scans nested directories recursively). Doesn't scan
-     *         hidden directories and doesn't return hidden files.
+     * hidden directories and doesn't return hidden files.
      * @throws java.io.IOException error.
      */
     public static List<File> list(final File directory) throws IOException {
@@ -672,7 +681,7 @@ public class FileUtil {
      * @param fileA first file or directory
      * @param fileB second file or directory
      * @return {@code true} iff both items A and B are {@code null},
-     *         {@link java.io.File#equals(Object) equals} or have the same content
+     * {@link java.io.File#equals(Object) equals} or have the same content
      * @throws java.io.IOException in case of any I/O-exception
      */
     public static boolean equalsOrSameContent(@Nullable File fileA, @Nullable File fileB) throws IOException {
@@ -771,20 +780,22 @@ public class FileUtil {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
 
-            FirstBytes that = (FirstBytes) o;
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
-            if (truncated != that.truncated) return false;
-            if (!Arrays.equals(bytes, that.bytes)) return false;
+            FirstBytes firstBytes = (FirstBytes) o;
 
-            return true;
+            return truncated == firstBytes.truncated && Arrays.equals(bytes, firstBytes.bytes);
         }
 
         @Override
         public int hashCode() {
-            int result = (truncated ? 1 : 0);
+            int result = truncated ? 1 : 0;
             result = 31 * result + (bytes != null ? Arrays.hashCode(bytes) : 0);
             return result;
         }

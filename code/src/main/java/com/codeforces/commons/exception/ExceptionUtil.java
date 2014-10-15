@@ -13,15 +13,15 @@ public class ExceptionUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static String getMessage(@Nonnull Throwable throwable) {
-        String message = throwable.getMessage();
+    public static String getMessage(@Nonnull Throwable t) {
+        String message = t.getMessage();
 
         while (message == null) {
-            if ((throwable = throwable.getCause()) == null) {
+            if ((t = t.getCause()) == null) {
                 break;
             }
 
-            message = throwable.getMessage();
+            message = t.getMessage();
         }
 
         return message;
