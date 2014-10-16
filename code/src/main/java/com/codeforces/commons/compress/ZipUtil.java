@@ -240,7 +240,7 @@ public final class ZipUtil {
             throws IOException {
         File zipArchive = null;
         try {
-            zipArchive = File.createTempFile("zip", String.valueOf(System.currentTimeMillis()));
+            zipArchive = File.createTempFile(System.currentTimeMillis() + "-", ".tmp.zip");
             FileUtil.writeFile(zipArchive, bytes);
             unzip(zipArchive, destinationDirectory, skipFilter);
         } finally {
@@ -307,10 +307,23 @@ public final class ZipUtil {
         try {
             tempDir = FileUtil.createTemporaryDirectory("rezip");
             unzip(bytes, tempDir, skipFilter);
-            return zip(tempDir, MAXIMAL_COMPRESSION_LEVEL, skipFilter);
+            byte[] rezippedBytes = zip(tempDir, MAXIMAL_COMPRESSION_LEVEL, skipFilter);
+            return rezippedBytes.length < bytes.length ? rezippedBytes : bytes;
         } finally {
             FileUtil.deleteTotallyAsync(tempDir);
         }
+    }
+
+    public static void rezip(File source, File destination, @Nullable FileFilter skipFilter) throws IOException {
+        byte[] sourceBytes = FileUtil.getBytes(source);
+        byte[] destinationBytes = rezip(sourceBytes, skipFilter);
+        if (destinationBytes.length < sourceBytes.length || !source.equals(destination)) {
+            FileUtil.writeFile(destination, destinationBytes);
+        }
+    }
+
+    public static void rezip(File file, @Nullable FileFilter skipFilter) throws IOException {
+        rezip(file, file, skipFilter);
     }
 
     private static ArrayList<File> deepListFilesInDirectory(
