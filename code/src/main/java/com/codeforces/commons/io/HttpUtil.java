@@ -18,7 +18,9 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestExecutor;
+import org.apache.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
@@ -38,6 +40,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @SuppressWarnings("OverloadedVarargsMethod")
 public class HttpUtil {
+    private static final Logger logger = Logger.getLogger(HttpUtil.class);
+
     private static final ExecutorService timedRequestExecutor = new ThreadPoolExecutor(
             0, Short.MAX_VALUE, 5L, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(),
             ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
@@ -218,7 +222,8 @@ public class HttpUtil {
                 httpResponse.getStatusLine().getStatusCode(),
                 httpEntity.getContent(),
                 httpEntity.getContentEncoding() == null ? null : httpEntity.getContentEncoding().getValue(),
-                httpEntity.getContentLength()
+                httpEntity.getContentLength(),
+                httpResponse
         );
     }
 
@@ -398,18 +403,29 @@ public class HttpUtil {
 
     public static Response executePostRequestAndReturnResponse(
             HttpClient httpClient, String url, Object... parameters) throws IOException {
+        logger.info("HttpUtil#executePostRequestAndReturnResponse 1");
         HttpResponse httpResponse = internalExecutePostRequest(httpClient, url, parameters);
+        logger.info("HttpUtil#executePostRequestAndReturnResponse 2");
         HttpEntity httpEntity = httpResponse.getEntity();
+        logger.info("HttpUtil#executePostRequestAndReturnResponse 3");
 
-        if (httpEntity == null) {
-            return new Response(httpResponse.getStatusLine().getStatusCode(), null, null, 0);
-        } else {
-            return new Response(
-                    httpResponse.getStatusLine().getStatusCode(),
-                    httpEntity.getContent(),
-                    httpEntity.getContentEncoding() == null ? null : httpEntity.getContentEncoding().getValue(),
-                    httpEntity.getContentLength()
-            );
+        try {
+            if (httpEntity == null) {
+                logger.info("HttpUtil#executePostRequestAndReturnResponse 4a");
+                return new Response(httpResponse.getStatusLine().getStatusCode(), null, null, 0, httpResponse);
+            } else {
+                logger.info("HttpUtil#executePostRequestAndReturnResponse 4b: "
+                        + httpEntity.getContentLength() + " bytes, statusCode=" + httpResponse.getStatusLine().getStatusCode());
+                return new Response(
+                        httpResponse.getStatusLine().getStatusCode(),
+                        httpEntity.getContent(),
+                        httpEntity.getContentEncoding() == null ? null : httpEntity.getContentEncoding().getValue(),
+                        httpEntity.getContentLength(),
+                        httpResponse
+                );
+            }
+        } finally {
+            logger.info("HttpUtil#executePostRequestAndReturnResponse 4");
         }
     }
 
@@ -527,9 +543,12 @@ public class HttpUtil {
 
     private static <R> R internalExecuteLimitedTimeRequest(
             final long executionTimeoutMillis, String url, Callable<R> httpTask) throws IOException {
+        logger.info("Ready to create future to download " + url);
         final Future<R> requestFuture = timedRequestExecutor.submit(httpTask);
+        logger.info("Submitted future to download " + url);
 
         try {
+            logger.info("Waiting for future to download " + url);
             return requestFuture.get(executionTimeoutMillis, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             requestFuture.cancel(true);
@@ -551,6 +570,8 @@ public class HttpUtil {
             throw new IOException(String.format(
                     "Can't execute HTTP request to '%s' in %d ms.", url, executionTimeoutMillis
             ), e);
+        } finally {
+            logger.info("Completed with future to download " + url);
         }
     }
 
@@ -643,10 +664,15 @@ public class HttpUtil {
                     // No operations.
                 }
             }
+
+            if (response instanceof Closeable) {
+                logger.info("Closing httpResponse.");
+                IoUtil.closeQuietly((Closeable) response);
+            }
         }
     }
 
-    public static final class Response {
+    public static final class Response implements Closeable {
         private final int responseCode;
         @Nullable
         private final InputStream inputStream;
@@ -654,12 +680,15 @@ public class HttpUtil {
         private final String charsetName;
         private final long contentLength;
 
+        private final HttpResponse internalHttpResponse;
+
         private Response(
-                int responseCode, @Nullable InputStream inputStream, @Nullable String charsetName, long contentLength) {
+                int responseCode, @Nullable InputStream inputStream, @Nullable String charsetName, long contentLength, @Nonnull HttpResponse internalHttpResponse) {
             this.responseCode = responseCode;
             this.inputStream = inputStream;
             this.charsetName = charsetName;
             this.contentLength = contentLength;
+            this.internalHttpResponse = internalHttpResponse;
         }
 
         public int getResponseCode() {
@@ -678,6 +707,11 @@ public class HttpUtil {
 
         public long getContentLength() {
             return contentLength;
+        }
+
+        @Override
+        public void close() throws IOException {
+            HttpUtil.closeQuietly(internalHttpResponse);
         }
     }
 
@@ -879,8 +913,8 @@ public class HttpUtil {
          */
         public static final int EXPECTATION_FAILED = 417;
         /**
-         *  Status code (429) indicating that the user has sent too many
-         *  requests in a given amount of time ("rate limiting").
+         * Status code (429) indicating that the user has sent too many
+         * requests in a given amount of time ("rate limiting").
          */
         public static final int TOO_MANY_REQUESTS = 429;
         /**
