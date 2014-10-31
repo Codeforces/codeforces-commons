@@ -12,9 +12,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestExecutor;
@@ -41,6 +43,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @SuppressWarnings("OverloadedVarargsMethod")
 public class HttpUtil {
     private static final Logger logger = Logger.getLogger(HttpUtil.class);
+    
+    private static final int CONNECTION_POOL_DEFAULT_MAX_SIZE = 50;
+    private static final int CONNECTION_POOL_DEFAULT_MAX_SIZE_PER_HOST = 25;
 
     private static final ExecutorService timedRequestExecutor = new ThreadPoolExecutor(
             0, Short.MAX_VALUE, 5L, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(),
@@ -576,35 +581,114 @@ public class HttpUtil {
     }
 
     public static CloseableHttpClient newHttpClient() {
-        return HttpClientBuilder.create()
-                .setDefaultConnectionConfig(HttpClientImmutableFieldHolder.CONNECTION_CONFIG)
-                .setRequestExecutor(HttpClientImmutableFieldHolder.HTTP_REQUEST_EXECUTOR)
-                .setProxy(HttpClientImmutableFieldHolder.HTTP_PROXY)
-                .build();
+        return internalNewHttpClient(getBasicConnectionManagerBuilder());
     }
 
     public static CloseableHttpClient newHttpClient(int connectionTimeoutMillis, int socketTimeoutMillis) {
-        SocketConfig socketConfig = SocketConfig.copy(SocketConfig.DEFAULT)
-                .setSoTimeout(socketTimeoutMillis)
-                .build();
+        return internalNewHttpClient(connectionTimeoutMillis, socketTimeoutMillis, getBasicConnectionManagerBuilder());
+    }
 
-        RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
-                .setConnectTimeout(connectionTimeoutMillis)
-                .setConnectionRequestTimeout(connectionTimeoutMillis)
-                .setSocketTimeout(socketTimeoutMillis)
-                .setProxy(HttpClientImmutableFieldHolder.HTTP_PROXY)
-                .build();
+    public static CloseableHttpClient newPoolingHttpClient() {
+        return internalNewHttpClient(getPoolingConnectionManagerBuilder(
+                CONNECTION_POOL_DEFAULT_MAX_SIZE_PER_HOST, CONNECTION_POOL_DEFAULT_MAX_SIZE
+        ));
+    }
 
-        BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
-        connectionManager.setConnectionConfig(HttpClientImmutableFieldHolder.CONNECTION_CONFIG);
-        connectionManager.setSocketConfig(socketConfig);
+    public static CloseableHttpClient newPoolingHttpClient(int connectionTimeoutMillis, int socketTimeoutMillis) {
+        return newPoolingHttpClient(
+                connectionTimeoutMillis, socketTimeoutMillis,
+                CONNECTION_POOL_DEFAULT_MAX_SIZE_PER_HOST, CONNECTION_POOL_DEFAULT_MAX_SIZE
+        );
+    }
 
+    public static CloseableHttpClient newPoolingHttpClient(
+            int connectionTimeoutMillis, int socketTimeoutMillis, int maxPoolSizePerHost, int maxPoolSize) {
+        return internalNewHttpClient(connectionTimeoutMillis, socketTimeoutMillis, getPoolingConnectionManagerBuilder(
+                maxPoolSizePerHost, maxPoolSize
+        ));
+    }
+
+    private static CloseableHttpClient internalNewHttpClient(
+            HttpClientConnectionManagerBuilder connectionManagerBuilder) {
+        SocketConfig socketConfig = getSocketConfig();
+        RequestConfig requestConfig = getRequestConfig();
+        HttpClientConnectionManager connectionManager = connectionManagerBuilder.build(socketConfig);
+
+        return internalNewHttpClient(socketConfig, requestConfig, connectionManager);
+    }
+
+    private static CloseableHttpClient internalNewHttpClient(
+            int connectionTimeoutMillis, int socketTimeoutMillis,
+            HttpClientConnectionManagerBuilder connectionManagerBuilder) {
+        SocketConfig socketConfig = getSocketConfig(socketTimeoutMillis);
+        RequestConfig requestConfig = getRequestConfig(connectionTimeoutMillis, socketTimeoutMillis);
+        HttpClientConnectionManager connectionManager = connectionManagerBuilder.build(socketConfig);
+
+        return internalNewHttpClient(socketConfig, requestConfig, connectionManager);
+    }
+
+    private static CloseableHttpClient internalNewHttpClient(
+            SocketConfig socketConfig, RequestConfig requestConfig, HttpClientConnectionManager connectionManager) {
         return HttpClientBuilder.create()
                 .setDefaultConnectionConfig(HttpClientImmutableFieldHolder.CONNECTION_CONFIG)
                 .setDefaultSocketConfig(socketConfig)
                 .setDefaultRequestConfig(requestConfig)
                 .setConnectionManager(connectionManager)
                 .setRequestExecutor(HttpClientImmutableFieldHolder.HTTP_REQUEST_EXECUTOR)
+                .setProxy(HttpClientImmutableFieldHolder.HTTP_PROXY)
+                .build();
+    }
+
+    private static HttpClientConnectionManagerBuilder getBasicConnectionManagerBuilder() {
+        return new HttpClientConnectionManagerBuilder() {
+            @Override
+            public HttpClientConnectionManager build(SocketConfig socketConfig) {
+                BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
+                connectionManager.setConnectionConfig(HttpClientImmutableFieldHolder.CONNECTION_CONFIG);
+                connectionManager.setSocketConfig(socketConfig);
+                return connectionManager;
+            }
+        };
+    }
+
+    private static HttpClientConnectionManagerBuilder getPoolingConnectionManagerBuilder(
+            final int maxPoolSizePerHost, final int maxPoolSize) {
+        return new HttpClientConnectionManagerBuilder() {
+            @Override
+            public HttpClientConnectionManager build(SocketConfig socketConfig) {
+                PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
+                        1L, TimeUnit.HOURS
+                );
+                connectionManager.setDefaultMaxPerRoute(maxPoolSizePerHost);
+                connectionManager.setMaxTotal(maxPoolSize);
+                connectionManager.setDefaultConnectionConfig(HttpClientImmutableFieldHolder.CONNECTION_CONFIG);
+                connectionManager.setDefaultSocketConfig(socketConfig);
+                return connectionManager;
+            }
+        };
+    }
+
+    private static SocketConfig getSocketConfig() {
+        return SocketConfig.DEFAULT;
+    }
+
+    private static SocketConfig getSocketConfig(int socketTimeoutMillis) {
+        return SocketConfig.copy(SocketConfig.DEFAULT)
+                .setSoTimeout(socketTimeoutMillis)
+                .build();
+    }
+
+    private static RequestConfig getRequestConfig() {
+        return RequestConfig.copy(RequestConfig.DEFAULT)
+                .setProxy(HttpClientImmutableFieldHolder.HTTP_PROXY)
+                .build();
+    }
+
+    private static RequestConfig getRequestConfig(int connectionTimeoutMillis, int socketTimeoutMillis) {
+        return RequestConfig.copy(RequestConfig.DEFAULT)
+                .setConnectTimeout(connectionTimeoutMillis)
+                .setConnectionRequestTimeout(connectionTimeoutMillis)
+                .setSocketTimeout(socketTimeoutMillis)
                 .setProxy(HttpClientImmutableFieldHolder.HTTP_PROXY)
                 .build();
     }
@@ -1004,5 +1088,9 @@ public class HttpUtil {
 
             return new HttpHost(proxyHost, proxyPort);
         }
+    }
+
+    private interface HttpClientConnectionManagerBuilder {
+        HttpClientConnectionManager build(SocketConfig socketConfig);
     }
 }
