@@ -48,6 +48,8 @@ public class MimeUtil {
             .put(".7z", "application/x-7z-compressed")
 
             .put(".jnlp", "application/x-java-jnlp-file")
+            .put(".bat", "application/bat")
+            .put(".sh", "application/x-sh")
             .buildUnmodifiable();
 
     private MimeUtil() {
