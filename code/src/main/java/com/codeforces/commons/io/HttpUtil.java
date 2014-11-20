@@ -90,7 +90,12 @@ public class HttpUtil {
                 connectionInputStream = connection.getInputStream();
             } catch (IOException e) {
                 // Some status codes like 409 doesn't give you to read data.
-                connectionInputStream = null;
+                try {
+                    connectionInputStream = connection.getErrorStream();
+                } catch (RuntimeException ignored) {
+                    // Can't get connection stream.
+                    connectionInputStream = null;
+                }
             }
 
             byte[] bytes = readBytes && connectionInputStream != null
