@@ -162,7 +162,7 @@ public class HttpUtil {
         }
 
         if (ArrayUtils.isEmpty(parameters)) {
-            return new String[]{};
+            return ArrayUtils.EMPTY_STRING_ARRAY;
         }
 
         boolean secureHost;
