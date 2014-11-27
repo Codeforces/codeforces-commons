@@ -1,5 +1,7 @@
-package com.codeforces.commons.io;
+package com.codeforces.commons.io.http;
 
+import com.codeforces.commons.io.HttpUtil_HttpClient;
+import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.io.http.HttpResponse;
 import com.codeforces.commons.io.http.HttpUtil;
 import junit.framework.TestCase;
