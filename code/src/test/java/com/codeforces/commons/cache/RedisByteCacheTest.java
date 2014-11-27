@@ -4,6 +4,7 @@ import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.google.common.primitives.Ints;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *         Date: 29.12.12
  */
 @SuppressWarnings({"JUnitTestMethodWithNoAssertions", "ThrowableResultOfMethodCallIgnored", "ErrorNotRethrown"})
+@Ignore
 public class RedisByteCacheTest extends TestCase {
     private static final int THREAD_COUNT = 8;
     private static final int SLEEPING_THREAD_COUNT = 125;

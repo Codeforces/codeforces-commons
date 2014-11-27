@@ -47,24 +47,8 @@ public class HttpUtil_HttpClient {
     private static final int CONNECTION_POOL_DEFAULT_MAX_SIZE = 50;
     private static final int CONNECTION_POOL_DEFAULT_MAX_SIZE_PER_HOST = 25;
 
-//    private static final ExecutorService timedRequestExecutor = new ThreadPoolExecutor(
-//            0, Short.MAX_VALUE, 5L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(),
-//            ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
-//                private final AtomicLong threadIndex = new AtomicLong();
-//
-//                @Override
-//                public void customize(Thread thread) {
-//                    thread.setDaemon(true);
-//                    thread.setName(String.format(
-//                            "%s#RequestExecutionThread-%d",
-//                            HttpUtil.class.getSimpleName(), threadIndex.incrementAndGet()
-//                    ));
-//                    System.out.println(thread.getName());
-//                }
-//            })
-//    );
-
-    private static final ExecutorService timedRequestExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+    private static final ExecutorService timedRequestExecutor = new ThreadPoolExecutor(
+            0, Short.MAX_VALUE, 5L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(),
             ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
                 private final AtomicLong threadIndex = new AtomicLong();
 
@@ -79,6 +63,22 @@ public class HttpUtil_HttpClient {
                 }
             })
     );
+
+//    private static final ExecutorService timedRequestExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+//            ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
+//                private final AtomicLong threadIndex = new AtomicLong();
+//
+//                @Override
+//                public void customize(Thread thread) {
+//                    thread.setDaemon(true);
+//                    thread.setName(String.format(
+//                            "%s#RequestExecutionThread-%d",
+//                            HttpUtil_HttpClient.class.getSimpleName(), threadIndex.incrementAndGet()
+//                    ));
+//                    System.out.println(thread.getName());
+//                }
+//            })
+//    );
 
     private HttpUtil_HttpClient() {
         throw new UnsupportedOperationException();
@@ -811,8 +811,8 @@ public class HttpUtil_HttpClient {
         }
 
         @Override
-        public void close() throws IOException {
-            HttpUtil_HttpClient.closeQuietly(internalHttpResponse);
+        public void close() {
+            closeQuietly(internalHttpResponse);
         }
     }
 
