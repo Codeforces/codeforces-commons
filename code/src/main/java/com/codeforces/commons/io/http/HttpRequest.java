@@ -465,17 +465,4 @@ public final class HttpRequest {
             throw e;
         }
     }
-
-    public static void main(String[] args) {
-        HttpResponse response = create(/*"http://acm.sgu.ru/files/conflict.php"*/ "https://www.base64encode.org/enc/deflate/")
-                .appendParameters("password", "huj")
-                .appendHeaders("Accept-Encoding", "deflate, gzip")
-                .setMethod(HttpMethod.POST)
-                .executeAndReturnResponse();
-        System.out.println(response.getUtf8String());
-        System.out.println();
-        System.out.println(response);
-        System.out.println();
-        System.out.println(response.getHeadersByNameMap());
-    }
 }
