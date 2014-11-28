@@ -11,6 +11,13 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @SuppressWarnings("RefusedBequest")
 public final class CountingInputStream extends InputStream {
+    private static final ReadEvent EMPTY_READ_EVENT = new ReadEvent() {
+        @Override
+        public void onRead(long readByteCount, long totalReadByteCount) {
+            // No operations.
+        }
+    };
+
     private final ReentrantLock lock = new ReentrantLock();
     private final AtomicLong totalReadByteCount = new AtomicLong();
     private final InputStream inputStream;
@@ -22,13 +29,7 @@ public final class CountingInputStream extends InputStream {
     }
 
     public CountingInputStream(InputStream inputStream) {
-        this.inputStream = inputStream;
-        this.readEvent = new ReadEvent() {
-            @Override
-            public void onRead(long readByteCount, long totalReadByteCount) {
-                // No operations.
-            }
-        };
+        this(inputStream, EMPTY_READ_EVENT);
     }
 
     @Override
@@ -128,6 +129,6 @@ public final class CountingInputStream extends InputStream {
     }
 
     public interface ReadEvent {
-        void onRead(long readByteCount, long totalReadByteCount);
+        void onRead(long readByteCount, long totalReadByteCount) throws IOException;
     }
 }

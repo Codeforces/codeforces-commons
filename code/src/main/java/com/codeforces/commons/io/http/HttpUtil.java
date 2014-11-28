@@ -4,7 +4,7 @@ package com.codeforces.commons.io.http;
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
  */
 @SuppressWarnings("UnusedDeclaration")
-public class HttpUtil {
+public final class HttpUtil {
     public static HttpRequest newRequest(String url, Object... parameters) {
         return HttpRequest.create(url, parameters);
     }
@@ -39,5 +39,9 @@ public class HttpUtil {
 
     public static HttpResponse executePostRequestAndReturnResponse(int timeoutMillis, String url, Object... parameters) {
         return newRequest(url, parameters).setTimeoutMillis(timeoutMillis).setMethod(HttpMethod.POST).executeAndReturnResponse();
+    }
+
+    private HttpUtil() {
+        throw new UnsupportedOperationException();
     }
 }

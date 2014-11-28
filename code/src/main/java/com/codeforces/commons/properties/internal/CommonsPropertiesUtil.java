@@ -38,6 +38,10 @@ public class CommonsPropertiesUtil {
         return PropertyValuesHolder.SECURE_HOSTS;
     }
 
+    public static List<String> getPrivateParameters() {
+        return PropertyValuesHolder.PRIVATE_PARAMETERS;
+    }
+
     public static String getSubscriptionToken() {
         return PropertyValuesHolder.SUBSCRIPTION_TOKEN;
     }
@@ -46,6 +50,7 @@ public class CommonsPropertiesUtil {
         private static final String TEMP_DIR_NAME = getProperty("temp-dir.name", "temp");
         private static final List<String> SECURE_PASSWORDS = getListProperty("security.secure-passwords", "");
         private static final List<String> SECURE_HOSTS = getListProperty("security.secure-hosts", "");
+        private static final List<String> PRIVATE_PARAMETERS = getListProperty("security.private-parameters", "");
         private static final String SUBSCRIPTION_TOKEN = getProperty("security.subscription-token", "secret");
 
         private PropertyValuesHolder() {

@@ -11,6 +11,13 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @SuppressWarnings("RefusedBequest")
 public class CountingOutputStream extends OutputStream {
+    private static final WriteEvent EMPTY_WRITE_EVENT = new WriteEvent() {
+        @Override
+        public void onWrite(long writtenByteCount, long totalWrittenByteCount) {
+            // No operations.
+        }
+    };
+
     private final ReentrantLock lock = new ReentrantLock();
     private final AtomicLong totalWrittenByteCount = new AtomicLong();
     private final OutputStream outputStream;
@@ -22,13 +29,7 @@ public class CountingOutputStream extends OutputStream {
     }
 
     public CountingOutputStream(OutputStream outputStream) {
-        this.outputStream = outputStream;
-        this.writeEvent = new WriteEvent() {
-            @Override
-            public void onWrite(long writtenByteCount, long totalWrittenByteCount) {
-                // No operations.
-            }
-        };
+        this(outputStream, EMPTY_WRITE_EVENT);
     }
 
     @Override
@@ -102,6 +103,6 @@ public class CountingOutputStream extends OutputStream {
     }
 
     public interface WriteEvent {
-        void onWrite(long writtenByteCount, long totalWrittenByteCount);
+        void onWrite(long writtenByteCount, long totalWrittenByteCount) throws IOException;
     }
 }
