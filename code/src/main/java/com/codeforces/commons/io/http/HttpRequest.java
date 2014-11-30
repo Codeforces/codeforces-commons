@@ -246,7 +246,7 @@ public final class HttpRequest {
 
         HttpURLConnection connection;
         try {
-            connection = newConnection(readBytes, method == HttpMethod.POST && !parametersByName.isEmpty());
+            connection = newConnection(internalUrl, readBytes, method == HttpMethod.POST && !parametersByName.isEmpty());
         } catch (IOException e) {
             String message = "Can't create HTTP connection to '" + internalUrl + "'.";
             logger.warn(message, e);
@@ -296,7 +296,9 @@ public final class HttpRequest {
                         @Override
                         public void onRead(long readByteCount, long totalReadByteCount) throws IOException {
                             if (System.currentTimeMillis() - startTimeMillis > timeoutMillis) {
-                                throw new IOException("Can't read response within " + timeoutMillis + " ms.");
+                                throw new IOException("Can't read response within "
+                                        + timeoutMillis
+                                        + " ms [url=" + HttpRequest.this.url + "].");
                             }
                         }
                     });
@@ -402,7 +404,7 @@ public final class HttpRequest {
         }
     }
 
-    private HttpURLConnection newConnection(boolean doInput, boolean doOutput) throws IOException {
+    private HttpURLConnection newConnection(String url, boolean doInput, boolean doOutput) throws IOException {
         URL urlObject = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
 
