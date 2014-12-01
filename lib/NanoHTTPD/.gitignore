@@ -1,0 +1,17 @@
+out
+build
+target
+
+*.iml
+*.class
+
+.idea
+.classpath
+.project
+.gradle
+
+# Vim Backup/Swap Files
+*~
+.swp
+.*.swp
+
