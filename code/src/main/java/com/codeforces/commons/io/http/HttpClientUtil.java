@@ -42,7 +42,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 07.11.11
  */
-@SuppressWarnings("OverloadedVarargsMethod")
+@SuppressWarnings({"OverloadedVarargsMethod", "deprecation"})
+@Deprecated
 public class HttpClientUtil {
     private static final int CONNECTION_POOL_DEFAULT_MAX_SIZE = 50;
     private static final int CONNECTION_POOL_DEFAULT_MAX_SIZE_PER_HOST = 25;

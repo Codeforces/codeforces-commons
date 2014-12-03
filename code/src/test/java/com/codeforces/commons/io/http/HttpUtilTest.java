@@ -39,7 +39,7 @@ import java.util.zip.GZIPOutputStream;
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
  * @author Maxim Shipko (sladethe@gmail.com)
  */
-@SuppressWarnings({"CallToPrintStackTrace", "MessageMissingOnJUnitAssertion"})
+@SuppressWarnings({"CallToPrintStackTrace", "MessageMissingOnJUnitAssertion", "deprecation"})
 public class HttpUtilTest extends TestCase {
     private static final String BASE_TESTING_URL = "http://127.0.0.1:8081";
     //private static final String BASE_TESTING_URL = "http://polygon-api.codeforces.com/httpLoad";
