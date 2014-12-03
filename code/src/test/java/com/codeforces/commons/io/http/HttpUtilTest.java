@@ -350,7 +350,7 @@ public class HttpUtilTest extends TestCase {
                 public void run() {
                     try {
                         HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
-                                650, BASE_TESTING_URL + "?delay=1000"
+                                500, BASE_TESTING_URL + "?delay=1000"
                         );
 
                         assertEquals(

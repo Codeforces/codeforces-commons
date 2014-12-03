@@ -687,7 +687,10 @@ public final class HttpRequest {
         } finally {
             long writeTimeMillis = System.currentTimeMillis() - startTimeMillis;
             if (writeTimeMillis > 100) {
-                logger.info("Writing of HTTP entity takes " + writeTimeMillis + " ms (size=" + entity.length + ").");
+                logger.info(String.format(
+                        "Writing of HTTP entity takes %d ms (size=%d, gzip=%s).",
+                        writeTimeMillis, entity.length, gzip
+                ));
             }
         }
     }
