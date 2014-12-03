@@ -675,6 +675,8 @@ public final class HttpRequest {
                 IoUtil.BUFFER_SIZE
         );
 
+        long startTimeMillis = System.currentTimeMillis();
+
         try {
             outputStream.write(entity);
             outputStream.flush();
@@ -682,6 +684,11 @@ public final class HttpRequest {
         } catch (IOException e) {
             IoUtil.closeQuietly(outputStream);
             throw e;
+        } finally {
+            long writeTimeMillis = System.currentTimeMillis() - startTimeMillis;
+            if (writeTimeMillis > 100) {
+                logger.info("Writing of HTTP entity takes " + writeTimeMillis + " ms (size=" + entity.length + ").");
+            }
         }
     }
 
