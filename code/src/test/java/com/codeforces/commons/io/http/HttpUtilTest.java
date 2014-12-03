@@ -302,7 +302,7 @@ public class HttpUtilTest extends TestCase {
                                 1500, BASE_TESTING_URL + "?delay=1000"
                         );
 
-                        assertEquals(DEFAULT_RESPONSE_SIZE, response.getBytes().length);
+                        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE), DEFAULT_RESPONSE_SIZE, response.getBytes().length);
 
                         if (VERBOSE) {
                             System.out.println("testManyNotTimedOutPosts: done " + count.incrementAndGet());
@@ -345,7 +345,7 @@ public class HttpUtilTest extends TestCase {
                                 950, BASE_TESTING_URL + "?delay=1000"
                         );
 
-                        assertEquals(DEFAULT_RESPONSE_SIZE, response.getBytes().length);
+                        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE), DEFAULT_RESPONSE_SIZE, response.getBytes().length);
 
                         if (VERBOSE) {
                             System.out.println("testManyTimedOutPosts: done " + count.incrementAndGet());
@@ -417,7 +417,7 @@ public class HttpUtilTest extends TestCase {
 
         response.getHeadersByNameMap();
 
-        assertEquals(DEFAULT_RESPONSE_SIZE, response.getBytes().length);
+        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE), DEFAULT_RESPONSE_SIZE, response.getBytes().length);
 
         assertEquals(String.format(
                 "Got unexpected response code %d.", response.getCode()
@@ -480,7 +480,7 @@ public class HttpUtilTest extends TestCase {
                 .setGzip(true)
                 .executeAndReturnResponse();
 
-        assertEquals(DEFAULT_RESPONSE_SIZE, response.getBytes().length);
+        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE), DEFAULT_RESPONSE_SIZE, response.getBytes().length);
 
         assertEquals(String.format(
                 "Got unexpected response code %d.", response.getCode()
@@ -499,13 +499,17 @@ public class HttpUtilTest extends TestCase {
                 .setGzip(true)
                 .executeAndReturnResponse();
 
-        assertEquals(LARGE_RESPONSE_SIZE, response.getBytes().length);
+        assertEquals(getIllegalResponseLengthMessage(response, LARGE_RESPONSE_SIZE), LARGE_RESPONSE_SIZE, response.getBytes().length);
 
         assertEquals(String.format(
                 "Got unexpected response code %d.", response.getCode()
         ), HttpCode.OK, response.getCode());
 
         System.out.println("Done 'testPostWithGzippedParameters' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+    }
+
+    private static String getIllegalResponseLengthMessage(HttpResponse response, int expectedLength) {
+        return String.format("Expected response length: %d. %s.", expectedLength, response);
     }
 
     private static final class HttpRequestTestServer extends NanoHTTPD {

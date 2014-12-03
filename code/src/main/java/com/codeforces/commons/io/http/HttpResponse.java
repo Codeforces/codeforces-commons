@@ -1,7 +1,7 @@
 package com.codeforces.commons.io.http;
 
+import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.ArrayUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -122,11 +122,10 @@ public final class HttpResponse {
     @Override
     public String toString() {
         return String.format(
-                "Response {code=%d, size=%s, s='%s%s'}",
+                "Response {code=%d, size=%s, s='%s'}",
                 code,
                 bytes == null ? "null" : Integer.toString(bytes.length),
-                bytes == null ? "null" : new String(ArrayUtils.subarray(bytes, 0, 20), Charsets.UTF_8),
-                bytes != null && bytes.length > 20 ? "..." : ""
+                StringUtil.shrinkTo(getUtf8String(), 30)
         );
     }
 }
