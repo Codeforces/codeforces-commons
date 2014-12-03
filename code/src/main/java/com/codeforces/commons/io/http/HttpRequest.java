@@ -3,6 +3,7 @@ package com.codeforces.commons.io.http;
 import com.codeforces.commons.io.CountingInputStream;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
+import com.codeforces.commons.io.MimeUtil;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.text.StringUtil;
@@ -13,14 +14,15 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
@@ -32,9 +34,13 @@ public final class HttpRequest {
     private static final Logger logger = Logger.getLogger(HttpRequest.class);
 
     private final String url;
-    private final Map<String, List<String>> parametersByName = new LinkedHashMap<>();
-    private final Map<String, List<String>> headersByName = new LinkedHashMap<>();
 
+    private final Map<String, List<String>> parametersByName = new LinkedHashMap<>(8);
+    @Nullable
+    private byte[] binaryEntity;
+    private boolean gzip;
+
+    private final Map<String, List<String>> headersByName = new LinkedHashMap<>(8);
     private HttpMethod method = HttpMethod.GET;
     private int timeoutMillis = NumberUtil.toInt(10L * TimeUtil.MILLIS_PER_MINUTE);
 
@@ -52,10 +58,42 @@ public final class HttpRequest {
     }
 
     public Map<String, List<String>> getParametersByNameMap() {
-        return Collections.unmodifiableMap(parametersByName);
+        return getDeepUnmodifiableMap(parametersByName);
+    }
+
+    public List<String> getParameters(String parameterName) {
+        List<String> parameters = parametersByName.get(parameterName);
+        return parameters == null ? Collections.<String>emptyList() : Collections.unmodifiableList(parameters);
+    }
+
+    @Nullable
+    public String getParameter(String parameterName) {
+        return getParameter(parameterName, false);
+    }
+
+    @Nullable
+    public String getParameter(String parameterName, boolean throwIfMany) {
+        List<String> parameters = getParameters(parameterName);
+        int parameterCount = parameters.size();
+
+        if (parameterCount == 0) {
+            return null;
+        }
+
+        if (parameterCount > 1 && throwIfMany) {
+            throw new IllegalStateException(String.format(
+                    "Expected only one parameter with name '%s' but %d has been found.", parameterName, parameterCount
+            ));
+        }
+
+        return parameters.get(0);
     }
 
     public HttpRequest appendParameters(Object... parameters) {
+        if (hasBinaryEntity()) {
+            throw new IllegalStateException("Can't send parameters and binary entity with a single request.");
+        }
+
         String[] encodedParameters = validateAndEncodeParameters(url, parameters);
         int parameterCount = encodedParameters.length;
 
@@ -74,7 +112,15 @@ public final class HttpRequest {
         return this;
     }
 
+    public HttpRequest appendParameter(@Nonnull String parameterName, @Nonnull Object parameterValue) {
+        return appendParameters(parameterName, parameterValue);
+    }
+
     public HttpRequest prependParameters(Object... parameters) {
+        if (hasBinaryEntity()) {
+            throw new IllegalStateException("Can't send parameters and binary entity with a single request.");
+        }
+
         String[] encodedParameters = validateAndEncodeParameters(url, parameters);
         int parameterCount = encodedParameters.length;
 
@@ -91,6 +137,10 @@ public final class HttpRequest {
         }
 
         return this;
+    }
+
+    public HttpRequest prependParameter(@Nonnull String parameterName, @Nonnull Object parameterValue) {
+        return prependParameters(parameterName, parameterValue);
     }
 
     public HttpRequest removeParameters(String parameterName) {
@@ -125,8 +175,91 @@ public final class HttpRequest {
         return this;
     }
 
+    public HttpRequest removeAllParameters() {
+        parametersByName.clear();
+        return this;
+    }
+
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    @Nullable
+    public byte[] getBinaryEntity() {
+        return binaryEntity;
+    }
+
+    /**
+     * Sets binary entity. Ignored if {@code {@link #method method}} is not {@code {@link HttpMethod#POST POST}}.
+     *
+     * @param binaryEntity binary entity to send as POST data
+     * @return this HTTP request
+     * @throws IllegalStateException if {@code {@link #parametersByName parametersByName}} is not empty
+     */
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    public HttpRequest setBinaryEntity(@Nullable byte[] binaryEntity) {
+        if (!parametersByName.isEmpty()) {
+            throw new IllegalStateException("Can't send parameters and binary entity with a single request.");
+        }
+        this.binaryEntity = binaryEntity;
+        return this;
+    }
+
+    @SuppressWarnings("InstanceVariableUsedBeforeInitialized")
+    public boolean hasBinaryEntity() {
+        return binaryEntity != null;
+    }
+
+    public HttpRequest removeBinaryEntity() {
+        this.binaryEntity = null;
+        return this;
+    }
+
+    public boolean isGzip() {
+        return gzip;
+    }
+
+    /**
+     * Sets whether POST data of request should be GZIP-compressed or not.
+     * It is absolutely normal to compress binary entity,
+     * but many HTTP servers in default configuration do not support compression of parameters.
+     * So use it with caution. Google for 'compressableMimeType' for more information.
+     *
+     * @param gzip compression flag value
+     * @return this HTTP request
+     */
+    public HttpRequest setGzip(boolean gzip) {
+        this.gzip = gzip;
+        return this;
+    }
+
     public Map<String, List<String>> getHeadersByNameMap() {
-        return Collections.unmodifiableMap(headersByName);
+        return getDeepUnmodifiableMap(headersByName);
+    }
+
+    public List<String> getHeaders(String headerName) {
+        List<String> headers = headersByName.get(headerName);
+        return headers == null ? Collections.<String>emptyList() : Collections.unmodifiableList(headers);
+    }
+
+    @Nullable
+    public String getHeader(String headerName) {
+        return getHeader(headerName, false);
+    }
+
+    @Nullable
+    public String getHeader(String headerName, boolean throwIfMany) {
+        List<String> headers = getHeaders(headerName);
+        int headerCount = headers.size();
+
+        if (headerCount == 0) {
+            return null;
+        }
+
+        if (headerCount > 1 && throwIfMany) {
+            throw new IllegalStateException(String.format(
+                    "Expected only one header with name '%s' but %d has been found.", headerName, headerCount
+            ));
+        }
+
+        return headers.get(0);
     }
 
     public HttpRequest appendHeaders(String... headers) {
@@ -148,6 +281,10 @@ public final class HttpRequest {
         return this;
     }
 
+    public HttpRequest appendHeader(@Nonnull String headerName, @Nonnull String headerValue) {
+        return appendHeaders(headerName, headerValue);
+    }
+
     public HttpRequest prependHeaders(String... headers) {
         validateHeaders(headers);
         int headerCount = headers.length;
@@ -165,6 +302,10 @@ public final class HttpRequest {
         }
 
         return this;
+    }
+
+    public HttpRequest prependHeader(@Nonnull String headerName, @Nonnull String headerValue) {
+        return prependHeaders(headerName, headerValue);
     }
 
     public HttpRequest removeHeaders(String headerName) {
@@ -199,6 +340,11 @@ public final class HttpRequest {
         return this;
     }
 
+    public HttpRequest removeAllHeaders() {
+        headersByName.clear();
+        return this;
+    }
+
     public HttpMethod getMethod() {
         return method;
     }
@@ -223,6 +369,10 @@ public final class HttpRequest {
         return setTimeoutMillis(NumberUtil.toInt(timeoutMillis));
     }
 
+    public HttpRequest setTimeout(long value, TimeUnit unit) {
+        return setTimeoutMillis(NumberUtil.toInt(unit.toMillis(value)));
+    }
+
     public int execute() {
         return internalExecute(false).getCode();
     }
@@ -233,35 +383,45 @@ public final class HttpRequest {
 
     @SuppressWarnings("OverlyLongMethod")
     private HttpResponse internalExecute(boolean readBytes) {
-        String internalUrl = this.url;
+        String internalUrl = appendGetParametersToUrl(this.url);
 
-        if (method == HttpMethod.GET) {
-            for (Map.Entry<String, List<String>> parameterEntry : parametersByName.entrySet()) {
-                String parameterName = parameterEntry.getKey();
-                for (String parameterValue : parameterEntry.getValue()) {
-                    internalUrl = UrlUtil.appendParameterToUrl(internalUrl, parameterName, parameterValue);
-                }
-            }
+        if (method == HttpMethod.GET && hasBinaryEntity()) {
+            String message = "Can't write binary entity to '" + internalUrl + "' with GET method.";
+            logger.warn(message);
+            return new HttpResponse(-1, null, null, new IOException(message));
         }
 
         HttpURLConnection connection;
         try {
             connection = newConnection(
-                    internalUrl, readBytes, method == HttpMethod.POST && !parametersByName.isEmpty()
+                    internalUrl, readBytes,
+                    method == HttpMethod.POST && (!parametersByName.isEmpty() || hasBinaryEntity())
             );
         } catch (IOException e) {
-            String message = "Can't create HTTP connection to '" + internalUrl + "'.";
+            String message = "Can't create connection to '" + internalUrl + "'.";
             logger.warn(message, e);
             return new HttpResponse(-1, null, null, new IOException(message, e));
         }
 
-        if (method == HttpMethod.POST && !parametersByName.isEmpty()) {
-            try {
-                writePostParameters(connection, parametersByName);
-            } catch (IOException e) {
-                String message = "Can't write HTTP POST parameters to '" + internalUrl + "'.";
-                logger.warn(message, e);
-                return new HttpResponse(-1, null, null, new IOException(message, e));
+        if (method == HttpMethod.POST) {
+            if (!parametersByName.isEmpty()) {
+                try {
+                    writePostParameters(connection, parametersByName);
+                } catch (IOException e) {
+                    String message = "Can't write POST parameters to '" + internalUrl + "'.";
+                    logger.warn(message, e);
+                    return new HttpResponse(-1, null, null, new IOException(message, e));
+                }
+            }
+
+            if (hasBinaryEntity()) {
+                try {
+                    writeEntity(connection, binaryEntity);
+                } catch (IOException e) {
+                    String message = "Can't write binary entity to '" + internalUrl + "'.";
+                    logger.warn(message, e);
+                    return new HttpResponse(-1, null, null, new IOException(message, e));
+                }
             }
         }
 
@@ -317,6 +477,19 @@ public final class HttpRequest {
         } finally {
             connection.disconnect();
         }
+    }
+
+    private String appendGetParametersToUrl(String url) {
+        if (method == HttpMethod.GET) {
+            for (Map.Entry<String, List<String>> parameterEntry : parametersByName.entrySet()) {
+                String parameterName = parameterEntry.getKey();
+                for (String parameterValue : parameterEntry.getValue()) {
+                    url = UrlUtil.appendParameterToUrl(url, parameterName, parameterValue);
+                }
+            }
+        }
+
+        return url;
     }
 
     private static String[] validateAndEncodeParameters(String url, Object... parameters) {
@@ -406,13 +579,31 @@ public final class HttpRequest {
 
     private HttpURLConnection newConnection(String url, boolean doInput, boolean doOutput) throws IOException {
         URL urlObject = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection) urlObject.openConnection();
+        @Nullable Proxy proxy = getProxy(urlObject.getProtocol());
+
+        HttpURLConnection connection = (HttpURLConnection) (
+                proxy == null ? urlObject.openConnection() : urlObject.openConnection(proxy)
+        );
 
         connection.setReadTimeout(timeoutMillis);
         connection.setConnectTimeout(timeoutMillis);
         connection.setRequestMethod(method.name());
         connection.setDoInput(doInput);
         connection.setDoOutput(doOutput);
+
+        connection.setRequestProperty("Connection", "close");
+
+        if (method == HttpMethod.POST) {
+            if (hasBinaryEntity()) {
+                connection.setRequestProperty("Content-Type", MimeUtil.Type.APPLICATION_OCTET_STREAM);
+            } else if (!parametersByName.isEmpty()) {
+                connection.setRequestProperty("Content-Type", MimeUtil.Type.APPLICATION_X_WWW_FORM_URLENCODED);
+            }
+
+            if (gzip && (hasBinaryEntity() || !parametersByName.isEmpty())) {
+                connection.setRequestProperty("Content-Encoding", "gzip");
+            }
+        }
 
         for (Map.Entry<String, List<String>> headerEntry : headersByName.entrySet()) {
             String headerName = headerEntry.getKey();
@@ -431,7 +622,36 @@ public final class HttpRequest {
         return connection;
     }
 
-    private static void writePostParameters(HttpURLConnection connection, Map<String, List<String>> parametersByName)
+    @SuppressWarnings("AccessOfSystemProperties")
+    @Nullable
+    private static Proxy getProxy(String protocol) {
+        if (!Boolean.parseBoolean(System.getProperty("proxySet"))) {
+            return null;
+        }
+
+        if (!"http".equalsIgnoreCase(protocol) && !"https".equalsIgnoreCase(protocol)) {
+            return null;
+        }
+
+        String proxyHost = System.getProperty(protocol + ".proxyHost");
+        if (StringUtil.isBlank(proxyHost)) {
+            return null;
+        }
+
+        int proxyPort;
+        try {
+            proxyPort = Integer.parseInt(System.getProperty(protocol + ".proxyPort"));
+            if (proxyPort <= 0 || proxyPort > 65535) {
+                return null;
+            }
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+
+        return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+    }
+
+    private void writePostParameters(HttpURLConnection connection, Map<String, List<String>> parametersByName)
             throws IOException {
         StringBuilder result = new StringBuilder();
 
@@ -446,25 +666,30 @@ public final class HttpRequest {
             }
         }
 
-        OutputStream outputStream = connection.getOutputStream();
+        writeEntity(connection, result.toString().getBytes(Charsets.UTF_8));
+    }
+
+    private void writeEntity(HttpURLConnection connection, byte[] entity) throws IOException {
+        OutputStream outputStream = new BufferedOutputStream(
+                gzip ? new GZIPOutputStream(connection.getOutputStream()) : connection.getOutputStream(),
+                IoUtil.BUFFER_SIZE
+        );
+
         try {
-            BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(outputStream, Charsets.UTF_8), IoUtil.BUFFER_SIZE
-            );
-
-            try {
-                writer.write(result.toString());
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                IoUtil.closeQuietly(writer);
-                throw e;
-            }
-
+            outputStream.write(entity);
+            outputStream.flush();
             outputStream.close();
         } catch (IOException e) {
             IoUtil.closeQuietly(outputStream);
             throw e;
         }
+    }
+
+    private static <K, V> Map<K, List<V>> getDeepUnmodifiableMap(Map<K, List<V>> map) {
+        Map<K, List<V>> copy = new LinkedHashMap<>(map);
+        for (Map.Entry<K, List<V>> entry : copy.entrySet()) {
+            entry.setValue(Collections.unmodifiableList(new ArrayList<>(entry.getValue())));
+        }
+        return Collections.unmodifiableMap(copy);
     }
 }

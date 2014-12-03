@@ -40,7 +40,7 @@ public class MimeUtil {
             .put(".tex", Type.APPLICATION_X_TEX)
             .put(".csv", "text/csv")
 
-            .put(".exe", "application/octet-stream")
+            .put(".exe", Type.APPLICATION_OCTET_STREAM)
             .put(".dll", "application/x-msdownload")
             .put(".zip", Type.APPLICATION_ZIP)
             .put(".tar", "application/x-tar-compressed")
@@ -50,6 +50,7 @@ public class MimeUtil {
             .put(".jnlp", "application/x-java-jnlp-file")
             .put(".bat", "application/bat")
             .put(".sh", "application/x-sh")
+
             .buildUnmodifiable();
 
     private MimeUtil() {
@@ -99,7 +100,10 @@ public class MimeUtil {
         public static final String APPLICATION_PDF = "application/pdf";
         public static final String APPLICATION_X_TEX = "application/x-tex";
 
+        public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
         public static final String APPLICATION_ZIP = "application/zip";
+
+        public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 
         private Type() {
             throw new UnsupportedOperationException();

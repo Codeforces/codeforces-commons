@@ -3,6 +3,7 @@ package com.codeforces.commons.io.http;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.ArrayUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -58,14 +59,49 @@ public final class HttpResponse {
         return bytes;
     }
 
-    @Nullable
+    @Nonnull
     public Map<String, List<String>> getHeadersByNameMap() {
-        return headersByName == null ? null : Collections.unmodifiableMap(headersByName);
+        return headersByName == null
+                ? Collections.<String, List<String>>emptyMap()
+                : Collections.unmodifiableMap(headersByName);
+    }
+
+    @Nonnull
+    public List<String> getHeaders(String headerName) {
+        List<String> headers = getHeadersByNameMap().get(headerName);
+        return headers == null ? Collections.<String>emptyList() : Collections.unmodifiableList(headers);
+    }
+
+    @Nullable
+    public String getHeader(String headerName) {
+        return getHeader(headerName, false);
+    }
+
+    @Nullable
+    public String getHeader(String headerName, boolean throwIfMany) {
+        List<String> headers = getHeaders(headerName);
+        int headerCount = headers.size();
+
+        if (headerCount == 0) {
+            return null;
+        }
+
+        if (headerCount > 1 && throwIfMany) {
+            throw new IllegalStateException(String.format(
+                    "Expected only one header with name '%s' but %d has been found.", headerName, headerCount
+            ));
+        }
+
+        return headers.get(0);
     }
 
     @Nullable
     public IOException getIoException() {
         return ioException;
+    }
+
+    public boolean hasIoException() {
+        return ioException != null;
     }
 
     @Nullable
