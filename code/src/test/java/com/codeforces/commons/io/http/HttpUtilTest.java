@@ -120,7 +120,9 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.println("Done 'testManyConcurrentGets_HttpClientUtil' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf(
+                "Done 'testManyConcurrentGets_HttpClientUtil' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
+        );
     }
 
     public void testManyConcurrentGets() throws InterruptedException, IOException {
@@ -160,7 +162,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.println("Done 'testManyConcurrentGets' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf("Done 'testManyConcurrentGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     @Ignore
@@ -201,7 +203,10 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.println("Done 'testManyConcurrentPosts_HttpClientUtil' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf(
+                "Done 'testManyConcurrentPosts_HttpClientUtil' in %d ms.%n",
+                System.currentTimeMillis() - startTimeMillis
+        );
     }
 
     public void testManyConcurrentPosts() throws InterruptedException, IOException {
@@ -241,7 +246,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.println("Done 'testManyConcurrentPosts' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf("Done 'testManyConcurrentPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyConcurrentDoGets() throws InterruptedException, IOException {
@@ -279,7 +284,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.println("Done 'testManyConcurrentDoGets' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf("Done 'testManyConcurrentDoGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyNotTimedOutPosts() throws InterruptedException, IOException {
@@ -302,7 +307,10 @@ public class HttpUtilTest extends TestCase {
                                 1500, BASE_TESTING_URL + "?delay=1000"
                         );
 
-                        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE), DEFAULT_RESPONSE_SIZE, response.getBytes().length);
+                        assertEquals(
+                                getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
+                                DEFAULT_RESPONSE_SIZE, response.getBytes().length
+                        );
 
                         if (VERBOSE) {
                             System.out.println("testManyNotTimedOutPosts: done " + count.incrementAndGet());
@@ -322,7 +330,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size(), exceptions.get(0));
         }
 
-        System.out.println("Done 'testManyNotTimedOutPosts' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf("Done 'testManyNotTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyTimedOutPosts() throws InterruptedException, IOException {
@@ -342,10 +350,13 @@ public class HttpUtilTest extends TestCase {
                 public void run() {
                     try {
                         HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
-                                950, BASE_TESTING_URL + "?delay=1000"
+                                650, BASE_TESTING_URL + "?delay=1000"
                         );
 
-                        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE), DEFAULT_RESPONSE_SIZE, response.getBytes().length);
+                        assertEquals(
+                                getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
+                                DEFAULT_RESPONSE_SIZE, response.getBytes().length
+                        );
 
                         if (VERBOSE) {
                             System.out.println("testManyTimedOutPosts: done " + count.incrementAndGet());
@@ -364,7 +375,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.println("Done 'testManyTimedOutPosts' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf("Done 'testManyTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testTimedOutPost() throws InterruptedException, IOException {
@@ -403,7 +414,10 @@ public class HttpUtilTest extends TestCase {
             HttpClientUtil.closeQuietly(httpClient, request, response);
         }
 
-        System.out.println("Done 'testPostWithBinaryEntity_HttpClientUtil' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf(
+                "Done 'testPostWithBinaryEntity_HttpClientUtil' in %d ms.%n",
+                System.currentTimeMillis() - startTimeMillis
+        );
     }
 
     public void testPostWithBinaryEntity() throws IOException {
@@ -417,13 +431,16 @@ public class HttpUtilTest extends TestCase {
 
         response.getHeadersByNameMap();
 
-        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE), DEFAULT_RESPONSE_SIZE, response.getBytes().length);
+        assertEquals(
+                getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
+                DEFAULT_RESPONSE_SIZE, response.getBytes().length
+        );
 
         assertEquals(String.format(
                 "Got unexpected response code %d.", response.getCode()
         ), HttpCode.OK, response.getCode());
 
-        System.out.println("Done 'testPostWithBinaryEntity' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf("Done 'testPostWithBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testPostWithGzippedBinaryEntity_HttpClientUtil() throws IOException {
@@ -467,7 +484,10 @@ public class HttpUtilTest extends TestCase {
             HttpClientUtil.closeQuietly(httpClient, request, response);
         }
 
-        System.out.println("Done 'testPostWithGzippedBinaryEntity_HttpClientUtil' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf(
+                "Done 'testPostWithGzippedBinaryEntity_HttpClientUtil' in %d ms.%n",
+                System.currentTimeMillis() - startTimeMillis
+        );
     }
 
     public void testPostWithGzippedBinaryEntity() throws IOException {
@@ -480,13 +500,18 @@ public class HttpUtilTest extends TestCase {
                 .setGzip(true)
                 .executeAndReturnResponse();
 
-        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE), DEFAULT_RESPONSE_SIZE, response.getBytes().length);
+        assertEquals(
+                getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
+                DEFAULT_RESPONSE_SIZE, response.getBytes().length
+        );
 
         assertEquals(String.format(
                 "Got unexpected response code %d.", response.getCode()
         ), HttpCode.OK, response.getCode());
 
-        System.out.println("Done 'testPostWithGzippedBinaryEntity' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf(
+                "Done 'testPostWithGzippedBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
+        );
     }
 
     public void testPostWithGzippedParameters() throws IOException {
@@ -499,13 +524,18 @@ public class HttpUtilTest extends TestCase {
                 .setGzip(true)
                 .executeAndReturnResponse();
 
-        assertEquals(getIllegalResponseLengthMessage(response, LARGE_RESPONSE_SIZE), LARGE_RESPONSE_SIZE, response.getBytes().length);
+        assertEquals(
+                getIllegalResponseLengthMessage(response, LARGE_RESPONSE_SIZE),
+                LARGE_RESPONSE_SIZE, response.getBytes().length
+        );
 
         assertEquals(String.format(
                 "Got unexpected response code %d.", response.getCode()
         ), HttpCode.OK, response.getCode());
 
-        System.out.println("Done 'testPostWithGzippedParameters' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        System.out.printf(
+                "Done 'testPostWithGzippedParameters' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
+        );
     }
 
     private static String getIllegalResponseLengthMessage(HttpResponse response, int expectedLength) {
