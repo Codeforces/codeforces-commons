@@ -685,7 +685,7 @@ public final class HttpRequest {
         }
     }
 
-    private static <K, V> Map<K, List<V>> getDeepUnmodifiableMap(Map<K, List<V>> map) {
+    static <K, V> Map<K, List<V>> getDeepUnmodifiableMap(Map<K, List<V>> map) {
         Map<K, List<V>> copy = new LinkedHashMap<>(map);
         for (Map.Entry<K, List<V>> entry : copy.entrySet()) {
             entry.setValue(Collections.unmodifiableList(new ArrayList<>(entry.getValue())));

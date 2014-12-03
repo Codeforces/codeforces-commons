@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +40,7 @@ public final class HttpResponse {
         this.bytes = bytes;
         this.headersByName = headersByName == null || headersByName.isEmpty()
                 ? null
-                : new LinkedHashMap<>(headersByName);
+                : HttpRequest.getDeepUnmodifiableMap(headersByName);
         this.ioException = ioException;
     }
 
@@ -61,9 +60,7 @@ public final class HttpResponse {
 
     @Nonnull
     public Map<String, List<String>> getHeadersByNameMap() {
-        return headersByName == null
-                ? Collections.<String, List<String>>emptyMap()
-                : Collections.unmodifiableMap(headersByName);
+        return headersByName == null ? Collections.<String, List<String>>emptyMap() : headersByName;
     }
 
     @Nonnull
