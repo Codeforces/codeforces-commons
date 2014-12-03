@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipInputStream;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -425,49 +426,13 @@ public final class HttpRequest {
             }
         }
 
-        final long startTimeMillis = System.currentTimeMillis();
+        long startTimeMillis = System.currentTimeMillis();
 
         try {
             connection.connect();
 
             int code = connection.getResponseCode();
-            byte[] bytes;
-
-            if (readBytes) {
-                InputStream connectionInputStream;
-
-                try {
-                    connectionInputStream = connection.getInputStream();
-                } catch (IOException e) {
-                    connectionInputStream = connection.getErrorStream();
-                    if (connectionInputStream == null) {
-                        throw e;
-                    }
-                }
-
-                if (connectionInputStream == null) {
-                    bytes = null;
-                } else {
-                    if ("gzip".equalsIgnoreCase(connection.getContentEncoding())) {
-                        connectionInputStream = new GZIPInputStream(connectionInputStream);
-                    } else if ("deflate".equalsIgnoreCase(connection.getContentEncoding())) {
-                        connectionInputStream = new InflaterInputStream(connectionInputStream);
-                    }
-
-                    connectionInputStream = new CountingInputStream(connectionInputStream, new CountingInputStream.ReadEvent() {
-                        @Override
-                        public void onRead(long readByteCount, long totalReadByteCount) throws IOException {
-                            if (System.currentTimeMillis() - startTimeMillis > timeoutMillis) {
-                                throw new IOException("Can't read response within " + timeoutMillis + " ms.");
-                            }
-                        }
-                    });
-
-                    bytes = IoUtil.toByteArray(connectionInputStream, NumberUtil.toInt(FileUtil.BYTES_PER_GB), true);
-                }
-            } else {
-                bytes = null;
-            }
+            byte[] bytes = getBytes(connection, readBytes, startTimeMillis);
 
             return new HttpResponse(code, bytes, connection.getHeaderFields(), null);
         } catch (IOException e) {
@@ -477,6 +442,51 @@ public final class HttpRequest {
         } finally {
             connection.disconnect();
         }
+    }
+
+    private byte[] getBytes(HttpURLConnection connection, boolean readBytes, final long startTimeMillis)
+            throws IOException {
+        byte[] bytes;
+
+        if (readBytes) {
+            InputStream connectionInputStream;
+
+            try {
+                connectionInputStream = connection.getInputStream();
+            } catch (IOException e) {
+                connectionInputStream = connection.getErrorStream();
+                if (connectionInputStream == null) {
+                    throw e;
+                }
+            }
+
+            if (connectionInputStream == null) {
+                bytes = null;
+            } else {
+                if ("gzip".equalsIgnoreCase(connection.getContentEncoding())) {
+                    connectionInputStream = new GZIPInputStream(connectionInputStream);
+                } else if ("deflate".equalsIgnoreCase(connection.getContentEncoding())) {
+                    connectionInputStream = new InflaterInputStream(connectionInputStream);
+                } else if ("zip".equalsIgnoreCase(connection.getContentEncoding())) {
+                    connectionInputStream = new ZipInputStream(connectionInputStream);
+                }
+
+                connectionInputStream = new CountingInputStream(connectionInputStream, new CountingInputStream.ReadEvent() {
+                    @Override
+                    public void onRead(long readByteCount, long totalReadByteCount) throws IOException {
+                        if (System.currentTimeMillis() - startTimeMillis > timeoutMillis) {
+                            throw new IOException("Can't read response within " + timeoutMillis + " ms.");
+                        }
+                    }
+                });
+
+                bytes = IoUtil.toByteArray(connectionInputStream, NumberUtil.toInt(FileUtil.BYTES_PER_GB), true);
+            }
+        } else {
+            bytes = null;
+        }
+
+        return bytes;
     }
 
     private String appendGetParametersToUrl(String url) {
