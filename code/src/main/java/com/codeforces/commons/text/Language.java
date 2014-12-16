@@ -1,7 +1,9 @@
 package com.codeforces.commons.text;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,6 +78,41 @@ public enum Language {
     private static final Map<String, Language> languageByIetfTag;
     private static final Map<String, Language> languageByIso6391Code;
 
+    private static final Comparator<Language> languageComparatorByGroup = new Comparator<Language>() {
+        @Override
+        public int compare(Language languageA, Language languageB) {
+            if (languageA == languageB) {
+                return 0;
+            }
+
+            if (languageA == ENGLISH) {
+                return -1;
+            }
+
+            if (languageB == ENGLISH) {
+                return 1;
+            }
+
+            if (languageA == RUSSIAN) {
+                return -1;
+            }
+
+            if (languageB == RUSSIAN) {
+                return 1;
+            }
+
+            if (languageA == OTHER) {
+                return 1;
+            }
+
+            if (languageB == OTHER) {
+                return -1;
+            }
+
+            return 0;
+        }
+    };
+
     private final String ietfTag;
     private final String iso6391Code;
 
@@ -118,6 +155,11 @@ public enum Language {
         return languageByIso6391Code.get(iso6391Code);
     }
 
+    @Nonnull
+    public static Comparator<Language> getLanguageComparatorByGroup() {
+        return languageComparatorByGroup;
+    }
+
     static {
         Language[] languages = Language.values();
         int languageCount = languages.length;
@@ -134,6 +176,9 @@ public enum Language {
         }
 
         languageByIetfTag = Collections.unmodifiableMap(languageByIetfTagModifiableMap);
-        languageByIso6391Code = Collections.unmodifiableMap(languageByIso6391CodeModifiableMap);
+
+        languageByIso6391Code = languageByIso6391CodeModifiableMap.equals(languageByIetfTagModifiableMap)
+                ? languageByIetfTag
+                : Collections.unmodifiableMap(languageByIso6391CodeModifiableMap);
     }
 }
