@@ -122,6 +122,7 @@ public class GuavaInmemoryCacheWrapper<K, V> extends Cache<K, V> {
     private static final class CacheKeyWrapper<K> {
         private final String section;
         private final K key;
+        private final int hashCode;
 
         private CacheKeyWrapper(@Nonnull String section, @Nonnull K key) {
             if (StringUtil.isEmpty(section)) {
@@ -134,14 +135,10 @@ public class GuavaInmemoryCacheWrapper<K, V> extends Cache<K, V> {
 
             this.section = section;
             this.key = key;
-        }
 
-        public String getSection() {
-            return section;
-        }
-
-        public K getKey() {
-            return key;
+            int hash = this.section.hashCode();
+            hash = 31 * hash + this.key.hashCode();
+            this.hashCode = hash;
         }
 
         @Override
@@ -161,9 +158,7 @@ public class GuavaInmemoryCacheWrapper<K, V> extends Cache<K, V> {
 
         @Override
         public int hashCode() {
-            int result = section.hashCode();
-            result = 31 * result + key.hashCode();
-            return result;
+            return hashCode;
         }
     }
 }
