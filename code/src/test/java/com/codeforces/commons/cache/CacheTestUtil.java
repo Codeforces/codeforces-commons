@@ -17,7 +17,7 @@ final class CacheTestUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static void checkStoringOneValue(ByteCache cache, CachePath cachePath, int valueLength) {
+    public static void checkStoringOneValue(Cache<String, byte[]> cache, CachePath cachePath, int valueLength) {
         String section = cachePath.getSection();
         String key = cachePath.getKey();
 
@@ -33,8 +33,9 @@ final class CacheTestUtil {
         Assert.assertNull("Value is not 'null' after removal.", cache.get(section, key));
     }
 
-    public static void checkStoringOneValueWithLifetime(ByteCache cache, CachePath cachePath, int valueLength,
-                                                        long valueLifetimeMillis, long valueCheckIntervalMillis) {
+    public static void checkStoringOneValueWithLifetime(
+            Cache<String, byte[]> cache, CachePath cachePath, int valueLength,
+            long valueLifetimeMillis, long valueCheckIntervalMillis) {
         String section = cachePath.getSection();
         String key = cachePath.getKey();
 
@@ -47,12 +48,14 @@ final class CacheTestUtil {
         );
 
         ThreadUtil.sleep(valueLifetimeMillis - valueCheckIntervalMillis);
-        Assert.assertTrue(
-                "Restored value (with lifetime) does not equal to original value after sleeping some time.",
-                Arrays.equals(value, cache.get(section, key))
-        );
+        byte[] restoredValue = cache.get(section, key);
+        Assert.assertTrue(String.format(
+                "Restored value (with lifetime) does not equal to original value after sleeping some time " +
+                        "(restored=%s, expected=%s, section=%s, key=%s).",
+                toShortString(restoredValue), toShortString(value), section, key
+        ), Arrays.equals(value, restoredValue));
 
-        ThreadUtil.sleep(3L * valueCheckIntervalMillis);
+        ThreadUtil.sleep(2L * valueCheckIntervalMillis);
         Assert.assertNull(
                 "Restored value (with lifetime) does not equal to 'null' after lifetime expiration.",
                 cache.get(section, key)
@@ -115,5 +118,36 @@ final class CacheTestUtil {
                 operationName, (finishTime - startTime) / 1000000.0
         );
         System.out.flush();
+    }
+
+    private static String toShortString(byte[] array) {
+        if (array == null) {
+            return "null";
+        }
+
+        int length = array.length;
+        if (length == 0) {
+            return "[]";
+        }
+
+        StringBuilder stringBuilder = new StringBuilder("[").append(array[0]);
+
+        if (length <= 6) {
+            for (int i = 1; i < length; ++i) {
+                stringBuilder.append(", ").append(array[i]);
+            }
+        } else {
+            for (int i = 1; i < 3; ++i) {
+                stringBuilder.append(", ").append(array[i]);
+            }
+
+            stringBuilder
+                    .append(", ... ").append(array[length - 3])
+                    .append(", ").append(array[length - 2])
+                    .append(", ").append(array[length - 1]);
+        }
+
+        stringBuilder.append(']');
+        return stringBuilder.toString();
     }
 }

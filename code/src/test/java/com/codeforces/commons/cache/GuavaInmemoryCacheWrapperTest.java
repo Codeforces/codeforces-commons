@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *         Date: 26.01.12
  */
 @SuppressWarnings({"JUnitTestMethodWithNoAssertions", "ThrowableResultOfMethodCallIgnored", "ErrorNotRethrown"})
-public class InmemoryCacheTest {
+public class GuavaInmemoryCacheWrapperTest {
     private static final int THREAD_COUNT = 10 * Runtime.getRuntime().availableProcessors();
     private static final int SLEEPING_THREAD_COUNT = 100 * Runtime.getRuntime().availableProcessors();
 
@@ -35,10 +35,10 @@ public class InmemoryCacheTest {
 
     @Test
     public void testStoringOfValues() throws Exception {
-        final Cache<String, byte[]> cache = new InmemoryByteCache();
+        final Cache<String, byte[]> cache = new GuavaInmemoryCacheWrapper<>();
         final BlockingQueue<CachePath> cachePaths = getCachePaths();
 
-        CacheTestUtil.determineOperationTime("InmemoryCacheTest.testStoringOfValues", new Runnable() {
+        CacheTestUtil.determineOperationTime("GuavaInmemoryCacheWrapperTest.testStoringOfValues", new Runnable() {
             @Override
             public void run() {
                 for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
@@ -50,15 +50,15 @@ public class InmemoryCacheTest {
 
     @Test
     public void testOverridingOfValuesWithLifetime() throws Exception {
-        final Cache<String, byte[]> cache = new InmemoryByteCache();
+        final Cache<String, byte[]> cache = new GuavaInmemoryCacheWrapper<>(1000L);
 
-        CacheTestUtil.determineOperationTime("InmemoryCacheTest.testOverridingOfValuesWithLifetime", new Runnable() {
+        CacheTestUtil.determineOperationTime("GuavaInmemoryCacheWrapperTest.testOverridingOfValuesWithLifetime", new Runnable() {
             @Override
             public void run() {
                 byte[] temporaryBytes = RandomUtil.getRandomBytes(VALUE_LENGTH);
                 byte[] finalBytes = RandomUtil.getRandomBytes(VALUE_LENGTH);
 
-                cache.put("S", "K", temporaryBytes, 500L);
+                cache.put("S", "K", temporaryBytes, 1000L);
                 Assert.assertTrue(
                         "Restored value (with lifetime) does not equal to original value.",
                         Arrays.equals(temporaryBytes, cache.get("S", "K"))
@@ -77,12 +77,12 @@ public class InmemoryCacheTest {
 
     @Test
     public void testConcurrentStoringOfValues() throws Exception {
-        final Cache<String, byte[]> cache = new InmemoryByteCache();
+        final Cache<String, byte[]> cache = new GuavaInmemoryCacheWrapper<>();
         final BlockingQueue<CachePath> cachePaths = getCachePaths();
         final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
         final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-        CacheTestUtil.determineOperationTime("InmemoryCacheTest.testConcurrentStoringOfValues", new Runnable() {
+        CacheTestUtil.determineOperationTime("GuavaInmemoryCacheWrapperTest.testConcurrentStoringOfValues", new Runnable() {
             @Override
             public void run() {
                 ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
@@ -135,12 +135,12 @@ public class InmemoryCacheTest {
 
     @Test
     public void testConcurrentStoringOfValuesWithLifetime() throws Exception {
-        final Cache<String, byte[]> cache = new InmemoryByteCache();
+        final Cache<String, byte[]> cache = new GuavaInmemoryCacheWrapper<>(VALUE_LIFETIME_MILLIS);
         final BlockingQueue<CachePath> cachePaths = getCachePaths();
         final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
         final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-        CacheTestUtil.determineOperationTime("InmemoryCacheTest.testConcurrentStoringOfValuesWithLifetime", new Runnable() {
+        CacheTestUtil.determineOperationTime("GuavaInmemoryCacheWrapperTest.testConcurrentStoringOfValuesWithLifetime", new Runnable() {
             @Override
             public void run() {
                 ExecutorService executorService = Executors.newFixedThreadPool(SLEEPING_THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
