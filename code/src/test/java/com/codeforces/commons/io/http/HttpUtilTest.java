@@ -24,10 +24,7 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +81,7 @@ public class HttpUtilTest extends TestCase {
 
     @Ignore
     public void _testManyConcurrentGets_HttpClientUtil() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = new ArrayList<>();
+        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
         final AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
@@ -103,7 +100,7 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            System.out.println("testManyConcurrentGets_HttpClientUtil: done " + count.incrementAndGet());
+                            println("testManyConcurrentGets_HttpClientUtil: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -120,13 +117,13 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.printf(
+        printf(
                 "Done 'testManyConcurrentGets_HttpClientUtil' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
         );
     }
 
     public void testManyConcurrentGets() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = new ArrayList<>();
+        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
         final AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
@@ -145,7 +142,7 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            System.out.println("testManyConcurrentGets: done " + count.incrementAndGet());
+                            println("testManyConcurrentGets: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -162,12 +159,12 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.printf("Done 'testManyConcurrentGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'testManyConcurrentGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     @Ignore
     public void _testManyConcurrentPosts_HttpClientUtil() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = new ArrayList<>();
+        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
         final AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
@@ -186,7 +183,7 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            System.out.println("testManyConcurrentPosts_HttpClientUtil: done " + count.incrementAndGet());
+                            println("testManyConcurrentPosts_HttpClientUtil: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -203,14 +200,14 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.printf(
+        printf(
                 "Done 'testManyConcurrentPosts_HttpClientUtil' in %d ms.%n",
                 System.currentTimeMillis() - startTimeMillis
         );
     }
 
     public void testManyConcurrentPosts() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = new ArrayList<>();
+        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
         final AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
@@ -229,7 +226,7 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            System.out.println("testManyConcurrentPosts: done " + count.incrementAndGet());
+                            println("testManyConcurrentPosts: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -246,11 +243,11 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.printf("Done 'testManyConcurrentPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'testManyConcurrentPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyConcurrentDoGets() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = new ArrayList<>();
+        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
         final AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
@@ -267,7 +264,7 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            System.out.println("testManyConcurrentDoGets: done " + count.incrementAndGet());
+                            println("testManyConcurrentDoGets: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -284,14 +281,14 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.printf("Done 'testManyConcurrentDoGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'testManyConcurrentDoGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyNotTimedOutPosts() throws InterruptedException, IOException {
         int concurrency = 5;
         int requestCount = 5 * concurrency;
 
-        final List<Throwable> exceptions = new ArrayList<>();
+        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
         final AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(concurrency);
@@ -313,7 +310,7 @@ public class HttpUtilTest extends TestCase {
                         );
 
                         if (VERBOSE) {
-                            System.out.println("testManyNotTimedOutPosts: done " + count.incrementAndGet());
+                            println("testManyNotTimedOutPosts: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -330,14 +327,14 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size(), exceptions.get(0));
         }
 
-        System.out.printf("Done 'testManyNotTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'testManyNotTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyTimedOutPosts() throws InterruptedException, IOException {
         int concurrency = 5;
         int requestCount = 5 * concurrency;
 
-        final List<Throwable> exceptions = new ArrayList<>();
+        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
         final AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(concurrency);
@@ -350,7 +347,7 @@ public class HttpUtilTest extends TestCase {
                 public void run() {
                     try {
                         HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
-                                500, BASE_TESTING_URL + "?delay=1000"
+                                950, BASE_TESTING_URL + "?delay=1000"
                         );
 
                         assertEquals(
@@ -359,7 +356,7 @@ public class HttpUtilTest extends TestCase {
                         );
 
                         if (VERBOSE) {
-                            System.out.println("testManyTimedOutPosts: done " + count.incrementAndGet());
+                            println("testManyTimedOutPosts: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         exceptions.add(e);
@@ -375,7 +372,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        System.out.printf("Done 'testManyTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'testManyTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testTimedOutPost() throws InterruptedException, IOException {
@@ -388,7 +385,7 @@ public class HttpUtilTest extends TestCase {
                 (System.currentTimeMillis() - startTimeMillis) < 2050
         );
 
-        System.out.println("Done 'testTimedOutPost' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        println("Done 'testTimedOutPost' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
     }
 
     public void testPostWithBinaryEntity_HttpClientUtil() throws IOException {
@@ -414,7 +411,7 @@ public class HttpUtilTest extends TestCase {
             HttpClientUtil.closeQuietly(httpClient, request, response);
         }
 
-        System.out.printf(
+        printf(
                 "Done 'testPostWithBinaryEntity_HttpClientUtil' in %d ms.%n",
                 System.currentTimeMillis() - startTimeMillis
         );
@@ -440,7 +437,7 @@ public class HttpUtilTest extends TestCase {
                 "Got unexpected response code %d.", response.getCode()
         ), HttpCode.OK, response.getCode());
 
-        System.out.printf("Done 'testPostWithBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'testPostWithBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testPostWithGzippedBinaryEntity_HttpClientUtil() throws IOException {
@@ -484,7 +481,7 @@ public class HttpUtilTest extends TestCase {
             HttpClientUtil.closeQuietly(httpClient, request, response);
         }
 
-        System.out.printf(
+        printf(
                 "Done 'testPostWithGzippedBinaryEntity_HttpClientUtil' in %d ms.%n",
                 System.currentTimeMillis() - startTimeMillis
         );
@@ -509,7 +506,7 @@ public class HttpUtilTest extends TestCase {
                 "Got unexpected response code %d.", response.getCode()
         ), HttpCode.OK, response.getCode());
 
-        System.out.printf(
+        printf(
                 "Done 'testPostWithGzippedBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
         );
     }
@@ -533,13 +530,28 @@ public class HttpUtilTest extends TestCase {
                 "Got unexpected response code %d.", response.getCode()
         ), HttpCode.OK, response.getCode());
 
-        System.out.printf(
+        printf(
                 "Done 'testPostWithGzippedParameters' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
         );
     }
 
+    public void testPostWithoutReadingResponse() {
+        assertEquals(HttpCode.OK, HttpRequest.create(BASE_TESTING_URL).setMethod(HttpMethod.POST).execute());
+    }
+
     private static String getIllegalResponseLengthMessage(HttpResponse response, int expectedLength) {
         return String.format("Expected response length: %d. %s.", expectedLength, response);
+    }
+
+
+    private static void println(String line) {
+        System.out.println(line);
+        System.out.flush();
+    }
+
+    private static void printf(String format, Object... arguments) {
+        System.out.printf(format, arguments);
+        System.out.flush();
     }
 
     private static final class HttpRequestTestServer extends NanoHTTPD {
