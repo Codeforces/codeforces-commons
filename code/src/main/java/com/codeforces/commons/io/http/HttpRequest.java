@@ -395,8 +395,7 @@ public final class HttpRequest {
         HttpURLConnection connection;
         try {
             connection = newConnection(
-                    internalUrl, readBytes,
-                    method == HttpMethod.POST && (!parametersByName.isEmpty() || hasBinaryEntity())
+                    internalUrl, method == HttpMethod.POST && (!parametersByName.isEmpty() || hasBinaryEntity())
             );
         } catch (IOException e) {
             String message = "Can't create connection to '" + internalUrl + "'.";
@@ -587,7 +586,7 @@ public final class HttpRequest {
         }
     }
 
-    private HttpURLConnection newConnection(String url, boolean doInput, boolean doOutput) throws IOException {
+    private HttpURLConnection newConnection(String url, boolean doOutput) throws IOException {
         URL urlObject = new URL(url);
         @Nullable Proxy proxy = getProxy(urlObject.getProtocol());
 
@@ -598,7 +597,7 @@ public final class HttpRequest {
         connection.setReadTimeout(timeoutMillis);
         connection.setConnectTimeout(timeoutMillis);
         connection.setRequestMethod(method.name());
-        connection.setDoInput(doInput);
+        connection.setDoInput(true);
         connection.setDoOutput(doOutput);
 
         connection.setRequestProperty("Connection", "close");
