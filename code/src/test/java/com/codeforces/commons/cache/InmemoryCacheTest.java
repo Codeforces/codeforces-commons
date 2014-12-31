@@ -8,10 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,12 +34,22 @@ public class InmemoryCacheTest {
     public void testStoringOfValues() throws Exception {
         final Cache<String, byte[]> cache = new InmemoryByteCache();
         final BlockingQueue<CachePath> cachePaths = getCachePaths();
+        final BlockingQueue<CachePath> copiedCachePaths = new LinkedBlockingQueue<>(cachePaths);
 
         CacheTestUtil.determineOperationTime("InmemoryCacheTest.testStoringOfValues", new Runnable() {
             @Override
             public void run() {
                 for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
                     checkStoringOneValue(cache, cachePaths.poll());
+                }
+            }
+        });
+
+        CacheTestUtil.determineOperationTime("InmemoryCacheTest.testStoringOfValues (after warm up)", new Runnable() {
+            @Override
+            public void run() {
+                for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
+                    checkStoringOneValue(cache, copiedCachePaths.poll());
                 }
             }
         });
@@ -79,57 +86,75 @@ public class InmemoryCacheTest {
     public void testConcurrentStoringOfValues() throws Exception {
         final Cache<String, byte[]> cache = new InmemoryByteCache();
         final BlockingQueue<CachePath> cachePaths = getCachePaths();
+        final BlockingQueue<CachePath> copiedCachePaths = new LinkedBlockingQueue<>(cachePaths);
         final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
         final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
         CacheTestUtil.determineOperationTime("InmemoryCacheTest.testConcurrentStoringOfValues", new Runnable() {
             @Override
             public void run() {
-                ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
-                    @Override
-                    public void customize(Thread thread) {
-                        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                            @Override
-                            public void uncaughtException(Thread t, Throwable e) {
-                                unexpectedThrowable.set(e);
-                            }
-                        });
-                    }
-                }));
-
-                final AtomicInteger pathIndex = new AtomicInteger();
-
-                for (int threadIndex = 0; threadIndex < THREAD_COUNT; ++threadIndex) {
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            while (assertionError.get() == null
-                                    && pathIndex.getAndIncrement() < TOTAL_KEY_COUNT) {
-                                try {
-                                    checkStoringOneValue(cache, cachePaths.poll());
-                                } catch (AssertionError error) {
-                                    assertionError.set(error);
-                                }
-                            }
-                        }
-                    });
-                }
-
-                executorService.shutdown();
-                try {
-                    executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException ignored) {
-                    // No operations.
-                }
-
-                if (assertionError.get() != null) {
-                    throw assertionError.get();
-                }
+                executeConcurrentStoringOfValues(cache, cachePaths, assertionError, unexpectedThrowable);
             }
         });
 
         if (unexpectedThrowable.get() != null) {
             throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+        }
+
+        CacheTestUtil.determineOperationTime("InmemoryCacheTest.testConcurrentStoringOfValues (after warm up)", new Runnable() {
+            @Override
+            public void run() {
+                executeConcurrentStoringOfValues(cache, copiedCachePaths, assertionError, unexpectedThrowable);
+            }
+        });
+
+        if (unexpectedThrowable.get() != null) {
+            throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+        }
+    }
+
+    private static void executeConcurrentStoringOfValues(
+            final Cache<String, byte[]> cache, final BlockingQueue<CachePath> cachePaths,
+            final AtomicReference<AssertionError> assertionError, final AtomicReference<Throwable> unexpectedThrowable) {
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
+            @Override
+            public void customize(Thread thread) {
+                thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                    @Override
+                    public void uncaughtException(Thread t, Throwable e) {
+                        unexpectedThrowable.set(e);
+                    }
+                });
+            }
+        }));
+
+        final AtomicInteger pathIndex = new AtomicInteger();
+
+        for (int threadIndex = 0; threadIndex < THREAD_COUNT; ++threadIndex) {
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    while (assertionError.get() == null
+                            && pathIndex.getAndIncrement() < TOTAL_KEY_COUNT) {
+                        try {
+                            checkStoringOneValue(cache, cachePaths.poll());
+                        } catch (AssertionError error) {
+                            assertionError.set(error);
+                        }
+                    }
+                }
+            });
+        }
+
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ignored) {
+            // No operations.
+        }
+
+        if (assertionError.get() != null) {
+            throw assertionError.get();
         }
     }
 

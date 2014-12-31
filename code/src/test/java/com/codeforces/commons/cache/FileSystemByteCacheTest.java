@@ -49,7 +49,7 @@ public class FileSystemByteCacheTest extends TestCase {
             final ByteCache cache = new FileSystemByteCache(tempDir, true);
             final BlockingQueue<CachePath> cachePaths = getCachePaths();
 
-            CacheTestUtil.determineOperationTime("testStoringOfValues", new Runnable() {
+            CacheTestUtil.determineOperationTime("FileSystemByteCacheTest.testStoringOfValues", new Runnable() {
                 @Override
                 public void run() {
                     for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
@@ -70,7 +70,7 @@ public class FileSystemByteCacheTest extends TestCase {
             final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
             final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-            CacheTestUtil.determineOperationTime("testConcurrentStoringOfValues", new Runnable() {
+            CacheTestUtil.determineOperationTime("FileSystemByteCacheTest.testConcurrentStoringOfValues", new Runnable() {
                 @Override
                 public void run() {
                     ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
@@ -149,7 +149,7 @@ public class FileSystemByteCacheTest extends TestCase {
             final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
             final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-            CacheTestUtil.determineOperationTime("testConcurrentStoringOfValuesWithLifetime", new Runnable() {
+            CacheTestUtil.determineOperationTime("FileSystemByteCacheTest.testConcurrentStoringOfValuesWithLifetime", new Runnable() {
                 @Override
                 public void run() {
                     ExecutorService executorService = Executors.newFixedThreadPool(SLEEPING_THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {

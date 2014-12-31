@@ -17,8 +17,13 @@ import org.apache.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.net.ssl.*;
 import java.io.*;
 import java.net.*;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
@@ -594,6 +599,10 @@ public final class HttpRequest {
                 proxy == null ? urlObject.openConnection() : urlObject.openConnection(proxy)
         );
 
+        if (connection instanceof HttpsURLConnection) {
+            bypassSecureHostSslCertificateCheck((HttpsURLConnection) connection, urlObject);
+        }
+
         connection.setReadTimeout(timeoutMillis);
         connection.setConnectTimeout(timeoutMillis);
         connection.setRequestMethod(method.name());
@@ -629,6 +638,47 @@ public final class HttpRequest {
         }
 
         return connection;
+    }
+
+    private static void bypassSecureHostSslCertificateCheck(HttpsURLConnection connection, URL url) {
+        if (!CommonsPropertiesUtil.isBypassCertificateCheck()
+                || !CommonsPropertiesUtil.getSecureHosts().contains(url.getHost())) {
+            return;
+        }
+
+        X509TrustManager insecureTrustManager = new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                // No operations.
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                // No operations.
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        };
+
+        SSLContext sslContext;
+        try {
+            sslContext = SSLContext.getInstance("SSL");
+        } catch (NoSuchAlgorithmException e) {
+            logger.warn("Can't get instance of SSL context.", e);
+            return;
+        }
+
+        try {
+            sslContext.init(null, new TrustManager[]{insecureTrustManager}, new SecureRandom());
+        } catch (KeyManagementException e) {
+            logger.warn("Can't initialize SSL context.", e);
+            return;
+        }
+
+        connection.setSSLSocketFactory(sslContext.getSocketFactory());
     }
 
     @SuppressWarnings("AccessOfSystemProperties")

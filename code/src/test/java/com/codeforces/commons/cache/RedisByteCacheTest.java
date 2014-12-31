@@ -51,7 +51,7 @@ public class RedisByteCacheTest extends TestCase {
             final ByteCache cache = new RedisByteCache("127.0.0.1:88");
             final BlockingQueue<CachePath> cachePaths = getCachePaths();
 
-            CacheTestUtil.determineOperationTime("testStoringOfValues", new Runnable() {
+            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testStoringOfValues", new Runnable() {
                 @Override
                 public void run() {
                     for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
@@ -72,7 +72,7 @@ public class RedisByteCacheTest extends TestCase {
             final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
             final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-            CacheTestUtil.determineOperationTime("testConcurrentStoringOfValues", new Runnable() {
+            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testConcurrentStoringOfValues", new Runnable() {
                 @Override
                 public void run() {
                     ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
@@ -151,7 +151,7 @@ public class RedisByteCacheTest extends TestCase {
             final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
             final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-            CacheTestUtil.determineOperationTime("testConcurrentStoringOfValuesWithLifetime", new Runnable() {
+            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testConcurrentStoringOfValuesWithLifetime", new Runnable() {
                 @Override
                 public void run() {
                     ExecutorService executorService = Executors.newFixedThreadPool(SLEEPING_THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {

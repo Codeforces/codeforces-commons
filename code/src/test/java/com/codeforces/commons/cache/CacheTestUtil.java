@@ -132,7 +132,7 @@ final class CacheTestUtil {
 
         StringBuilder stringBuilder = new StringBuilder("[").append(array[0]);
 
-        if (length <= 6) {
+        if (length <= 7) {
             for (int i = 1; i < length; ++i) {
                 stringBuilder.append(", ").append(array[i]);
             }

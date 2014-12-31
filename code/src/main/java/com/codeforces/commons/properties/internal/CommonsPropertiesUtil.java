@@ -38,6 +38,10 @@ public class CommonsPropertiesUtil {
         return PropertyValuesHolder.SECURE_HOSTS;
     }
 
+    public static boolean isBypassCertificateCheck() {
+        return PropertyValuesHolder.BYPASS_CERTIFICATE_CHECK;
+    }
+
     public static List<String> getPrivateParameters() {
         return PropertyValuesHolder.PRIVATE_PARAMETERS;
     }
@@ -50,6 +54,8 @@ public class CommonsPropertiesUtil {
         private static final String TEMP_DIR_NAME = getProperty("temp-dir.name", "temp");
         private static final List<String> SECURE_PASSWORDS = getListProperty("security.secure-passwords", "");
         private static final List<String> SECURE_HOSTS = getListProperty("security.secure-hosts", "");
+        private static final boolean BYPASS_CERTIFICATE_CHECK
+                = Boolean.parseBoolean(getProperty("security.secure-hosts.bypass-certificate-check", "false"));
         private static final List<String> PRIVATE_PARAMETERS = getListProperty("security.private-parameters", "");
         private static final String SUBSCRIPTION_TOKEN = getProperty("security.subscription-token", "secret");
 

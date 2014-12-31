@@ -100,7 +100,10 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            println("testManyConcurrentGets_HttpClientUtil: done " + count.incrementAndGet());
+                            println(String.format(
+                                    "HttpUtilTest.testManyConcurrentGets_HttpClientUtil: done %d",
+                                    count.incrementAndGet()
+                            ));
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -118,7 +121,8 @@ public class HttpUtilTest extends TestCase {
         }
 
         printf(
-                "Done 'testManyConcurrentGets_HttpClientUtil' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
+                "Done 'HttpUtilTest.testManyConcurrentGets_HttpClientUtil' in %d ms.%n",
+                System.currentTimeMillis() - startTimeMillis
         );
     }
 
@@ -142,7 +146,7 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            println("testManyConcurrentGets: done " + count.incrementAndGet());
+                            println("HttpUtilTest.testManyConcurrentGets: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -159,7 +163,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        printf("Done 'testManyConcurrentGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'HttpUtilTest.testManyConcurrentGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     @Ignore
@@ -183,7 +187,10 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            println("testManyConcurrentPosts_HttpClientUtil: done " + count.incrementAndGet());
+                            println(String.format(
+                                    "HttpUtilTest.testManyConcurrentPosts_HttpClientUtil: done %d",
+                                    count.incrementAndGet()
+                            ));
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -201,7 +208,7 @@ public class HttpUtilTest extends TestCase {
         }
 
         printf(
-                "Done 'testManyConcurrentPosts_HttpClientUtil' in %d ms.%n",
+                "Done 'HttpUtilTest.testManyConcurrentPosts_HttpClientUtil' in %d ms.%n",
                 System.currentTimeMillis() - startTimeMillis
         );
     }
@@ -226,7 +233,7 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            println("testManyConcurrentPosts: done " + count.incrementAndGet());
+                            println("HttpUtilTest.testManyConcurrentPosts: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -243,7 +250,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        printf("Done 'testManyConcurrentPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'HttpUtilTest.testManyConcurrentPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyConcurrentDoGets() throws InterruptedException, IOException {
@@ -264,7 +271,7 @@ public class HttpUtilTest extends TestCase {
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
                         if (VERBOSE) {
-                            println("testManyConcurrentDoGets: done " + count.incrementAndGet());
+                            println("HttpUtilTest.testManyConcurrentDoGets: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -281,7 +288,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        printf("Done 'testManyConcurrentDoGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'HttpUtilTest.testManyConcurrentDoGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyNotTimedOutPosts() throws InterruptedException, IOException {
@@ -310,7 +317,7 @@ public class HttpUtilTest extends TestCase {
                         );
 
                         if (VERBOSE) {
-                            println("testManyNotTimedOutPosts: done " + count.incrementAndGet());
+                            println("HttpUtilTest.testManyNotTimedOutPosts: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -327,7 +334,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size(), exceptions.get(0));
         }
 
-        printf("Done 'testManyNotTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'HttpUtilTest.testManyNotTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testManyTimedOutPosts() throws InterruptedException, IOException {
@@ -356,7 +363,7 @@ public class HttpUtilTest extends TestCase {
                         );
 
                         if (VERBOSE) {
-                            println("testManyTimedOutPosts: done " + count.incrementAndGet());
+                            println("HttpUtilTest.testManyTimedOutPosts: done " + count.incrementAndGet());
                         }
                     } catch (Throwable e) {
                         exceptions.add(e);
@@ -372,7 +379,7 @@ public class HttpUtilTest extends TestCase {
             throw new RuntimeException("exceptions.size() = " + exceptions.size());
         }
 
-        printf("Done 'testManyTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'HttpUtilTest.testManyTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testTimedOutPost() throws InterruptedException, IOException {
@@ -385,7 +392,7 @@ public class HttpUtilTest extends TestCase {
                 (System.currentTimeMillis() - startTimeMillis) < 2050
         );
 
-        println("Done 'testTimedOutPost' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
+        println("Done 'HttpUtilTest.testTimedOutPost' in " + (System.currentTimeMillis() - startTimeMillis) + " ms.");
     }
 
     public void testPostWithBinaryEntity_HttpClientUtil() throws IOException {
@@ -412,7 +419,7 @@ public class HttpUtilTest extends TestCase {
         }
 
         printf(
-                "Done 'testPostWithBinaryEntity_HttpClientUtil' in %d ms.%n",
+                "Done 'HttpUtilTest.testPostWithBinaryEntity_HttpClientUtil' in %d ms.%n",
                 System.currentTimeMillis() - startTimeMillis
         );
     }
@@ -437,7 +444,7 @@ public class HttpUtilTest extends TestCase {
                 "Got unexpected response code %d.", response.getCode()
         ), HttpCode.OK, response.getCode());
 
-        printf("Done 'testPostWithBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
+        printf("Done 'HttpUtilTest.testPostWithBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
     public void testPostWithGzippedBinaryEntity_HttpClientUtil() throws IOException {
@@ -482,7 +489,7 @@ public class HttpUtilTest extends TestCase {
         }
 
         printf(
-                "Done 'testPostWithGzippedBinaryEntity_HttpClientUtil' in %d ms.%n",
+                "Done 'HttpUtilTest.testPostWithGzippedBinaryEntity_HttpClientUtil' in %d ms.%n",
                 System.currentTimeMillis() - startTimeMillis
         );
     }
@@ -507,7 +514,8 @@ public class HttpUtilTest extends TestCase {
         ), HttpCode.OK, response.getCode());
 
         printf(
-                "Done 'testPostWithGzippedBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
+                "Done 'HttpUtilTest.testPostWithGzippedBinaryEntity' in %d ms.%n",
+                System.currentTimeMillis() - startTimeMillis
         );
     }
 
@@ -531,7 +539,8 @@ public class HttpUtilTest extends TestCase {
         ), HttpCode.OK, response.getCode());
 
         printf(
-                "Done 'testPostWithGzippedParameters' in %d ms.%n", System.currentTimeMillis() - startTimeMillis
+                "Done 'HttpUtilTest.testPostWithGzippedParameters' in %d ms.%n",
+                System.currentTimeMillis() - startTimeMillis
         );
     }
 
