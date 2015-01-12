@@ -13,11 +13,14 @@ import org.apache.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.naming.ConfigurationException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -415,6 +418,9 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
 
     @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
     private static final class InMemoryCacheModule extends AbstractModule {
+        private static final Map<Method, Annotation[][]> parameterAnnotationsByMethod = new HashMap<>();
+        private static final ReadWriteLock parameterAnnotationsLock = new ReentrantReadWriteLock();
+
         @Override
         protected void configure() {
             bindInterceptor(
@@ -497,7 +503,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         }
 
         private static String getSectionParameterValue(MethodInvocation invocation) throws ConfigurationException {
-            Annotation[][] parameterAnnotations = invocation.getMethod().getParameterAnnotations();
+            Annotation[][] parameterAnnotations = getParameterAnnotations(invocation.getMethod());
             int parameterCount = parameterAnnotations.length;
             Integer sectionParameterIndex = null;
 
@@ -521,14 +527,39 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
 
             if (sectionParameterIndex == null) {
                 String message = String.format(
-                        "Method '%s' has no parameter annotated with '@%s'.",
-                        invocation.getMethod(), CacheSection.class
+                        "Method '%s' has no parameter annotated with '@%s'.", invocation.getMethod(), CacheSection.class
                 );
                 logger.fatal(message);
                 throw new ConfigurationException(message);
             }
 
             return (String) invocation.getArguments()[sectionParameterIndex];
+        }
+
+        private static Annotation[][] getParameterAnnotations(Method method) {
+            Annotation[][] parameterAnnotations;
+
+            Lock readLock = parameterAnnotationsLock.readLock();
+            readLock.lock();
+            try {
+                parameterAnnotations = parameterAnnotationsByMethod.get(method);
+            } finally {
+                readLock.unlock();
+            }
+
+            if (parameterAnnotations == null) {
+                parameterAnnotations = method.getParameterAnnotations();
+
+                Lock writeLock = parameterAnnotationsLock.writeLock();
+                writeLock.lock();
+                try {
+                    parameterAnnotationsByMethod.put(method, parameterAnnotations);
+                } finally {
+                    writeLock.unlock();
+                }
+            }
+
+            return parameterAnnotations;
         }
     }
 }
