@@ -231,6 +231,6 @@ public class InmemoryCacheTest {
     }
 
     private static BlockingQueue<CachePath> getCachePaths() {
-        return CacheTestUtil.getCachePaths(KEY_PER_SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT);
+        return CacheTestUtil.getCachePaths(SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT);
     }
 }
