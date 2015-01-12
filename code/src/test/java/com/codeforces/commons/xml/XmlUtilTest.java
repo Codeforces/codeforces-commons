@@ -9,10 +9,7 @@ import org.w3c.dom.NodeList;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -179,6 +176,48 @@ public class XmlUtilTest {
                     "Failed XmlUtil.extractFromXml after XmlUtil.ensureXmlElementExists for XPath '/a/e[2]/@baz'.",
                     "bazValue", XmlUtil.extractFromXml(testFile, "/a/e[2]/@baz", String.class)
             );
+        } finally {
+            FileUtil.deleteTotallyAsync(tempDir);
+        }
+    }
+
+    @Test
+    public void testEnsureXmlElementExistDoesntRewriteFileIfNoChanges() throws IOException {
+        File tempDir = null;
+
+        try {
+            tempDir = FileUtil.createTemporaryDirectory("test-xml-ext");
+            File testFile = new File(tempDir, "test-ext.xml");
+            FileUtil.writeFile(testFile, getBytes("test-ext.xml"));
+            long lastModified = testFile.lastModified();
+
+            Map<String, String> filterAttributes = new HashMap<>();
+            filterAttributes.put("boolAttr", "false");
+            filterAttributes.put("strAttr", "");
+
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, null);
+            Assert.assertEquals(lastModified, testFile.lastModified());
+
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, filterAttributes, null);
+            Assert.assertEquals(lastModified, testFile.lastModified());
+
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Arrays.asList("c")));
+            Assert.assertEquals(lastModified, testFile.lastModified());
+
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Arrays.asList("intAttr")));
+            Assert.assertNotEquals(lastModified, testFile.lastModified());
+            lastModified = testFile.lastModified();
+
+            Map<String, String> expectedAttributes = new HashMap<String, String>() {{
+                put("x", "");
+                put("notBoolAttr", "false");
+            }};
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, expectedAttributes, null);
+            Assert.assertNotEquals(lastModified, testFile.lastModified());
+            lastModified = testFile.lastModified();
+
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", expectedAttributes, null, null);
+            Assert.assertEquals(lastModified, testFile.lastModified());
         } finally {
             FileUtil.deleteTotallyAsync(tempDir);
         }

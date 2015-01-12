@@ -19,6 +19,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -264,13 +265,19 @@ public final class XmlUtil {
             public Void run() throws IOException {
                 try {
                     ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+
                     internalEnsureXmlElementExists(
+                            false,
                             new ByteArrayInputStream(FileUtil.getBytes(xmlFile)),
                             xmlOutputStream,
                             parentElementXPath, elementName,
                             filterAttributes, newAttributes, obsoleteAttributes
                     );
-                    FileUtil.writeFile(xmlFile, xmlOutputStream.toByteArray());
+
+                    byte[] bytes = xmlOutputStream.toByteArray();
+                    if (bytes.length > 0) {
+                        FileUtil.writeFile(xmlFile, bytes);
+                    }
                 } catch (IOException e) {
                     throw new IOException(
                             "Can't find, read or update file '" + xmlFile.getName()
@@ -311,6 +318,7 @@ public final class XmlUtil {
             @Override
             public Void run() throws IOException {
                 internalEnsureXmlElementExists(
+                        true,
                         xmlInputStream, xmlOutputStream,
                         parentElementXPath, elementName,
                         filterAttributes, newAttributes, obsoleteAttributes
@@ -501,6 +509,8 @@ public final class XmlUtil {
      * If such element does exist, all its attributes will be overriden with values of {@code newAttributes},
      * else a new element will be created.
      *
+     * @param writeXmlOutputStreamIfNoChanges
+     *                           if {@code false} then no data will be written to output stream if no changes needed.
      * @param xmlInputStream     Stream to read.
      * @param xmlOutputStream    Stream to write.
      * @param parentElementXPath XPath to find element that should contain specified element.
@@ -515,6 +525,7 @@ public final class XmlUtil {
      */
     @SuppressWarnings({"OverlyLongMethod", "OverlyComplexMethod"})
     private static void internalEnsureXmlElementExists(
+            boolean writeXmlOutputStreamIfNoChanges,
             @Nonnull InputStream xmlInputStream, @Nonnull OutputStream xmlOutputStream,
             @Nonnull String parentElementXPath, @Nonnull String elementName,
             @Nonnull Map<String, String> filterAttributes, @Nullable Map<String, String> newAttributes,
@@ -560,27 +571,77 @@ public final class XmlUtil {
                 }
             }
 
+            boolean changed = false;
+
             // Create new element if not found.
             if (element == null) {
+                changed = true;
                 element = document.createElement(elementName);
                 parentNode.appendChild(element);
             }
 
-            // Create or update attributes.
-            newAttributes = newAttributes == null ? filterAttributes : newAttributes;
-            for (Map.Entry<String, String> newAttribute : newAttributes.entrySet()) {
-                element.setAttribute(newAttribute.getKey(), newAttribute.getValue());
-            }
+            {
+                Map<String, String> elementAttributes = new HashMap<>();
+                NamedNodeMap attributes = element.getAttributes();
+                int attributesLength = attributes.getLength();
+                for (int i = 0; i < attributesLength; i++) {
+                    Node item = attributes.item(i);
+                    elementAttributes.put(item.getNodeName(), item.getNodeValue());
+                }
 
-            // Remove obsolete attributes.
-            if (obsoleteAttributes != null) {
-                for (String obsoleteAttribute : obsoleteAttributes) {
-                    element.removeAttribute(obsoleteAttribute);
+                boolean matched = true;
+                Map<String, String> expectedAttributes = newAttributes == null
+                        ? filterAttributes : newAttributes;
+                for (Map.Entry<String, String> entry : expectedAttributes.entrySet()) {
+                    String name = entry.getKey();
+                    String value = entry.getValue();
+                    if (obsoleteAttributes != null && obsoleteAttributes.contains(name)) {
+                        if (elementAttributes.containsKey(name)) {
+                            matched = false;
+                            break;
+                        }
+                    } else {
+                        if (!elementAttributes.containsKey(name)
+                                || !StringUtil.equals(value, elementAttributes.get(name))) {
+                            matched = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (matched) {
+                    if (obsoleteAttributes != null) {
+                        for (String attribute : obsoleteAttributes) {
+                            if (elementAttributes.containsKey(attribute)) {
+                                matched = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!matched) {
+                    changed = true;
+
+                    // Create or update attributes.
+                    newAttributes = newAttributes == null ? filterAttributes : newAttributes;
+                    for (Map.Entry<String, String> newAttribute : newAttributes.entrySet()) {
+                        element.setAttribute(newAttribute.getKey(), newAttribute.getValue());
+                    }
+
+                    // Remove obsolete attributes.
+                    if (obsoleteAttributes != null) {
+                        for (String obsoleteAttribute : obsoleteAttributes) {
+                            element.removeAttribute(obsoleteAttribute);
+                        }
+                    }
                 }
             }
 
-            // Save DOM-document.
-            internalWriteXml(xmlOutputStream, document);
+            if (changed || writeXmlOutputStreamIfNoChanges) {
+                // Save DOM-document.
+                internalWriteXml(xmlOutputStream, document);
+            }
         } catch (XPathExpressionException e) {
             throw new IOException("Illegal XPath.", e);
         } finally {
