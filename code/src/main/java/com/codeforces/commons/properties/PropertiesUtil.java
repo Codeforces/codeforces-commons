@@ -7,6 +7,8 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +88,7 @@ public class PropertiesUtil {
         if (properties == null) {
             properties = new Properties();
             try (InputStream inputStream = PropertiesUtil.class.getResourceAsStream(resourceName)) {
-                properties.load(inputStream);
+                properties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             }
             propertiesByResourceName.putIfAbsent(resourceName, properties);
             properties = propertiesByResourceName.get(resourceName);

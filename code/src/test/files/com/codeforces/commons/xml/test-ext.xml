@@ -1,0 +1,11 @@
+<a>
+    <bs>
+        <b attr1="attr1v1" attr2="attr2v1" attr3="1" attr4="true"/>
+        <b attr1="attr1v2"/>
+    </bs>
+
+    <c intAttr="0" strAttr="1" boolAttr="false" notBoolAttr="false"/>
+    <c intAttr="0" strAttr="" boolAttr="false" notBoolAttr="false"/>
+
+    <d attr5="attr5v" attr6="attr6v"/>
+</a>

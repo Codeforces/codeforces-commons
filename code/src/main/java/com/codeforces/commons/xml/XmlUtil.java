@@ -4,7 +4,6 @@ import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -21,6 +20,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -151,7 +151,7 @@ public final class XmlUtil {
                     internalUpdateXml(xmlInputStream, xmlOutputStream, xPath, value);
 
                     byte[] outputBytes = xmlOutputStream.toByteArray();
-                    if (ArrayUtils.getLength(outputBytes) > 0 && !Arrays.equals(inputBytes, outputBytes)) {
+                    if (!Arrays.equals(inputBytes, outputBytes)) {
                         FileUtil.writeFile(xmlFile, outputBytes);
                     }
                 } catch (IOException e) {
@@ -209,7 +209,7 @@ public final class XmlUtil {
                     internalUpdateText(xmlInputStream, xmlOutputStream, xPath, value);
 
                     byte[] outputBytes = xmlOutputStream.toByteArray();
-                    if (ArrayUtils.getLength(outputBytes) > 0 && !Arrays.equals(inputBytes, outputBytes)) {
+                    if (!Arrays.equals(inputBytes, outputBytes)) {
                         FileUtil.writeFile(xmlFile, outputBytes);
                     }
                 } catch (IOException e) {
@@ -250,7 +250,7 @@ public final class XmlUtil {
      * Ensures that XML-element with {@code newAttributes} does exist and creates it if not.
      * <p/>
      * Method uses {@code filterAttributes} to uniquely identify an XML-element.
-     * If such element does exist, all its attributes will be overriden with values of {@code newAttributes},
+     * If such element does exist, all its attributes will be overridden with values of {@code newAttributes},
      * else a new element will be created.
      *
      * @param xmlFile            Which will read first and updated later.
@@ -278,12 +278,12 @@ public final class XmlUtil {
                     ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
 
                     internalEnsureXmlElementExists(
-                            xmlInputStream, xmlOutputStream,
+                            false, xmlInputStream, xmlOutputStream,
                             parentElementXPath, elementName, filterAttributes, newAttributes, obsoleteAttributes
                     );
 
                     byte[] outputBytes = xmlOutputStream.toByteArray();
-                    if (ArrayUtils.getLength(outputBytes) > 0 && !Arrays.equals(inputBytes, outputBytes)) {
+                    if (outputBytes.length > 0) {
                         FileUtil.writeFile(xmlFile, outputBytes);
                     }
                 } catch (IOException e) {
@@ -326,6 +326,7 @@ public final class XmlUtil {
             @Override
             public Void run() throws IOException {
                 internalEnsureXmlElementExists(
+                        true,
                         xmlInputStream, xmlOutputStream,
                         parentElementXPath, elementName,
                         filterAttributes, newAttributes, obsoleteAttributes
@@ -352,7 +353,7 @@ public final class XmlUtil {
             removeElementsIfExists(xmlInputStream, xmlOutputStream, elementXPath);
 
             byte[] outputBytes = xmlOutputStream.toByteArray();
-            if (ArrayUtils.getLength(outputBytes) > 0 && !Arrays.equals(inputBytes, outputBytes)) {
+            if (!Arrays.equals(inputBytes, outputBytes)) {
                 FileUtil.writeFile(xmlFile, outputBytes);
             }
         } catch (IOException e) {
@@ -519,23 +520,26 @@ public final class XmlUtil {
      * Ensures that XML-element with {@code newAttributes} does exist and creates it if not.
      * <p/>
      * Method uses {@code filterAttributes} to uniquely identify an XML-element.
-     * If such element does exist, all its attributes will be overriden with values of {@code newAttributes},
+     * If such element does exist, all its attributes will be overridden with values of {@code newAttributes},
      * else a new element will be created.
      *
-     * @param xmlInputStream     Stream to read.
-     * @param xmlOutputStream    Stream to write.
-     * @param parentElementXPath XPath to find element that should contain specified element.
-     * @param elementName        Name of the element to create.
-     * @param filterAttributes   Collection of attributes which allows to uniquely identify an XML-element.
-     * @param newAttributes      Collection of attributes which an XML-element should have
-     *                           or {@code null} if {@code filterAttributes} should be considered
-     *                           also as {@code newAttributes}.
-     * @param obsoleteAttributes Collection of attribute names which should be removed from the element
-     *                           or {@code null} if no such action is required.
+     * @param writeOutputIfNoChanges The flag that indicates that method should write XML-data to output stream
+     *                               if no changes was made.
+     * @param xmlInputStream         Stream to read.
+     * @param xmlOutputStream        Stream to write.
+     * @param parentElementXPath     XPath to find element that should contain specified element.
+     * @param elementName            Name of the element to create.
+     * @param filterAttributes       Collection of attributes which allows to uniquely identify an XML-element.
+     * @param newAttributes          Collection of attributes which an XML-element should have
+     *                               or {@code null} if {@code filterAttributes} should be considered
+     *                               also as {@code newAttributes}.
+     * @param obsoleteAttributes     Collection of attribute names which should be removed from the element
+     *                               or {@code null} if no such action is required.
      * @throws java.io.IOException In case of I/O error.
      */
     @SuppressWarnings({"OverlyLongMethod", "OverlyComplexMethod"})
     private static void internalEnsureXmlElementExists(
+            boolean writeOutputIfNoChanges,
             @Nonnull InputStream xmlInputStream, @Nonnull OutputStream xmlOutputStream,
             @Nonnull String parentElementXPath, @Nonnull String elementName,
             @Nonnull Map<String, String> filterAttributes, @Nullable Map<String, String> newAttributes,
@@ -581,27 +585,76 @@ public final class XmlUtil {
                 }
             }
 
+            boolean changed = false;
+
             // Create new element if not found.
             if (element == null) {
+                changed = true;
                 element = document.createElement(elementName);
                 parentNode.appendChild(element);
             }
 
-            // Create or update attributes.
-            newAttributes = newAttributes == null ? filterAttributes : newAttributes;
-            for (Map.Entry<String, String> newAttribute : newAttributes.entrySet()) {
-                element.setAttribute(newAttribute.getKey(), newAttribute.getValue());
+            Map<String, String> existingAttributes = new HashMap<>();
+            NamedNodeMap attributes = element.getAttributes();
+            int attributeCount = attributes.getLength();
+
+            for (int attributeIndex = 0; attributeIndex < attributeCount; ++attributeIndex) {
+                Node item = attributes.item(attributeIndex);
+                existingAttributes.put(item.getNodeName(), item.getNodeValue());
             }
 
-            // Remove obsolete attributes.
-            if (obsoleteAttributes != null) {
-                for (String obsoleteAttribute : obsoleteAttributes) {
-                    element.removeAttribute(obsoleteAttribute);
+            boolean matches = true;
+            Map<String, String> expectedAttributes = newAttributes == null ? filterAttributes : newAttributes;
+
+            for (Map.Entry<String, String> entry : expectedAttributes.entrySet()) {
+                String name = entry.getKey();
+                String value = entry.getValue();
+                if (obsoleteAttributes != null && obsoleteAttributes.contains(name)) {
+                    if (existingAttributes.containsKey(name)) {
+                        matches = false;
+                        break;
+                    }
+                } else {
+                    if (!existingAttributes.containsKey(name)
+                            || !StringUtil.equals(value, existingAttributes.get(name))) {
+                        matches = false;
+                        break;
+                    }
                 }
             }
 
-            // Save DOM-document.
-            internalWriteXml(xmlOutputStream, document);
+            if (matches) {
+                if (obsoleteAttributes != null) {
+                    for (String attribute : obsoleteAttributes) {
+                        if (existingAttributes.containsKey(attribute)) {
+                            matches = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!matches) {
+                changed = true;
+
+                // Create or update attributes.
+                newAttributes = newAttributes == null ? filterAttributes : newAttributes;
+                for (Map.Entry<String, String> newAttribute : newAttributes.entrySet()) {
+                    element.setAttribute(newAttribute.getKey(), newAttribute.getValue());
+                }
+
+                // Remove obsolete attributes.
+                if (obsoleteAttributes != null) {
+                    for (String obsoleteAttribute : obsoleteAttributes) {
+                        element.removeAttribute(obsoleteAttribute);
+                    }
+                }
+            }
+
+            if (changed || writeOutputIfNoChanges) {
+                // Save DOM-document.
+                internalWriteXml(xmlOutputStream, document);
+            }
         } catch (XPathExpressionException e) {
             throw new IOException("Illegal XPath.", e);
         } finally {
