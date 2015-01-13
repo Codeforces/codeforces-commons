@@ -4,6 +4,7 @@ import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -19,6 +20,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 import java.io.*;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -142,17 +144,21 @@ public final class XmlUtil {
             @Override
             public Void run() throws IOException {
                 try {
+                    byte[] inputBytes = FileUtil.getBytes(xmlFile);
+                    ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
                     ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
-                    internalUpdateXml(
-                            new ByteArrayInputStream(FileUtil.getBytes(xmlFile)),
-                            xmlOutputStream, xPath, value
-                    );
-                    FileUtil.writeFile(xmlFile, xmlOutputStream.toByteArray());
+
+                    internalUpdateXml(xmlInputStream, xmlOutputStream, xPath, value);
+
+                    byte[] outputBytes = xmlOutputStream.toByteArray();
+                    if (ArrayUtils.getLength(outputBytes) > 0 && !Arrays.equals(inputBytes, outputBytes)) {
+                        FileUtil.writeFile(xmlFile, outputBytes);
+                    }
                 } catch (IOException e) {
-                    throw new IOException(
-                            "Can't find, read or update file '" + xmlFile.getName()
-                                    + "' while evaluating XPath '" + xPath + "'.", e
-                    );
+                    throw new IOException(String.format(
+                            "Can't find, read or update file '%s' while evaluating XPath '%s'.",
+                            xmlFile.getName(), xPath
+                    ), e);
                 }
                 return null;
             }
@@ -196,17 +202,21 @@ public final class XmlUtil {
             @Override
             public Void run() throws IOException {
                 try {
+                    byte[] inputBytes = FileUtil.getBytes(xmlFile);
+                    ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
                     ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
-                    internalUpdateText(
-                            new ByteArrayInputStream(FileUtil.getBytes(xmlFile)),
-                            xmlOutputStream, xPath, value
-                    );
-                    FileUtil.writeFile(xmlFile, xmlOutputStream.toByteArray());
+
+                    internalUpdateText(xmlInputStream, xmlOutputStream, xPath, value);
+
+                    byte[] outputBytes = xmlOutputStream.toByteArray();
+                    if (ArrayUtils.getLength(outputBytes) > 0 && !Arrays.equals(inputBytes, outputBytes)) {
+                        FileUtil.writeFile(xmlFile, outputBytes);
+                    }
                 } catch (IOException e) {
-                    throw new IOException(
-                            "Can't find, read or update file '" + xmlFile.getName()
-                                    + "' while evaluating XPath '" + xPath + "'.", e
-                    );
+                    throw new IOException(String.format(
+                            "Can't find, read or update file '%s' while evaluating XPath '%s'.",
+                            xmlFile.getName(), xPath
+                    ), e);
                 }
                 return null;
             }
@@ -263,19 +273,24 @@ public final class XmlUtil {
             @Override
             public Void run() throws IOException {
                 try {
+                    byte[] inputBytes = FileUtil.getBytes(xmlFile);
+                    ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
                     ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+
                     internalEnsureXmlElementExists(
-                            new ByteArrayInputStream(FileUtil.getBytes(xmlFile)),
-                            xmlOutputStream,
-                            parentElementXPath, elementName,
-                            filterAttributes, newAttributes, obsoleteAttributes
+                            xmlInputStream, xmlOutputStream,
+                            parentElementXPath, elementName, filterAttributes, newAttributes, obsoleteAttributes
                     );
-                    FileUtil.writeFile(xmlFile, xmlOutputStream.toByteArray());
+
+                    byte[] outputBytes = xmlOutputStream.toByteArray();
+                    if (ArrayUtils.getLength(outputBytes) > 0 && !Arrays.equals(inputBytes, outputBytes)) {
+                        FileUtil.writeFile(xmlFile, outputBytes);
+                    }
                 } catch (IOException e) {
-                    throw new IOException(
-                            "Can't find, read or update file '" + xmlFile.getName()
-                                    + "' while evaluating XPath '" + parentElementXPath + "'.", e
-                    );
+                    throw new IOException(String.format(
+                            "Can't find, read or update file '%s' while evaluating XPath '%s'.",
+                            xmlFile.getName(), parentElementXPath
+                    ), e);
                 }
                 return null;
             }
@@ -286,7 +301,7 @@ public final class XmlUtil {
      * Ensures that XML-element with {@code newAttributes} does exist and creates it if not.
      * <p/>
      * Method uses {@code filterAttributes} to uniquely identify an XML-element.
-     * If such element does exist, all its attributes will be overriden with values of {@code newAttributes},
+     * If such element does exist, all its attributes will be overridden with values of {@code newAttributes},
      * else a new element will be created.
      *
      * @param xmlInputStream     Stream to read.
@@ -330,14 +345,20 @@ public final class XmlUtil {
     public static void removeElementsIfExists(@Nonnull File xmlFile, @Nonnull String elementXPath)
             throws IOException {
         try {
+            byte[] inputBytes = FileUtil.getBytes(xmlFile);
+            ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
             ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
-            removeElementsIfExists(new ByteArrayInputStream(FileUtil.getBytes(xmlFile)), xmlOutputStream, elementXPath);
-            FileUtil.writeFile(xmlFile, xmlOutputStream.toByteArray());
+
+            removeElementsIfExists(xmlInputStream, xmlOutputStream, elementXPath);
+
+            byte[] outputBytes = xmlOutputStream.toByteArray();
+            if (ArrayUtils.getLength(outputBytes) > 0 && !Arrays.equals(inputBytes, outputBytes)) {
+                FileUtil.writeFile(xmlFile, outputBytes);
+            }
         } catch (IOException e) {
-            throw new IOException(
-                    "Can't find, read or update file '" + xmlFile.getName()
-                            + "' while evaluating XPath '" + elementXPath + "'.", e
-            );
+            throw new IOException(String.format(
+                    "Can't find, read or update file '%s' while evaluating XPath '%s'.", xmlFile.getName(), elementXPath
+            ), e);
         }
     }
 
