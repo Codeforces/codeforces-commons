@@ -354,4 +354,28 @@ public class NumberUtil {
     public static double sumSqr(double numberA, double numberB, double numberC) {
         return numberA * numberA + numberB * numberB + numberC * numberC;
     }
+
+    public static byte nullToZero(@Nullable Byte value) {
+        return value == null ? (byte) 0 : value;
+    }
+
+    public static short nullToZero(@Nullable Short value) {
+        return value == null ? (short) 0 : value;
+    }
+
+    public static int nullToZero(@Nullable Integer value) {
+        return value == null ? 0 : value;
+    }
+
+    public static long nullToZero(@Nullable Long value) {
+        return value == null ? 0L : value;
+    }
+
+    public static float nullToZero(@Nullable Float value) {
+        return value == null ? 0.0F : value;
+    }
+
+    public static double nullToZero(@Nullable Double value) {
+        return value == null ? 0.0D : value;
+    }
 }
