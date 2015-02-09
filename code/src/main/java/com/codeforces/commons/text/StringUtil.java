@@ -58,7 +58,8 @@ public final class StringUtil {
         }
 
         for (int charIndex = s.length() - 1; charIndex >= 0; --charIndex) {
-            if (!Character.isWhitespace(s.charAt(charIndex))) {
+            int codePoint = s.codePointAt(charIndex);
+            if (!Character.isWhitespace(codePoint) && codePoint != 160) {
                 return false;
             }
         }
