@@ -2,10 +2,7 @@ package com.codeforces.commons.template;
 
 import com.codeforces.commons.resource.ResourceUtil;
 import freemarker.cache.StringTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
+import freemarker.template.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -16,9 +13,7 @@ import java.util.Map;
  * @author Edvard Davtyan
  */
 public class TemplateUtil {
-    private TemplateUtil() {
-        throw new UnsupportedOperationException();
-    }
+    private static final Version FREEMARKER_VERSION = Configuration.VERSION_2_3_21;
 
     @SuppressWarnings("unchecked")
     public static String parseResourceTemplate(String resourceName, Object... params) {
@@ -48,8 +43,8 @@ public class TemplateUtil {
     }
 
     public static String parseTemplate(String template, Map<String, Object> params) {
-        Configuration configuration = new Configuration();
-        configuration.setObjectWrapper(new DefaultObjectWrapper());
+        Configuration configuration = new Configuration(FREEMARKER_VERSION);
+        configuration.setObjectWrapper(new DefaultObjectWrapper(FREEMARKER_VERSION));
 
         StringTemplateLoader templateLoader = new StringTemplateLoader();
         templateLoader.putTemplate("template", template);
@@ -64,5 +59,9 @@ public class TemplateUtil {
         } catch (IOException | TemplateException e) {
             throw new IllegalArgumentException("Can't parse template.", e);
         }
+    }
+
+    private TemplateUtil() {
+        throw new UnsupportedOperationException();
     }
 }
