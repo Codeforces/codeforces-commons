@@ -36,8 +36,16 @@ public final class StringUtil {
     private static final Map<Class, ToStringConverter> toStringConverterByClass = new HashMap<>();
     private static final ReadWriteLock toStringConverterByClassMapLock = new ReentrantReadWriteLock();
 
+    static final char NON_BREAKING_SPACE = (char) 160;
+    static final char THIN_SPACE = '\u2009';
+    static final char ZERO_WIDTH_SPACE = '\u200B';
+
     private StringUtil() {
         throw new UnsupportedOperationException();
+    }
+
+    public static boolean isWhitespace(char c) {
+        return Character.isWhitespace(c) || c == NON_BREAKING_SPACE || c == ZERO_WIDTH_SPACE;
     }
 
     /**
@@ -58,8 +66,7 @@ public final class StringUtil {
         }
 
         for (int charIndex = s.length() - 1; charIndex >= 0; --charIndex) {
-            int codePoint = s.codePointAt(charIndex);
-            if (!Character.isWhitespace(codePoint) && codePoint != 160) {
+            if (!isWhitespace(s.charAt(charIndex))) {
                 return false;
             }
         }
@@ -155,7 +162,23 @@ public final class StringUtil {
 
     @Nullable
     public static String trim(@Nullable String s) {
-        return s == null ? null : s.trim();
+        if (s == null) {
+            return null;
+        }
+
+        int lastIndex = s.length() - 1;
+        int beginIndex = 0;
+        int endIndex = lastIndex;
+
+        while (beginIndex <= lastIndex && isWhitespace(s.charAt(beginIndex))) {
+            ++beginIndex;
+        }
+
+        while (endIndex > beginIndex && isWhitespace(s.charAt(endIndex))) {
+            --endIndex;
+        }
+
+        return beginIndex == 0 && endIndex == lastIndex ? s : s.substring(beginIndex, endIndex + 1);
     }
 
     @Nullable
@@ -175,13 +198,13 @@ public final class StringUtil {
         }
 
         int lastIndex = s.length() - 1;
-        int index = lastIndex;
+        int endIndex = lastIndex;
 
-        while (index >= 0 && s.charAt(index) <= ' ') {
-            --index;
+        while (endIndex >= 0 && isWhitespace(s.charAt(endIndex))) {
+            --endIndex;
         }
 
-        return index == lastIndex ? s : s.substring(0, index + 1);
+        return endIndex == lastIndex ? s : s.substring(0, endIndex + 1);
     }
 
     @Nullable
@@ -191,13 +214,13 @@ public final class StringUtil {
         }
 
         int lastIndex = s.length() - 1;
-        int index = 0;
+        int beginIndex = 0;
 
-        while (index <= lastIndex && s.charAt(index) <= ' ') {
-            ++index;
+        while (beginIndex <= lastIndex && isWhitespace(s.charAt(beginIndex))) {
+            ++beginIndex;
         }
 
-        return index == 0 ? s : s.substring(index, lastIndex + 1);
+        return beginIndex == 0 ? s : s.substring(beginIndex, lastIndex + 1);
     }
 
     @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
@@ -480,11 +503,11 @@ public final class StringUtil {
 
         if (s != null) {
             try {
-                String[] tokens = com.codeforces.commons.text.Patterns.COMMA_PATTERN.split(s);
+                String[] tokens = Patterns.COMMA_PATTERN.split(s);
                 for (int tokenIndex = 0, tokenCount = tokens.length; tokenIndex < tokenCount; ++tokenIndex) {
                     String token = tokens[tokenIndex].trim();
                     if (!token.isEmpty()) {
-                        String[] tt = com.codeforces.commons.text.Patterns.MINUS_PATTERN.split(token);
+                        String[] tt = Patterns.MINUS_PATTERN.split(token);
                         if (tt.length == 1) {
                             integers.add(Integer.parseInt(tt[0]));
                         } else if (tt.length == 2) {
@@ -583,9 +606,9 @@ public final class StringUtil {
      * @return Replaces "<", ">" and "&" with entities.
      */
     public static String quoteHtml(String html) {
-        html = com.codeforces.commons.text.Patterns.AMP_PATTERN.matcher(html).replaceAll("&amp;");
-        html = com.codeforces.commons.text.Patterns.LT_PATTERN.matcher(html).replaceAll("&lt;");
-        html = com.codeforces.commons.text.Patterns.GT_PATTERN.matcher(html).replaceAll("&gt;");
+        html = Patterns.AMP_PATTERN.matcher(html).replaceAll("&amp;");
+        html = Patterns.LT_PATTERN.matcher(html).replaceAll("&lt;");
+        html = Patterns.GT_PATTERN.matcher(html).replaceAll("&gt;");
         return html;
     }
 
@@ -630,13 +653,13 @@ public final class StringUtil {
      * @return Text with unix line breaks.
      */
     public static String toUnixLineBreaks(String s) {
-        return com.codeforces.commons.text.Patterns.LINE_BREAK_PATTERN.matcher(s).replaceAll("\n");
+        return Patterns.LINE_BREAK_PATTERN.matcher(s).replaceAll("\n");
     }
 
     public static String wellformForWindows(String s) {
-        String[] lines = com.codeforces.commons.text.Patterns.CR_PATTERN.split(s);
+        String[] lines = Patterns.CR_PATTERN.split(s);
         if (lines.length == 1) {
-            lines = com.codeforces.commons.text.Patterns.LF_PATTERN.split(s);
+            lines = Patterns.LF_PATTERN.split(s);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -758,7 +781,7 @@ public final class StringUtil {
             return input;
         }
 
-        String[] lines = com.codeforces.commons.text.Patterns.LINE_BREAK_PATTERN.split(input);
+        String[] lines = Patterns.LINE_BREAK_PATTERN.split(input);
         StringBuilder result = new StringBuilder((maxLineLength + 5) * maxLineNumber + 5);
 
         for (int i = 0; i < maxLineNumber && i < lines.length; ++i) {
@@ -1117,37 +1140,5 @@ public final class StringUtil {
         public void setAddEnclosingClassNames(boolean addEnclosingClassNames) {
             this.addEnclosingClassNames = addEnclosingClassNames;
         }
-    }
-
-    /**
-     * @deprecated Use {@link com.codeforces.commons.text.Patterns}.
-     */
-    @Deprecated
-    public static class Patterns {
-        private Patterns() {
-            throw new UnsupportedOperationException();
-        }
-
-        public static final Pattern LINE_BREAK_PATTERN = Pattern.compile("\\r\\n|\\r|\\n");
-        public static final Pattern PLUS_PATTERN = Pattern.compile("\\+");
-        public static final Pattern MINUS_PATTERN = Pattern.compile("\\-");
-        public static final Pattern EQ_PATTERN = Pattern.compile("=");
-        public static final Pattern LT_PATTERN = Pattern.compile("<");
-        public static final Pattern GT_PATTERN = Pattern.compile(">");
-        public static final Pattern SPACE_PATTERN = Pattern.compile(" ");
-        public static final Pattern NBSP_PATTERN = Pattern.compile("" + (char) 160);
-        public static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
-        public static final Pattern THIN_SPACE_PATTERN = Pattern.compile("" + '\u2009');
-        public static final Pattern ZERO_WIDTH_SPACE_PATTERN = Pattern.compile("" + '\u200B');
-        public static final Pattern TAB_PATTERN = Pattern.compile("\\t");
-        public static final Pattern CR_LF_PATTERN = Pattern.compile("\\r\\n");
-        public static final Pattern CR_PATTERN = Pattern.compile("\\r");
-        public static final Pattern LF_PATTERN = Pattern.compile("\\n");
-        public static final Pattern SLASH_PATTERN = Pattern.compile("/");
-        public static final Pattern DOT_PATTERN = Pattern.compile("\\.");
-        public static final Pattern COMMA_PATTERN = Pattern.compile(",");
-        public static final Pattern SEMICOLON_PATTERN = Pattern.compile(";");
-        public static final Pattern COLON_PATTERN = Pattern.compile(":");
-        public static final Pattern AMP_PATTERN = Pattern.compile("&");
     }
 }

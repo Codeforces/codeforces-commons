@@ -14,10 +14,10 @@ public final class Patterns {
     public static final Pattern LT_PATTERN = Pattern.compile("<");
     public static final Pattern GT_PATTERN = Pattern.compile(">");
     public static final Pattern SPACE_PATTERN = Pattern.compile(" ");
-    public static final Pattern NBSP_PATTERN = Pattern.compile("" + (char) 160);
+    public static final Pattern NBSP_PATTERN = Pattern.compile("" + StringUtil.NON_BREAKING_SPACE);
     public static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
-    public static final Pattern THIN_SPACE_PATTERN = Pattern.compile("" + '\u2009');
-    public static final Pattern ZERO_WIDTH_SPACE_PATTERN = Pattern.compile("" + '\u200B');
+    public static final Pattern THIN_SPACE_PATTERN = Pattern.compile("" + StringUtil.THIN_SPACE);
+    public static final Pattern ZERO_WIDTH_SPACE_PATTERN = Pattern.compile("" + StringUtil.ZERO_WIDTH_SPACE);
     public static final Pattern TAB_PATTERN = Pattern.compile("\\t");
     public static final Pattern CR_LF_PATTERN = Pattern.compile("\\r\\n");
     public static final Pattern CR_PATTERN = Pattern.compile("\\r");
