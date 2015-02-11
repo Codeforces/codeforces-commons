@@ -58,7 +58,16 @@ public final class StringUtil {
 
     /**
      * @param s String.
+     * @return {@code true} iff {@code s} is not {@code null} and not empty.
+     */
+    public static boolean isNotEmpty(@Nullable String s) {
+        return s != null && !s.isEmpty();
+    }
+
+    /**
+     * @param s String.
      * @return {@code true} iff {@code s} is {@code null}, empty or contains only whitespaces.
+     * @see #isWhitespace(char)
      */
     public static boolean isBlank(@Nullable String s) {
         if (s == null || s.isEmpty()) {
@@ -72,6 +81,26 @@ public final class StringUtil {
         }
 
         return true;
+    }
+
+    /**
+     * @param s String.
+     * @return {@code true} iff {@code s} is not {@code null}, not empty
+     *         and contains at least one character that is not whitespace.
+     * @see #isWhitespace(char)
+     */
+    public static boolean isNotBlank(@Nullable String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+
+        for (int charIndex = s.length() - 1; charIndex >= 0; --charIndex) {
+            if (!isWhitespace(s.charAt(charIndex))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -183,12 +212,12 @@ public final class StringUtil {
 
     @Nullable
     public static String trimToNull(@Nullable String s) {
-        return s == null ? null : (s = s.trim()).isEmpty() ? null : s;
+        return s == null ? null : (s = trim(s)).isEmpty() ? null : s;
     }
 
     @Nonnull
     public static String trimToEmpty(@Nullable String s) {
-        return s == null ? "" : s.trim();
+        return s == null ? "" : trim(s);
     }
 
     @Nullable
@@ -505,7 +534,7 @@ public final class StringUtil {
             try {
                 String[] tokens = Patterns.COMMA_PATTERN.split(s);
                 for (int tokenIndex = 0, tokenCount = tokens.length; tokenIndex < tokenCount; ++tokenIndex) {
-                    String token = tokens[tokenIndex].trim();
+                    String token = trim(tokens[tokenIndex]);
                     if (!token.isEmpty()) {
                         String[] tt = Patterns.MINUS_PATTERN.split(token);
                         if (tt.length == 1) {
@@ -701,7 +730,7 @@ public final class StringUtil {
             sb.append(c);
         }
 
-        return sb.toString().trim();
+        return trim(sb.toString());
     }
 
     public static void convertFileToLinuxStyle(File file) throws IOException {

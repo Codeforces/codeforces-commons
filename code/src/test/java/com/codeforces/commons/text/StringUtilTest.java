@@ -46,6 +46,32 @@ public class StringUtilTest {
     }
 
     @Test
+    public void testIsNotEmpty() {
+        assertFalse(StringUtil.isNotEmpty(null));
+        assertFalse(StringUtil.isNotEmpty(""));
+        assertTrue(StringUtil.isNotEmpty("a"));
+        assertTrue(StringUtil.isNotEmpty(" "));
+        assertTrue(StringUtil.isNotEmpty("          "));
+        assertTrue(StringUtil.isNotEmpty(" a"));
+        assertTrue(StringUtil.isNotEmpty("z "));
+        assertTrue(StringUtil.isNotEmpty("тест"));
+    }
+
+    @Test
+    public void testIsNotBlank() throws Exception {
+        assertFalse(StringUtil.isNotBlank(null));
+        assertFalse(StringUtil.isNotBlank(""));
+        assertTrue(StringUtil.isNotBlank("a"));
+        assertFalse(StringUtil.isNotBlank(" "));
+        assertFalse(StringUtil.isNotBlank("          "));
+        assertTrue(StringUtil.isNotBlank(" a"));
+        assertTrue(StringUtil.isNotBlank("z "));
+        assertTrue(StringUtil.isNotBlank("тест"));
+        assertFalse(StringUtil.isNotBlank(BLANK_STRING));
+        assertTrue(StringUtil.isNotBlank(BLANK_STRING + '_'));
+    }
+
+    @Test
     public void testTrimLeft() throws Exception {
         assertNull(StringUtil.trimLeft(null));
         assertEquals("", StringUtil.trimLeft(""));
