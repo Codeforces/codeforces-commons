@@ -1,5 +1,8 @@
 package com.codeforces.commons.text;
 
+import com.codeforces.commons.holder.Holders;
+import com.codeforces.commons.holder.Mutable;
+import com.codeforces.commons.holder.SimpleMutable;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.pair.SimplePair;
@@ -270,7 +273,7 @@ public final class StringUtil {
             return getSimpleName(objectClass, options.addEnclosingClassNames) + " {null}";
         }
 
-        return toString(object, options.skipNulls, fieldNames);
+        return toString(object, options, fieldNames);
     }
 
     @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
@@ -383,27 +386,58 @@ public final class StringUtil {
         return simpleName;
     }
 
-    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
     @Nullable
     private static String fieldToString(@Nonnull Object value, @Nonnull String fieldName, ToStringOptions options) {
         if (value.getClass() == Boolean.class || value.getClass() == boolean.class) {
             return (boolean) value ? fieldName : '!' + fieldName;
         }
 
-        String stringValue = valueToString(value);
+        Mutable<Boolean> quoted = new SimpleMutable<>();
+        String stringValue = valueToString(value, quoted);
 
-        if (options.skipNulls && stringValue == null
-                || options.skipEmptyStrings && isEmpty(stringValue)
-                || options.skipBlankStrings && isBlank(stringValue)) {
+        if (shouldSkipField(stringValue, options, quoted)) {
             return null;
         }
 
         return fieldName + '=' + stringValue;
     }
 
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
+    private static boolean shouldSkipField(String stringValue, ToStringOptions options, Mutable<Boolean> quoted) {
+        if (options.skipNulls && stringValue == null) {
+            return true;
+        }
+
+        if (options.skipEmptyStrings) {
+            if (quoted.get()) {
+                if ("''".equals(stringValue) || "\"\"".equals(stringValue)) {
+                    return true;
+                }
+            } else {
+                if (isEmpty(stringValue)) {
+                    return true;
+                }
+            }
+        }
+
+        if (options.skipBlankStrings) {
+            if (quoted.get()) {
+                if (isBlank(stringValue.substring(1, stringValue.length() - 1))) {
+                    return true;
+                }
+            } else {
+                if (isBlank(stringValue)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     @SuppressWarnings({"OverlyComplexMethod", "unchecked"})
     @Nullable
-    private static String valueToString(@Nullable Object value) {
+    private static String valueToString(@Nullable Object value, @Nullable Mutable<Boolean> quoted) {
         if (value == null) {
             return null;
         }
@@ -421,11 +455,12 @@ public final class StringUtil {
             return mapToString((Map) value);
         } else if (value instanceof Map.Entry) {
             Map.Entry entry = (Map.Entry) value;
-            return valueToString(entry.getKey()) + '=' + valueToString(entry.getValue());
+            return valueToString(entry.getKey(), null) + '=' + valueToString(entry.getValue(), null);
         } else if (value instanceof SimplePair) {
             SimplePair pair = (SimplePair) value;
-            return valueToString(pair.getFirst()) + '=' + valueToString(pair.getSecond());
+            return valueToString(pair.getFirst(), null) + '=' + valueToString(pair.getSecond(), null);
         } else if (valueClass == Character.class) {
+            Holders.setQuietly(quoted, true);
             return "'" + value + '\'';
         } else if (valueClass == Boolean.class
                 || valueClass == Byte.class
@@ -438,8 +473,10 @@ public final class StringUtil {
         } else if (valueClass.isEnum()) {
             return ((Enum) value).name();
         } else if (valueClass == String.class) {
+            Holders.setQuietly(quoted, true);
             return '\'' + (String) value + '\'';
         } else {
+            Holders.setQuietly(quoted, true);
             return '\'' + String.valueOf(value) + '\'';
         }
     }
@@ -449,10 +486,10 @@ public final class StringUtil {
         int length = Array.getLength(array);
 
         if (length > 0) {
-            builder.append(valueToString(Array.get(array, 0)));
+            builder.append(valueToString(Array.get(array, 0), null));
 
             for (int i = 1; i < length; ++i) {
-                builder.append(", ").append(valueToString(Array.get(array, i)));
+                builder.append(", ").append(valueToString(Array.get(array, i), null));
             }
         }
 
@@ -464,10 +501,10 @@ public final class StringUtil {
         Iterator iterator = collection.iterator();
 
         if (iterator.hasNext()) {
-            builder.append(valueToString(iterator.next()));
+            builder.append(valueToString(iterator.next(), null));
 
             while (iterator.hasNext()) {
-                builder.append(", ").append(valueToString(iterator.next()));
+                builder.append(", ").append(valueToString(iterator.next(), null));
             }
         }
 
@@ -479,10 +516,10 @@ public final class StringUtil {
         Iterator iterator = map.entrySet().iterator();
 
         if (iterator.hasNext()) {
-            builder.append(valueToString(iterator.next()));
+            builder.append(valueToString(iterator.next(), null));
 
             while (iterator.hasNext()) {
-                builder.append(", ").append(valueToString(iterator.next()));
+                builder.append(", ").append(valueToString(iterator.next(), null));
             }
         }
 
