@@ -409,7 +409,7 @@ public final class StringUtil {
         }
 
         if (options.skipEmptyStrings) {
-            if (quoted.get()) {
+            if (quoted != null && quoted.get()) {
                 if ("''".equals(stringValue) || "\"\"".equals(stringValue)) {
                     return true;
                 }
@@ -421,7 +421,7 @@ public final class StringUtil {
         }
 
         if (options.skipBlankStrings) {
-            if (quoted.get()) {
+            if (quoted != null && quoted.get()) {
                 if (isBlank(stringValue.substring(1, stringValue.length() - 1))) {
                     return true;
                 }
