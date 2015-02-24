@@ -684,7 +684,7 @@ public final class StringUtil {
         boolean inside = false;
         for (String token : tokens) {
             if (inside) {
-                sb.append("<pre style='display:inline;'>").append(quoteHtml(token)).append("</pre>");
+                sb.append("<pre style='display: inline;'>").append(quoteHtml(token)).append("</pre>");
             } else {
                 sb.append(FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN.matcher(quoteHtml(token)).replaceAll("<br/>"));
             }

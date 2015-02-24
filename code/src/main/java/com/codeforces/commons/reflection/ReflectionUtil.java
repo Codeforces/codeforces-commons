@@ -1,6 +1,5 @@
 package com.codeforces.commons.reflection;
 
-import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.lang.StringUtils;
 
@@ -55,7 +54,7 @@ public class ReflectionUtil {
         Object deepValue = null;
         Object deepObject = object;
 
-        String[] pathParts = Patterns.DOT_PATTERN.split(propertyName);
+        String[] pathParts = splitPath(propertyName);
 
         for (int partIndex = 0, partCount = pathParts.length; partIndex < partCount; ++partIndex) {
             String pathPart = pathParts[partIndex];
@@ -256,6 +255,38 @@ public class ReflectionUtil {
         }
     }
 
+    private static String[] splitPath(@Nonnull String propertyName) {
+        char[] chars = propertyName.toCharArray();
+        int length = chars.length;
+        int dotCount = 0;
+
+        for (int i = 0; i < length; ++i) {
+            if (chars[i] == '.') {
+                ++dotCount;
+            }
+        }
+
+        if (dotCount == 0) {
+            return new String[]{propertyName};
+        }
+
+        String[] pathParts = new String[dotCount + 1];
+
+        int previousDotPosition = -1;
+        int partIndex = 0;
+
+        for (int i = 0; i < length; ++i) {
+            if (chars[i] == '.') {
+                pathParts[partIndex++] = new String(chars, previousDotPosition + 1, i - previousDotPosition - 1);
+                previousDotPosition = i;
+            }
+        }
+
+        pathParts[partIndex] = new String(chars, previousDotPosition + 1, length - previousDotPosition - 1);
+
+        return pathParts;
+    }
+
     private ReflectionUtil() {
         throw new UnsupportedOperationException();
     }
@@ -263,10 +294,15 @@ public class ReflectionUtil {
     public static final class MethodSignature {
         private final String name;
         private final List<Class<?>> parameterTypes;
+        private final int hashCode;
 
         public MethodSignature(String name, Class<?>... parameterTypes) {
             this.name = name;
             this.parameterTypes = Arrays.asList(parameterTypes);
+
+            int hash = this.name.hashCode();
+            hash = 31 * hash + this.parameterTypes.hashCode();
+            this.hashCode = hash;
         }
 
         public String getName() {
@@ -295,9 +331,7 @@ public class ReflectionUtil {
 
         @Override
         public int hashCode() {
-            int result = name.hashCode();
-            result = 31 * result + parameterTypes.hashCode();
-            return result;
+            return hashCode;
         }
     }
 }
