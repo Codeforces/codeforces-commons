@@ -51,6 +51,68 @@ public final class StringUtil {
         return Character.isWhitespace(c) || c == NON_BREAKING_SPACE || c == ZERO_WIDTH_SPACE;
     }
 
+    public static boolean isCyrillic(char c) {
+        return c >= 'а' && c <= 'я' || c >= 'А' && c <= 'Я';
+    }
+
+    /**
+     * Checks that string is cyrillic. Returns {@code true} if and only if
+     * {@link #getCyrillicFactor(String) cyrillic factor} of specified string is {@code 1.0}.
+     *
+     * @param s string to check
+     * @return {@code true} iff {@code s} is not {@link #isEmpty(String) empty} and contains only cyrillic letters
+     * @see #getCyrillicFactor(String)
+     * @see #isCyrillic(char)
+     */
+    public static boolean isCyrillic(@Nullable String s) {
+        if (s == null) {
+            return false;
+        }
+
+        int length = s.length();
+        if (length == 0) {
+            return false;
+        }
+
+        for (int i = 0; i < length; ++i) {
+            if (!isCyrillic(s.charAt(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Calculates percent of cyrillic letters in the string. Returns {@code 1.0} if and only if specified string is
+     * {@link #isCyrillic(String) cyrillic}.
+     *
+     * @param s string to calculate
+     * @return value between {@code 0.0} and {@code 1.0} both inclusive
+     * @see #isCyrillic(String)
+     * @see #isCyrillic(char)
+     */
+    public static double getCyrillicFactor(@Nullable String s) {
+        if (s == null) {
+            return 0.0D;
+        }
+
+        int length = s.length();
+        if (length == 0) {
+            return 0.0D;
+        }
+
+        int matchCount = 0;
+
+        for (int i = 0; i < length; ++i) {
+            if (isCyrillic(s.charAt(i))) {
+                ++matchCount;
+            }
+        }
+
+        return (double) matchCount / (double) length;
+    }
+
     /**
      * @param s String.
      * @return {@code true} iff {@code s} is {@code null} or empty.
@@ -240,6 +302,16 @@ public final class StringUtil {
     }
 
     @Nullable
+    public static String trimRightToNull(@Nullable String s) {
+        return s == null ? null : (s = trimRight(s)).isEmpty() ? null : s;
+    }
+
+    @Nonnull
+    public static String trimRightToEmpty(@Nullable String s) {
+        return s == null ? "" : trimRight(s);
+    }
+
+    @Nullable
     public static String trimLeft(@Nullable String s) {
         if (s == null) {
             return null;
@@ -253,6 +325,16 @@ public final class StringUtil {
         }
 
         return beginIndex == 0 ? s : s.substring(beginIndex, lastIndex + 1);
+    }
+
+    @Nullable
+    public static String trimLeftToNull(@Nullable String s) {
+        return s == null ? null : (s = trimLeft(s)).isEmpty() ? null : s;
+    }
+
+    @Nonnull
+    public static String trimLeftToEmpty(@Nullable String s) {
+        return s == null ? "" : trimLeft(s);
     }
 
     @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
