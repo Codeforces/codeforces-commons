@@ -76,7 +76,6 @@ public class TimeUtil {
         endCalendar.set(Calendar.MINUTE, 0);
         endCalendar.set(Calendar.HOUR_OF_DAY, 0);
 
-
 //        int result = 0;
 //        while (beginCalendar.before(endCalendar)) {
 //            beginCalendar.add(Calendar.DAY_OF_YEAR, 1);

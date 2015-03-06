@@ -150,6 +150,11 @@
             <version>1.3.2</version>
         </dependency>
         <dependency>
+        	<groupId>net.sf.trove4j</groupId>
+        	<artifactId>trove4j</artifactId>
+        	<version>3.0.3</version>
+        </dependency>
+        <dependency>
             <groupId>net.sourceforge.nekohtml</groupId>
             <artifactId>nekohtml</artifactId>
             <version>1.9.19</version>
@@ -163,11 +168,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.3.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>3.11</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlrpc</groupId>

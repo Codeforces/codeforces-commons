@@ -26,7 +26,7 @@ public class ExceptionUtil {
 
         return message;
     }
-    
+
     public static String toString(Throwable e) {
         Set<Throwable> used = new HashSet<>();
         StringBuilder sb = new StringBuilder();

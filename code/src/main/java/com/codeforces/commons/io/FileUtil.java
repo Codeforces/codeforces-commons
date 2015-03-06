@@ -345,8 +345,9 @@ public class FileUtil {
      * @param file     File to be write.
      * @param content  Content to be write.
      * @param encoding File encoding.
-     * @throws java.io.IOException                  if can't read file.
-     * @throws java.io.UnsupportedEncodingException illegal encoding.
+     * @throws java.io.IOException if can't read file.
+     * @throws java.io.UnsupportedEncodingException
+     *                             illegal encoding.
      */
     public static void writeFile(final File file, final String content, final String encoding) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -616,7 +617,7 @@ public class FileUtil {
 
     /**
      * @return System temporary directory. It expected that current process
-     * has permissions for read, write and execution in it.
+     *         has permissions for read, write and execution in it.
      * @throws java.io.IOException error.
      */
     public static File getTemporaryDirectory() throws IOException {
@@ -631,7 +632,7 @@ public class FileUtil {
     /**
      * @param directory Directory to be scanned.
      * @return List of nested files (scans nested directories recursively). Doesn't scan
-     * hidden directories and doesn't return hidden files.
+     *         hidden directories and doesn't return hidden files.
      * @throws java.io.IOException error.
      */
     public static List<File> list(final File directory) throws IOException {
@@ -681,7 +682,7 @@ public class FileUtil {
      * @param fileA first file or directory
      * @param fileB second file or directory
      * @return {@code true} iff both items A and B are {@code null},
-     * {@link java.io.File#equals(Object) equals} or have the same content
+     *         {@link java.io.File#equals(Object) equals} or have the same content
      * @throws java.io.IOException in case of any I/O-exception
      */
     public static boolean equalsOrSameContent(@Nullable File fileA, @Nullable File fileB) throws IOException {
