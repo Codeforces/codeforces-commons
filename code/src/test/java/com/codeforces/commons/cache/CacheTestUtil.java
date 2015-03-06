@@ -109,7 +109,9 @@ final class CacheTestUtil {
         return new LinkedBlockingQueue<>(cachePaths);
     }
 
+    @SuppressWarnings("CallToSystemGC")
     public static void determineOperationTime(String operationName, Runnable operation) {
+        System.gc();
         long startTime = System.nanoTime();
         operation.run();
         long finishTime = System.nanoTime();
