@@ -7,7 +7,6 @@ import com.codeforces.commons.io.LimitedByteArrayOutputStream;
 import com.codeforces.commons.io.MimeUtil;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.process.ThreadUtil;
-import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import fi.iki.elonen.NanoHTTPD;
 import junit.framework.TestCase;
@@ -683,12 +682,12 @@ public class HttpUtilTest extends TestCase {
                     );
                 }
             } else if (MimeUtil.Type.APPLICATION_X_WWW_FORM_URLENCODED.equalsIgnoreCase(contentType)) {
-                for (String postParameter : Patterns.AMP_PATTERN.split(postData)) {
+                for (String postParameter : StringUtil.split(postData, '&')) {
                     if (StringUtil.isBlank(postParameter)) {
                         continue;
                     }
 
-                    String[] postParameterParts = Patterns.EQ_PATTERN.split(postParameter);
+                    String[] postParameterParts = StringUtil.split(postParameter, '=');
                     if (postParameterParts.length != 2) {
                         continue;
                     }

@@ -1,5 +1,6 @@
 package com.codeforces.commons.text;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -223,5 +224,30 @@ public class StringUtilTest {
         String expected = "ABA\n\nC\nABA\nDABAC\n\n\nABA\n";
         String found = StringUtil.toUnixLineBreaks(text);
         assertEquals(expected, found);
+    }
+
+    @Test
+    public void testSplit() throws Exception {
+        internalTestSplit("size", '.', new String[]{"size"});
+        internalTestSplit("size.dice", '.', new String[]{"size", "dice"});
+        internalTestSplit("size.dice.nice.lays.mays", '.', new String[]{"size", "dice", "nice", "lays", "mays"});
+
+        internalTestSplit("size" + StringUtils.repeat("_size", 1000), '.', new String[]{
+                "size" + StringUtils.repeat("_size", 1000)
+        });
+        internalTestSplit("size.dice" + StringUtils.repeat("_dice", 1000), '.', new String[]{
+                "size", "dice" + StringUtils.repeat("_dice", 1000)
+        });
+        internalTestSplit("size.dice.nice.lays.mays" + StringUtils.repeat("_mays", 1000), '.', new String[]{
+                "size", "dice", "nice", "lays", "mays" + StringUtils.repeat("_mays", 1000)
+        });
+
+        internalTestSplit(".size.", '.', new String[]{"", "size", ""});
+        internalTestSplit(" size  ", ' ', new String[]{"", "size", "", ""});
+        internalTestSplit(",,,,", ',', new String[]{"", "", "", "", ""});
+    }
+
+    private static void internalTestSplit(String s, char c, String[] parts) {
+        assertArrayEquals("Illegal split of '" + s + "' by '" + c + "'.", parts, StringUtil.split(s, c));
     }
 }

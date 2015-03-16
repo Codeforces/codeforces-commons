@@ -337,6 +337,59 @@ public final class StringUtil {
         return s == null ? "" : trimLeft(s);
     }
 
+    /**
+     * Splits given string using separator char. All empty parts are included in the result.
+     *
+     * @param s         the string to be split
+     * @param separator the delimiting character
+     * @return the array of string parts
+     */
+    @Nonnull
+    public static String[] split(@Nonnull String s, char separator) {
+        int length = s.length();
+        int start = 0;
+        int i = 0;
+
+        String[] parts = null;
+        int count = 0;
+
+        while (i < length) {
+            if (s.charAt(i) == separator) {
+                if (parts == null) {
+                    parts = new String[8];
+                } else if (count == parts.length) {
+                    String[] tempParts = new String[count << 1];
+                    System.arraycopy(parts, 0, tempParts, 0, count);
+                    parts = tempParts;
+                }
+                parts[count++] = s.substring(start, i);
+                start = ++i;
+                continue;
+            }
+            ++i;
+        }
+
+        if (parts == null) {
+            return new String[]{s};
+        }
+
+        if (count == parts.length) {
+            String[] tempParts = new String[count << 1];
+            System.arraycopy(parts, 0, tempParts, 0, count);
+            parts = tempParts;
+        }
+
+        parts[count++] = s.substring(start, i);
+
+        if (count == parts.length) {
+            return parts;
+        } else {
+            String[] tempParts = new String[count];
+            System.arraycopy(parts, 0, tempParts, 0, count);
+            return tempParts;
+        }
+    }
+
     @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
     @Nonnull
     public static <T> String toString(
@@ -651,7 +704,7 @@ public final class StringUtil {
 
         if (s != null) {
             try {
-                String[] tokens = Patterns.COMMA_PATTERN.split(s);
+                String[] tokens = split(s, ',');
                 for (int tokenIndex = 0, tokenCount = tokens.length; tokenIndex < tokenCount; ++tokenIndex) {
                     String token = trim(tokens[tokenIndex]);
                     if (!token.isEmpty()) {

@@ -1,6 +1,7 @@
 package com.codeforces.commons.cache;
 
 import com.codeforces.commons.math.RandomUtil;
+import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.time.TimeUtil;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
@@ -24,7 +25,7 @@ public class RedisByteCache extends ByteCache {
     private final JedisPool jedisPool;
 
     public RedisByteCache(String hostAndPort) {
-        String[] items = hostAndPort.split(":");
+        String[] items = Patterns.COLON_PATTERN.split(hostAndPort);
 
         if (items.length == 1) {
             this.host = hostAndPort;

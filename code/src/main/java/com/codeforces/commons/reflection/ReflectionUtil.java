@@ -54,7 +54,7 @@ public class ReflectionUtil {
         Object deepValue = null;
         Object deepObject = object;
 
-        String[] pathParts = splitPath(propertyName);
+        String[] pathParts = StringUtil.split(propertyName, '.');
 
         for (int partIndex = 0, partCount = pathParts.length; partIndex < partCount; ++partIndex) {
             String pathPart = pathParts[partIndex];
@@ -253,38 +253,6 @@ public class ReflectionUtil {
             String fieldName = nameAnnotation == null ? field.getName() : nameAnnotation.value();
             throw new IllegalArgumentException("Can't get value of inaccessible field '" + fieldName + "'.", e);
         }
-    }
-
-    private static String[] splitPath(@Nonnull String propertyName) {
-        char[] chars = propertyName.toCharArray();
-        int length = chars.length;
-        int dotCount = 0;
-
-        for (int i = 0; i < length; ++i) {
-            if (chars[i] == '.') {
-                ++dotCount;
-            }
-        }
-
-        if (dotCount == 0) {
-            return new String[]{propertyName};
-        }
-
-        String[] pathParts = new String[dotCount + 1];
-
-        int previousDotPosition = -1;
-        int partIndex = 0;
-
-        for (int i = 0; i < length; ++i) {
-            if (chars[i] == '.') {
-                pathParts[partIndex++] = new String(chars, previousDotPosition + 1, i - previousDotPosition - 1);
-                previousDotPosition = i;
-            }
-        }
-
-        pathParts[partIndex] = new String(chars, previousDotPosition + 1, length - previousDotPosition - 1);
-
-        return pathParts;
     }
 
     private ReflectionUtil() {

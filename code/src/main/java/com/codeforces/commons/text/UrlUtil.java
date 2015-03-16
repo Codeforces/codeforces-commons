@@ -34,7 +34,7 @@ public class UrlUtil {
 
         String rawQuery = uri.getRawQuery();
         if (rawQuery != null) {
-            String[] parameters = Patterns.AMP_PATTERN.split(rawQuery);
+            String[] parameters = StringUtil.split(rawQuery, '&');
             int parameterCount = parameters.length;
 
             for (int parameterIndex = 0; parameterIndex < parameterCount; ++parameterIndex) {
@@ -228,7 +228,7 @@ public class UrlUtil {
             return query;
         }
 
-        String[] parameters = Patterns.AMP_PATTERN.split(query);
+        String[] parameters = StringUtil.split(query, '&');
         int parameterCount = parameters.length;
 
         StringBuilder queryBuilder = new StringBuilder(query.length());
