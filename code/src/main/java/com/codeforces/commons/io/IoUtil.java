@@ -136,20 +136,20 @@ public class IoUtil {
         return copy(inputStream, outputStream, true, false);
     }
 
-    public static void closeQuietly(@Nullable Closeable closeable) {
+    public static void closeQuietly(@Nullable AutoCloseable  closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
-            } catch (IOException ignored) {
+            } catch (Exception ignored) {
                 // No operations.
             }
         }
     }
 
     @SuppressWarnings("OverloadedVarargsMethod")
-    public static void closeQuietly(Closeable... closeables) {
-        for (int i = 0, count = closeables.length; i < count; ++i) {
-            closeQuietly(closeables[i]);
+    public static void closeQuietly(AutoCloseable... closeables) {
+        for (AutoCloseable closeable : closeables) {
+            closeQuietly(closeable);
         }
     }
 
