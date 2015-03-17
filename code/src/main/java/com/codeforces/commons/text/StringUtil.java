@@ -374,7 +374,7 @@ public final class StringUtil {
         }
 
         if (count == parts.length) {
-            String[] tempParts = new String[count << 1];
+            String[] tempParts = new String[count + 1];
             System.arraycopy(parts, 0, tempParts, 0, count);
             parts = tempParts;
         }
