@@ -11,6 +11,7 @@ import com.codeforces.commons.reflection.ReflectionUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -1286,6 +1287,49 @@ public final class StringUtil {
         }
 
         return result.toString();
+    }
+
+    public static byte[] removeBoms(byte[] bytes) {
+        int byteCount;
+
+        if (bytes == null || (byteCount = bytes.length) == 0) {
+            return bytes;
+        }
+
+        int bomLength;
+
+        if (bytes.length >= 3
+                && (bytes[0] & 0xFF) == 239 && (bytes[1] & 0xFF) == 187 && (bytes[2] & 0xFF) == 191) { // UTF-8
+            bomLength = 3;
+        } else if (bytes.length >= 2
+                && (bytes[0] & 0xFF) == 254 && (bytes[1] & 0xFF) == 255) { // UTF-16 (BE)
+            bomLength = 2;
+        } else if (bytes.length >= 2
+                && (bytes[0] & 0xFF) == 255 && (bytes[1] & 0xFF) == 254) { // UTF-16 (LE)
+            bomLength = 2;
+        } else if (bytes.length >= 4
+                && (bytes[0] & 0xFF) == 0 && (bytes[1] & 0xFF) == 0
+                && (bytes[0] & 0xFF) == 254 && (bytes[1] & 0xFF) == 255) { // UTF-32 (BE)
+            bomLength = 4;
+        } else if (bytes.length >= 4
+                && (bytes[0] & 0xFF) == 255 && (bytes[1] & 0xFF) == 254
+                && (bytes[0] & 0xFF) == 0 && (bytes[1] & 0xFF) == 0) { // UTF-32 (LE)
+            bomLength = 4;
+        } else {
+            bomLength = 0;
+        }
+
+        if (bomLength == 0) {
+            return bytes;
+        }
+
+        if (bomLength == byteCount) {
+            return ArrayUtils.EMPTY_BYTE_ARRAY;
+        }
+
+        byte[] processedBytes = new byte[byteCount - bomLength];
+        System.arraycopy(bytes, bomLength, processedBytes, 0, byteCount - bomLength);
+        return processedBytes;
     }
 
     public interface ToStringConverter<T> {
