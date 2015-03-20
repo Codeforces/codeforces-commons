@@ -1,6 +1,8 @@
 package com.codeforces.commons.collection;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Random;
 
 /**
@@ -58,6 +60,31 @@ public class ArrayUtil {
                 array[newIndex] = temp;
             }
         }
+    }
+
+    public static <T> T[] sort(T[] array) {
+        Arrays.sort(array);
+        return array;
+    }
+
+    public static <T> T[] sort(T[] array, Comparator<T> comparator) {
+        Arrays.sort(array, comparator);
+        return array;
+    }
+
+    public static double[] sort(double[] array) {
+        Arrays.sort(array);
+        return array;
+    }
+
+    public static int[] sort(int[] array) {
+        Arrays.sort(array);
+        return array;
+    }
+
+    public static long[] sort(long[] array) {
+        Arrays.sort(array);
+        return array;
     }
 
     public static int getDimensionCount(@Nonnull Class arrayClass) {
