@@ -73,8 +73,9 @@ public class CollectionUtil {
                 newList.add(converter.convert(list.get(i)));
             }
         } else {
-            for (T1 value : list) {
-                newList.add(converter.convert(value));
+            Iterator<T1> iterator = list.iterator();
+            for (int i = 0; i < count; ++i) {
+                newList.add(converter.convert(iterator.next()));
             }
         }
 
@@ -82,10 +83,12 @@ public class CollectionUtil {
     }
 
     public static <T1, T2> Collection<T2> convert(Collection<T1> collection, Converter<T1, T2> converter) {
-        Collection<T2> newCollection = new ArrayList<>(collection.size());
+        int count = collection.size();
+        Collection<T2> newCollection = new ArrayList<>(count);
 
-        for (T1 value : collection) {
-            newCollection.add(converter.convert(value));
+        Iterator<T1> iterator = collection.iterator();
+        for (int i = 0; i < count; ++i) {
+            newCollection.add(converter.convert(iterator.next()));
         }
 
         return newCollection;
@@ -93,9 +96,12 @@ public class CollectionUtil {
 
     public static <K1, T1, K2, T2> Map<K2, T2> convert(
             Map<K1, T1> map, Converter<K1, K2> keyConverter, Converter<T1, T2> valueConverter) {
-        Map<K2, T2> newMap = new LinkedHashMap<>(map.size());
+        int count = map.size();
+        Map<K2, T2> newMap = new LinkedHashMap<>(count);
 
-        for (Map.Entry<K1, T1> entry : map.entrySet()) {
+        Iterator<Map.Entry<K1, T1>> iterator = map.entrySet().iterator();
+        for (int i = 0; i < count; ++i) {
+            Map.Entry<K1, T1> entry = iterator.next();
             newMap.put(keyConverter.convert(entry.getKey()), valueConverter.convert(entry.getValue()));
         }
 
@@ -108,14 +114,17 @@ public class CollectionUtil {
 
         if (list instanceof RandomAccess) {
             for (int i = 0; i < count; ++i) {
+                T1 value = list.get(i);
                 try {
-                    newList.add(converter.convert(list.get(i)));
+                    newList.add(converter.convert(value));
                 } catch (RuntimeException ignored) {
                     // No operations.
                 }
             }
         } else {
-            for (T1 value : list) {
+            Iterator<T1> iterator = list.iterator();
+            for (int i = 0; i < count; ++i) {
+                T1 value = iterator.next();
                 try {
                     newList.add(converter.convert(value));
                 } catch (RuntimeException ignored) {
@@ -128,9 +137,12 @@ public class CollectionUtil {
     }
 
     public static <T1, T2> Collection<T2> convertQuietly(Collection<T1> collection, Converter<T1, T2> converter) {
-        Collection<T2> newCollection = new ArrayList<>(collection.size());
+        int count = collection.size();
+        Collection<T2> newCollection = new ArrayList<>(count);
 
-        for (T1 value : collection) {
+        Iterator<T1> iterator = collection.iterator();
+        for (int i = 0; i < count; ++i) {
+            T1 value = iterator.next();
             try {
                 newCollection.add(converter.convert(value));
             } catch (RuntimeException ignored) {
@@ -143,9 +155,12 @@ public class CollectionUtil {
 
     public static <K1, T1, K2, T2> Map<K2, T2> convertQuietly(
             Map<K1, T1> map, Converter<K1, K2> keyConverter, Converter<T1, T2> valueConverter) {
-        Map<K2, T2> newMap = new LinkedHashMap<>(map.size());
+        int count = map.size();
+        Map<K2, T2> newMap = new LinkedHashMap<>(count);
 
-        for (Map.Entry<K1, T1> entry : map.entrySet()) {
+        Iterator<Map.Entry<K1, T1>> iterator = map.entrySet().iterator();
+        for (int i = 0; i < count; ++i) {
+            Map.Entry<K1, T1> entry = iterator.next();
             try {
                 newMap.put(keyConverter.convert(entry.getKey()), valueConverter.convert(entry.getValue()));
             } catch (RuntimeException ignored) {
