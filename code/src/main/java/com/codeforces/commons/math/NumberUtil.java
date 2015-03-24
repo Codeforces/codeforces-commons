@@ -1,5 +1,7 @@
 package com.codeforces.commons.math;
 
+import com.codeforces.commons.text.StringUtil;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -53,12 +55,12 @@ public class NumberUtil {
             return toByte(((Number) value).doubleValue());
         }
 
-        return toByte(Double.parseDouble(value.toString()));
+        return toByte(Double.parseDouble(StringUtil.trim(value.toString())));
     }
 
     @Nullable
     public static Byte toByte(@Nullable String value) {
-        return value == null ? null : toByte(Double.parseDouble(value));
+        return value == null ? null : toByte(Double.parseDouble(StringUtil.trim(value)));
     }
 
     public static byte toByte(short value) {
@@ -135,12 +137,12 @@ public class NumberUtil {
             return toInt(((Number) value).doubleValue());
         }
 
-        return toInt(Double.parseDouble(value.toString()));
+        return toInt(Double.parseDouble(StringUtil.trim(value.toString())));
     }
 
     @Nullable
     public static Integer toInt(@Nullable String value) {
-        return value == null ? null : toInt(Double.parseDouble(value));
+        return value == null ? null : toInt(Double.parseDouble(StringUtil.trim(value)));
     }
 
     public static int toInt(long value) {
@@ -201,12 +203,12 @@ public class NumberUtil {
             return toLong(((Number) value).doubleValue());
         }
 
-        return toLong(Double.parseDouble(value.toString()));
+        return toLong(Double.parseDouble(StringUtil.trim(value.toString())));
     }
 
     @Nullable
     public static Long toLong(@Nullable String value) {
-        return value == null ? null : toLong(Double.parseDouble(value));
+        return value == null ? null : toLong(Double.parseDouble(StringUtil.trim(value)));
     }
 
     public static long toLong(float value) {
