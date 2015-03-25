@@ -5,16 +5,220 @@ import com.codeforces.commons.process.ThreadUtil;
 import org.junit.Assert;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 29.12.12
  */
+@SuppressWarnings({"CallToSystemGC", "ThrowableResultOfMethodCallIgnored", "ErrorNotRethrown"})
 final class CacheTestUtil {
     private CacheTestUtil() {
         throw new UnsupportedOperationException();
+    }
+
+    public static void testStoringOfValues(
+            Class<?> cacheTestClass, final Cache<String, byte[]> cache,
+            int sectionCount, int keyPerSectionCount, final int totalKeyCount, final int valueLength) {
+        final CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
+
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues", new Runnable() {
+            @Override
+            public void run() {
+                for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
+                    checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
+                }
+            }
+        });
+
+        System.gc();
+
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues (after warm up)", new Runnable() {
+            @Override
+            public void run() {
+                for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
+                    checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
+                }
+            }
+        });
+    }
+
+    public static void testOverridingOfValuesWithLifetime(
+            Class<?> cacheTestClass, final Cache<String, byte[]> cache, final int valueLength) {
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testOverridingOfValuesWithLifetime", new Runnable() {
+            @Override
+            public void run() {
+                byte[] temporaryBytes = RandomUtil.getRandomBytes(valueLength);
+                byte[] finalBytes = RandomUtil.getRandomBytes(valueLength);
+
+                cache.put("S", "K", temporaryBytes, 1000L);
+                Assert.assertTrue(
+                        "Restored value (with lifetime) does not equal to original value.",
+                        Arrays.equals(temporaryBytes, cache.get("S", "K"))
+                );
+
+                cache.put("S", "K", finalBytes, 1000L);
+                ThreadUtil.sleep(500L);
+                Assert.assertNotNull("Value is 'null' after previous value lifetime expiration.", cache.get("S", "K"));
+                Assert.assertEquals("Restored value does not equal to original value.", finalBytes, cache.get("S", "K"));
+
+                ThreadUtil.sleep(1000L);
+                Assert.assertNull("Value is not 'null' after lifetime expiration.", cache.get("S", "K"));
+            }
+        });
+    }
+
+    public static void testConcurrentStoringOfValues(
+            Class<?> cacheTestClass, final Cache<String, byte[]> cache,
+            int sectionCount, int keyPerSectionCount, final int totalKeyCount, final int valueLength, final int threadCount) {
+        final CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
+        final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+        final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
+
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues", new Runnable() {
+            @Override
+            public void run() {
+                executeConcurrentStoringOfValues(
+                        cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
+                );
+            }
+        });
+
+        if (unexpectedThrowable.get() != null) {
+            throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+        }
+
+        System.gc();
+
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues (after warm up)", new Runnable() {
+            @Override
+            public void run() {
+                executeConcurrentStoringOfValues(
+                        cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
+                );
+            }
+        });
+
+        if (unexpectedThrowable.get() != null) {
+            throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+        }
+    }
+
+    public static void testConcurrentStoringOfValuesWithLifetime(
+            Class<?> cacheTestClass, final Cache<String, byte[]> cache,
+            int sectionCount, int keyPerSectionCount, final int totalKeyCount, final int valueLength,
+            final int sleepingThreadCount, final long valueLifetimeMillis, final long valueCheckIntervalMillis) {
+        final CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
+        final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+        final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
+
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValuesWithLifetime", new Runnable() {
+            @Override
+            public void run() {
+                ExecutorService executorService = Executors.newFixedThreadPool(sleepingThreadCount, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
+                    @Override
+                    public void customize(Thread thread) {
+                        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                            @Override
+                            public void uncaughtException(Thread t, Throwable e) {
+                                unexpectedThrowable.set(e);
+                            }
+                        });
+                    }
+                }));
+
+                final AtomicInteger pathIndexCounter = new AtomicInteger();
+
+                for (int threadIndex = 0; threadIndex < sleepingThreadCount; ++threadIndex) {
+                    final long threadSleepTime = 1L * threadIndex;
+
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            ThreadUtil.sleep(threadSleepTime);
+                            int pathIndex;
+
+                            while (assertionError.get() == null
+                                    && (pathIndex = pathIndexCounter.getAndIncrement()) < totalKeyCount) {
+                                try {
+                                    checkStoringOneValueWithLifetime(
+                                            cache, cachePaths[pathIndex], valueLength,
+                                            valueLifetimeMillis, valueCheckIntervalMillis
+                                    );
+                                } catch (AssertionError error) {
+                                    assertionError.set(error);
+                                }
+                            }
+                        }
+                    });
+                }
+
+                executorService.shutdown();
+                try {
+                    executorService.awaitTermination(1L, TimeUnit.HOURS);
+                } catch (InterruptedException ignored) {
+                    // No operations.
+                }
+
+                if (assertionError.get() != null) {
+                    throw assertionError.get();
+                }
+            }
+        });
+
+        if (unexpectedThrowable.get() != null) {
+            throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+        }
+    }
+
+    private static void executeConcurrentStoringOfValues(
+            final Cache<String, byte[]> cache, final CachePath[] cachePaths,
+            final AtomicReference<AssertionError> assertionError, final AtomicReference<Throwable> unexpectedThrowable,
+            final int totalKeyCount, final int valueLength, int threadCount) {
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
+            @Override
+            public void customize(Thread thread) {
+                thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                    @Override
+                    public void uncaughtException(Thread t, Throwable e) {
+                        unexpectedThrowable.set(e);
+                    }
+                });
+            }
+        }));
+
+        final AtomicInteger pathIndexCounter = new AtomicInteger();
+
+        for (int threadIndex = 0; threadIndex < threadCount; ++threadIndex) {
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    int pathIndex;
+
+                    while (assertionError.get() == null
+                            && (pathIndex = pathIndexCounter.getAndIncrement()) < totalKeyCount) {
+                        try {
+                            checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
+                        } catch (AssertionError error) {
+                            assertionError.set(error);
+                        }
+                    }
+                }
+            });
+        }
+
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(1L, TimeUnit.HOURS);
+        } catch (InterruptedException ignored) {
+            // No operations.
+        }
+
+        if (assertionError.get() != null) {
+            throw assertionError.get();
+        }
     }
 
     public static void checkStoringOneValue(Cache<String, byte[]> cache, CachePath cachePath, int valueLength) {
@@ -71,8 +275,8 @@ final class CacheTestUtil {
         Assert.assertNull("Value (with lifetime) is not 'null' after removal.", cache.get(section, key));
     }
 
-    public static BlockingQueue<CachePath> getCachePaths(int sectionCount, int keyPerSectionCount, int totalKeyCount) {
-        Map<String, List<String>> keysBySection = new HashMap<>();
+    public static CachePath[] getCachePaths(int sectionCount, int keyPerSectionCount, int totalKeyCount) {
+        Map<String, List<String>> keysBySection = new HashMap<>(sectionCount);
 
         for (int sectionIndex = 0; sectionIndex < sectionCount; ++sectionIndex) {
             String section;
@@ -82,13 +286,8 @@ final class CacheTestUtil {
 
             Set<String> keys = new HashSet<>(keyPerSectionCount);
 
-            for (int keyIndex = 0; keyIndex < keyPerSectionCount; ++keyIndex) {
-                String key;
-                do {
-                    key = RandomUtil.getRandomToken();
-                } while (keys.contains(key));
-
-                keys.add(key);
+            while (keys.size() < keyPerSectionCount) {
+                keys.add(RandomUtil.getRandomToken());
             }
 
             keysBySection.put(section, new ArrayList<>(keys));
@@ -106,10 +305,9 @@ final class CacheTestUtil {
 
         Collections.shuffle(cachePaths);
 
-        return new LinkedBlockingQueue<>(cachePaths);
+        return cachePaths.toArray(new CachePath[totalKeyCount]);
     }
 
-    @SuppressWarnings("CallToSystemGC")
     public static void determineOperationTime(String operationName, Runnable operation) {
         System.gc();
         long startTime = System.nanoTime();

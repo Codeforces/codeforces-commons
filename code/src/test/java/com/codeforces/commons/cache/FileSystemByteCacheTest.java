@@ -7,10 +7,8 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -221,6 +219,8 @@ public class FileSystemByteCacheTest extends TestCase {
     }
 
     private static BlockingQueue<CachePath> getCachePaths() {
-        return CacheTestUtil.getCachePaths(KEY_PER_SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT);
+        return new LinkedBlockingQueue<>(Arrays.asList(CacheTestUtil.getCachePaths(
+                SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT
+        )));
     }
 }
