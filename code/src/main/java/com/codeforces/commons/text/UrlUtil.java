@@ -166,17 +166,17 @@ public class UrlUtil {
         int sharpPos = url.indexOf('#');
 
         StringBuilder resultUrl;
-        String urlAppendix;
+        String urlPostfix;
 
         if (questionSignPos == -1 && sharpPos == -1) {
             resultUrl = new StringBuilder(url);
-            urlAppendix = "";
+            urlPostfix = "";
         } else if (questionSignPos == -1 || sharpPos != -1 && questionSignPos > sharpPos) {
             resultUrl = new StringBuilder(url.substring(0, sharpPos));
-            urlAppendix = url.substring(sharpPos);
+            urlPostfix = url.substring(sharpPos);
         } else {
             resultUrl = new StringBuilder(url.substring(0, questionSignPos));
-            urlAppendix = url.length() > questionSignPos + 1 ? '&' + url.substring(questionSignPos + 1) : "";
+            urlPostfix = url.length() > questionSignPos + 1 ? '&' + url.substring(questionSignPos + 1) : "";
         }
 
         boolean firstParameter = true;
@@ -195,7 +195,7 @@ public class UrlUtil {
             firstParameter = false;
         }
 
-        return firstParameter ? url : resultUrl.append(urlAppendix).toString();
+        return firstParameter ? url : resultUrl.append(urlPostfix).toString();
     }
 
     public static String appendRelativePathToUrl(@Nonnull String url, @Nullable String relativePath) {
