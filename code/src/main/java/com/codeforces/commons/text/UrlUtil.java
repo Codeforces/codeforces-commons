@@ -151,6 +151,53 @@ public class UrlUtil {
         }
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
+    public static String appendParametersToUrl(@Nonnull String url, @Nonnull String... parameterParts) {
+        int partCount = parameterParts.length;
+        if (!isValidUri(url) || partCount == 0) {
+            return url;
+        }
+
+        if (partCount % 2 != 0) {
+            throw new IllegalArgumentException("Expected even number of parameter parts.");
+        }
+
+        int questionSignPos = url.indexOf('?');
+        int sharpPos = url.indexOf('#');
+
+        StringBuilder resultUrl;
+        String urlAppendix;
+
+        if (questionSignPos == -1 && sharpPos == -1) {
+            resultUrl = new StringBuilder(url);
+            urlAppendix = "";
+        } else if (questionSignPos == -1 || sharpPos != -1 && questionSignPos > sharpPos) {
+            resultUrl = new StringBuilder(url.substring(0, sharpPos));
+            urlAppendix = url.substring(sharpPos);
+        } else {
+            resultUrl = new StringBuilder(url.substring(0, questionSignPos));
+            urlAppendix = url.length() > questionSignPos + 1 ? '&' + url.substring(questionSignPos + 1) : "";
+        }
+
+        boolean firstParameter = true;
+
+        for (int partIndex = 0; partIndex < partCount; partIndex += 2) {
+            String parameterName = parameterParts[partIndex];
+            if (StringUtil.isBlank(parameterName)) {
+                continue;
+            }
+
+            String parameterValue = parameterParts[partIndex + 1];
+
+            String parameter = StringUtil.isBlank(parameterValue) ? parameterName : parameterName + '=' + parameterValue;
+
+            resultUrl.append(firstParameter ? '?' : '&').append(parameter);
+            firstParameter = false;
+        }
+
+        return firstParameter ? url : resultUrl.append(urlAppendix).toString();
+    }
+
     public static String appendRelativePathToUrl(@Nonnull String url, @Nullable String relativePath) {
         if (!isValidUri(url) || StringUtil.isBlank(relativePath)
                 || relativePath.length() == 1 && relativePath.charAt(0) == '/') {
