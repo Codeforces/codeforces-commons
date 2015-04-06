@@ -181,4 +181,25 @@ public class CollectionUtil {
             return value;
         }
     }
+
+    public static class CollectionComparator<T extends Comparable<T>> implements Comparator<Collection<T>> {
+        @Override
+        public int compare(Collection<T> o1, Collection<T> o2) {
+            Iterator<T> iterator1 = o1.iterator();
+            Iterator<T> iterator2 = o2.iterator();
+            while (iterator1.hasNext() && iterator2.hasNext()) {
+                int compareResult = iterator1.next().compareTo(iterator2.next());
+                if (compareResult != 0) {
+                    return compareResult;
+                }
+            }
+            if (iterator1.hasNext()) {
+                return 1;
+            }
+            if (iterator2.hasNext()) {
+                return -1;
+            }
+            return 0;
+        }
+    }
 }
