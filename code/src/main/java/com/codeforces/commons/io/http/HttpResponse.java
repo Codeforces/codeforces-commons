@@ -122,7 +122,7 @@ public final class HttpResponse {
                 "Response {code=%d, size=%s, s='%s'}",
                 code,
                 bytes == null ? "null" : Integer.toString(bytes.length),
-                StringUtil.shrinkTo(getUtf8String(), 30)
+                StringUtil.shrinkTo(getUtf8String(), 50)
         );
     }
 }

@@ -1,13 +1,134 @@
 package com.codeforces.commons.text;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 19.03.14
  */
 @SuppressWarnings("MessageMissingOnJUnitAssertion")
-public class UrlUtilTest extends TestCase {
+public class UrlUtilTest {
+    @Test
+    public void testAppendParameterToUrl() throws Exception {
+        assertEquals(
+                "http://localhost/?pageIndex=19",
+                UrlUtil.appendParameterToUrl("http://localhost/", "pageIndex", "19")
+        );
+        assertEquals(
+                "http://localhost/",
+                UrlUtil.appendParameterToUrl("http://localhost/", "", "19")
+        );
+        assertEquals(
+                "123?pageIndex=19",
+                UrlUtil.appendParameterToUrl("123", "pageIndex", "19")
+        );
+        assertEquals(
+                "http://localhost?pageIndex=1#pageIndex",
+                UrlUtil.appendParameterToUrl("http://localhost#pageIndex", "pageIndex", "1")
+        );
+        assertEquals(
+                "http://localhost?pageIndex=1#?pageIndex=7",
+                UrlUtil.appendParameterToUrl("http://localhost#?pageIndex=7", "pageIndex", "1")
+        );
+        assertEquals(
+                "http://localhost/?compact",
+                UrlUtil.appendParameterToUrl("http://localhost/", "compact", null)
+        );
+        assertEquals(
+                "http://google.ru/?compact&id=17&pageIndex1&counter=0&flag=1",
+                UrlUtil.appendParameterToUrl("http://google.ru/?id=17&pageIndex1&counter=0&flag=1", "compact", null)
+        );
+        assertEquals(
+                "http://google.ru/?compact#?id=17&pageIndex=0&pageIndex1&counter=0&pageIndex&flag=1",
+                UrlUtil.appendParameterToUrl(
+                        "http://google.ru/#?id=17&pageIndex=0&pageIndex1&counter=0&pageIndex&flag=1", "compact", null
+                )
+        );
+    }
+
+    @Test
+    public void testAppendParametersToUrl() throws Exception {
+        // Single parameter
+        assertEquals(
+                "http://localhost/?pageIndex=19",
+                UrlUtil.appendParametersToUrl("http://localhost/", "pageIndex", "19")
+        );
+        assertEquals(
+                "http://localhost/",
+                UrlUtil.appendParametersToUrl("http://localhost/", "", "19")
+        );
+        assertEquals(
+                "123?pageIndex=19",
+                UrlUtil.appendParametersToUrl("123", "pageIndex", "19")
+        );
+        assertEquals(
+                "http://localhost?pageIndex=1#pageIndex",
+                UrlUtil.appendParametersToUrl("http://localhost#pageIndex", "pageIndex", "1")
+        );
+        assertEquals(
+                "http://localhost?pageIndex=1#?pageIndex=7",
+                UrlUtil.appendParametersToUrl("http://localhost#?pageIndex=7", "pageIndex", "1")
+        );
+        assertEquals(
+                "http://localhost/?compact",
+                UrlUtil.appendParametersToUrl("http://localhost/", "compact", null)
+        );
+        assertEquals(
+                "http://google.ru/?compact&id=17&pageIndex1&counter=0&flag=1",
+                UrlUtil.appendParametersToUrl("http://google.ru/?id=17&pageIndex1&counter=0&flag=1", "compact", null)
+        );
+        assertEquals(
+                "http://google.ru/?compact#?id=17&pageIndex=0&pageIndex1&counter=0&pageIndex&flag=1",
+                UrlUtil.appendParametersToUrl(
+                        "http://google.ru/#?id=17&pageIndex=0&pageIndex1&counter=0&pageIndex&flag=1", "compact", null
+                )
+        );
+
+        // Multiple parameters
+        assertEquals(
+                "http://localhost/?pageIndex=19&friends=true",
+                UrlUtil.appendParametersToUrl("http://localhost/", "pageIndex", "19", "friends", "true")
+        );
+        assertEquals(
+                "http://localhost/?friends=true&cool=false&width=100",
+                UrlUtil.appendParametersToUrl(
+                        "http://localhost/", "", "19", "friends", "true", "cool", "false", "width", "100"
+                )
+        );
+        assertEquals(
+                "123?pageIndex=19&friends=true",
+                UrlUtil.appendParametersToUrl("123", "pageIndex", "19", "friends", "true")
+        );
+        assertEquals(
+                "http://localhost?pageIndex=1&friends=true#pageIndex",
+                UrlUtil.appendParametersToUrl("http://localhost#pageIndex", "pageIndex", "1", "friends", "true")
+        );
+        assertEquals(
+                "http://localhost?pageIndex=1&friends=true#?pageIndex=7",
+                UrlUtil.appendParametersToUrl("http://localhost#?pageIndex=7", "pageIndex", "1", "friends", "true")
+        );
+        assertEquals(
+                "http://localhost/?compact&friends=true",
+                UrlUtil.appendParametersToUrl("http://localhost/", "compact", null, "friends", "true")
+        );
+        assertEquals(
+                "http://google.ru/?compact&friends=true&id=17&pageIndex1&counter=0&flag=1",
+                UrlUtil.appendParametersToUrl(
+                        "http://google.ru/?id=17&pageIndex1&counter=0&flag=1", "compact", null, "friends", "true"
+                )
+        );
+        assertEquals(
+                "http://google.ru/?compact&friends=true#?id=17&pageIndex=0&pageIndex1&counter=0&pageIndex&flag=1",
+                UrlUtil.appendParametersToUrl(
+                        "http://google.ru/#?id=17&pageIndex=0&pageIndex1&counter=0&pageIndex&flag=1",
+                        "compact", null, "friends", "true"
+                )
+        );
+    }
+
+    @Test
     public void testRemoveParameterFromUrl() throws Exception {
         assertEquals("http://localhost/", UrlUtil.removeParameterFromUrl("http://localhost/?", "pageIndex"));
         assertEquals("http://localhost/", UrlUtil.removeParameterFromUrl("http://localhost/?pageIndex=0", "pageIndex"));
@@ -30,6 +151,7 @@ public class UrlUtilTest extends TestCase {
         );
     }
 
+    @Test
     public void testReplaceParameterInUrl() throws Exception {
         assertEquals(
                 "http://localhost/?pageIndex=999",
