@@ -444,6 +444,17 @@ public class FileUtil {
         });
     }
 
+    public static void moveFile(File sourceFile, File destinationFile, boolean overwrite) throws IOException {
+        try {
+            renameFile(sourceFile, destinationFile, overwrite);
+        } catch (IOException ignored) {
+            if (overwrite || !destinationFile.exists()) {
+                copyFile(sourceFile, destinationFile);
+                removeFile(sourceFile);
+            }
+        }
+    }
+
     /**
      * @param file File to be read.
      * @return File content as a byte array.
