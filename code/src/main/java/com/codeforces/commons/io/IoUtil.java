@@ -6,6 +6,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.tools.zip.ZipFile;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -136,7 +137,7 @@ public class IoUtil {
         return copy(inputStream, outputStream, true, false);
     }
 
-    public static void closeQuietly(@Nullable AutoCloseable  closeable) {
+    public static void closeQuietly(@Nullable AutoCloseable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
@@ -157,6 +158,16 @@ public class IoUtil {
         if (ftpClient != null && ftpClient.isConnected()) {
             try {
                 ftpClient.disconnect();
+            } catch (IOException ignored) {
+                // No operations.
+            }
+        }
+    }
+
+    public static void closeQuietly(@Nullable ZipFile zipFile) {
+        if (zipFile != null) {
+            try {
+                zipFile.close();
             } catch (IOException ignored) {
                 // No operations.
             }

@@ -478,10 +478,11 @@ public final class ZipUtil {
         }
     }
 
-    public static long getZipArchiveSize(File zipFile) throws IOException {
+    public static ZipArchiveInfo getZipArchiveInfo(File zipFile) throws IOException {
         try {
             ZipFile internalZipFile = new ZipFile(zipFile);
             long totalSize = 0;
+            long entryCount = 0;
 
             for (Object fileHeader : internalZipFile.getFileHeaders()) {
                 FileHeader entry = (FileHeader) fileHeader;
@@ -489,12 +490,21 @@ public final class ZipUtil {
                 if (size != -1) {
                     totalSize += size;
                 }
+                ++entryCount;
             }
 
-            return totalSize;
+            return new ZipArchiveInfo(totalSize, entryCount);
         } catch (ZipException e) {
-            throw new IOException("Can't get ZIP-archive size.", e);
+            throw new IOException("Can't get ZIP-archive info.", e);
         }
+    }
+
+    public static long getZipArchiveSize(File zipFile) throws IOException {
+        return getZipArchiveInfo(zipFile).getUncompressedSize();
+    }
+
+    public static long getZipArchiveEntryCount(File zipFile) throws IOException {
+        return getZipArchiveInfo(zipFile).getEntryCount();
     }
 
     /**
@@ -558,6 +568,29 @@ public final class ZipUtil {
             } catch (FsSyncException ignored) {
                 // No operations.
             }
+        }
+    }
+
+    public static final class ZipArchiveInfo {
+        private final long uncompressedSize;
+        private final long entryCount;
+
+        public ZipArchiveInfo(long uncompressedSize, long entryCount) {
+            this.uncompressedSize = uncompressedSize;
+            this.entryCount = entryCount;
+        }
+
+        public long getUncompressedSize() {
+            return uncompressedSize;
+        }
+
+        public long getEntryCount() {
+            return entryCount;
+        }
+
+        @Override
+        public String toString() {
+            return StringUtil.toString(this, true, "uncompressedSize", "entryCount");
         }
     }
 }
