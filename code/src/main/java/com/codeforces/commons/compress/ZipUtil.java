@@ -1,7 +1,11 @@
 package com.codeforces.commons.compress;
 
+import com.codeforces.commons.holder.Mutable;
+import com.codeforces.commons.holder.SimpleMutable;
+import com.codeforces.commons.io.CountingOutputStream;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
+import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import com.google.common.primitives.Ints;
 import de.schlichtherle.truezip.file.TFile;
@@ -19,7 +23,12 @@ import org.apache.commons.io.filefilter.NameFileFilter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.zip.*;
 
 import static java.lang.StrictMath.max;
@@ -509,7 +518,7 @@ public final class ZipUtil {
 
     /**
      * Checks that file is correct non-empty ZIP-archive.
-     * Equivalent of {@code {@link #isCorrectZipFile(java.io.File, boolean) isCorrectZipFile(file, true)}}.
+     * Equivalent of {@code {@link #isCorrectZipFile(File, boolean) isCorrectZipFile(file, true)}}.
      *
      * @param file file to check
      * @return {@code true} iff file is correct non-empty ZIP-archive
@@ -567,6 +576,232 @@ public final class ZipUtil {
                 }
             } catch (FsSyncException ignored) {
                 // No operations.
+            }
+        }
+    }
+
+    /**
+     * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
+     * indicates that the length of returned view was restricted by {@code maxLength} parameter.
+     * This method delegates to
+     * {@code {@link #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)}}
+     * using default values for different string patterns.
+     *
+     * @param zipFile            ZIP-archive to format
+     * @param maxLength          maximal allowed length of result
+     * @param maxEntryLineCount  maximal allowed number of lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength maximal allowed length of ZIP-archive entry line
+     * @return formatted view of ZIP-archive
+     * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
+     */
+    public static FileUtil.FirstBytes formatZipArchiveContentForView(
+            File zipFile, int maxLength, int maxEntryLineCount, int maxEntryLineLength) throws IOException {
+        return formatZipArchiveContentForView(
+                zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
+                "ZIP-file entries {\n", "    %2$03d. %1$s", "\n", "\n}\n\n",
+                "Entry %1$s (%2$d B) {\n", "    %1$s", "\n", "\n}\n\n",
+                "    BINARY DATA (%1$d B)", "Empty ZIP-file."
+        );
+    }
+
+    /**
+     * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
+     * indicates that the length of returned view was restricted by {@code maxLength} parameter.
+     *
+     * @param zipFile                        ZIP-archive to format
+     * @param maxLength                      maximal allowed length of result
+     * @param maxEntryLineCount              maximal allowed number of content lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength             maximal allowed length of ZIP-archive entry content line
+     * @param entryListHeaderPattern         pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
+     * @param entryListItemPattern           pattern of entry list item; parameters: {@code entryName}, {@code entryIndex} (1-based)
+     * @param entryListItemSeparatorPattern  pattern of entry list separator
+     * @param entryListCloserPattern         pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
+     * @param entryContentHeaderPattern      pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
+     * @param entryContentLinePattern        pattern of entry content line; parameters: {@code entryLine}
+     * @param entryContentLineSeparatorPattern
+     *                                       pattern of entry content separator
+     * @param entryContentCloserPattern      pattern of entry content closer; parameters: {@code entryName}
+     * @param binaryEntryContentPlaceholderPattern
+     *                                       pattern of binary entry content placeholder; parameters: {@code entrySize}
+     * @param emptyZipFilePlaceholderPattern pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
+     * @return formatted view of ZIP-archive
+     * @see String#format(String, Object...)
+     */
+    @SuppressWarnings("OverlyLongMethod")
+    public static FileUtil.FirstBytes formatZipArchiveContentForView(
+            File zipFile, int maxLength, int maxEntryLineCount, int maxEntryLineLength,
+            String entryListHeaderPattern, String entryListItemPattern,
+            String entryListItemSeparatorPattern, String entryListCloserPattern,
+            String entryContentHeaderPattern, String entryContentLinePattern,
+            String entryContentLineSeparatorPattern, String entryContentCloserPattern,
+            String binaryEntryContentPlaceholderPattern, String emptyZipFilePlaceholderPattern
+    ) throws IOException {
+        try {
+            Charset charset = StandardCharsets.UTF_8;
+
+            ZipFile internalZipFile = new ZipFile(zipFile);
+            List fileHeaders = internalZipFile.getFileHeaders();
+            int headerCount = fileHeaders.size();
+
+            if (headerCount <= 0) {
+                return formatEmptyZipFilePlaceholder(zipFile, maxLength, emptyZipFilePlaceholderPattern, charset);
+            }
+
+            Mutable<Boolean> truncated = new SimpleMutable<>(Boolean.FALSE);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            CountingOutputStream countingOutputStream = new CountingOutputStream(byteArrayOutputStream);
+
+            byte[] entryListHeaderBytes = String.format(
+                    entryListHeaderPattern, zipFile.getName(), zipFile.getPath(), headerCount
+            ).getBytes(charset);
+
+            if (!writeBytesForView(countingOutputStream, entryListHeaderBytes, maxLength, truncated)) {
+                throw new IllegalArgumentException(String.format(
+                        "Argument 'maxLength' (%d) is less than the length of entry list header '%s' (%d bytes).",
+                        maxLength, new String(entryListHeaderBytes, charset), entryListHeaderBytes.length
+                ));
+            }
+
+            Collections.sort(fileHeaders, new Comparator() {
+                @Override
+                public int compare(Object headerA, Object headerB) {
+                    return ((FileHeader) headerA).getFileName().compareTo(((FileHeader) headerB).getFileName());
+                }
+            });
+
+            for (int headerIndex = 0; headerIndex < headerCount; ++headerIndex) {
+                FileHeader header = (FileHeader) fileHeaders.get(headerIndex);
+                String fileName = header.getFileName();
+
+                String entryListItemAppendix = headerIndex == headerCount - 1
+                        ? String.format(entryListCloserPattern, zipFile.getName(), zipFile.getPath())
+                        : entryListItemSeparatorPattern;
+
+                byte[] entryListItemBytes = (String.format(
+                        entryListItemPattern, fileName, headerIndex + 1
+                ) + entryListItemAppendix).getBytes(charset);
+
+                if (!writeBytesForView(countingOutputStream, entryListItemBytes, maxLength, truncated)) {
+                    break;
+                }
+            }
+
+            for (int headerIndex = 0; headerIndex < headerCount; ++headerIndex) {
+                FileHeader header = (FileHeader) fileHeaders.get(headerIndex);
+                if (header.isDirectory()) {
+                    continue;
+                }
+
+                formatAndAppendEntryContent(
+                        countingOutputStream, maxLength, truncated, charset, internalZipFile, header,
+                        maxEntryLineCount, maxEntryLineLength, entryContentHeaderPattern, entryContentLinePattern,
+                        entryContentLineSeparatorPattern, entryContentCloserPattern,
+                        binaryEntryContentPlaceholderPattern
+                );
+
+                if (truncated.get()) {
+                    break;
+                }
+            }
+
+            return new FileUtil.FirstBytes(truncated.get(), byteArrayOutputStream.toByteArray());
+        } catch (ZipException e) {
+            throw new IOException("Can't format ZIP-file for view.", e);
+        }
+    }
+
+    private static void formatAndAppendEntryContent(
+            CountingOutputStream countingOutputStream, int maxLength, Mutable<Boolean> truncated, Charset charset,
+            ZipFile zipFile, FileHeader zipEntryHeader, int maxEntryLineCount, int maxEntryLineLength,
+            String entryContentHeaderPattern, String entryContentLinePattern,
+            String entryContentLineSeparatorPattern, String entryContentCloserPattern,
+            String binaryEntryContentPlaceholderPattern) throws IOException, ZipException {
+        String fileName = zipEntryHeader.getFileName();
+
+        byte[] fileBytes = IoUtil.toByteArray(zipFile.getInputStream(zipEntryHeader));
+        String fileText;
+        boolean binaryFile;
+
+        try {
+            fileText = new String(fileBytes, charset);
+            binaryFile = false;
+
+            for (int charIndex = 0, charCount = fileText.length(); charIndex < charCount; ++charIndex) {
+                if (fileText.charAt(charIndex) < 9) {
+                    binaryFile = true;
+                    break;
+                }
+            }
+        } catch (RuntimeException ignored) {
+            fileText = null;
+            binaryFile = true;
+        }
+
+        writeBytesForView(countingOutputStream, String.format(
+                entryContentHeaderPattern, fileName, fileBytes.length
+        ).getBytes(charset), maxLength, truncated);
+
+        if (binaryFile) {
+            writeBytesForView(countingOutputStream, String.format(
+                    binaryEntryContentPlaceholderPattern, fileBytes.length
+            ).getBytes(charset), maxLength, truncated);
+
+            writeBytesForView(countingOutputStream, String.format(
+                    entryContentCloserPattern, fileName
+            ).getBytes(charset), maxLength, truncated);
+        } else {
+            String[] fileLines = StringUtil.shrinkLinesTo(
+                    Patterns.LINE_BREAK_PATTERN.split(fileText), maxEntryLineLength, maxEntryLineCount
+            );
+
+            for (int lineIndex = 0, lineCount = fileLines.length; lineIndex < lineCount; ++lineIndex) {
+                String entryContentLineAppendix = lineIndex == lineCount - 1
+                        ? String.format(entryContentCloserPattern, fileName)
+                        : entryContentLineSeparatorPattern;
+
+                byte[] entryContentLineBytes = (String.format(
+                        entryContentLinePattern, fileLines[lineIndex]
+                ) + entryContentLineAppendix).getBytes(charset);
+
+                if (!writeBytesForView(countingOutputStream, entryContentLineBytes, maxLength, truncated)) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private static FileUtil.FirstBytes formatEmptyZipFilePlaceholder(
+            File zipFile, int maxLength, String emptyZipFilePlaceholderPattern, Charset charset) {
+        byte[] emptyZipFilePlaceholderBytes = String.format(
+                emptyZipFilePlaceholderPattern, zipFile.getName(), zipFile.getPath()
+        ).getBytes(charset);
+
+        if (maxLength < emptyZipFilePlaceholderBytes.length) {
+            throw new IllegalArgumentException(String.format(
+                    "Argument 'maxLength' (%d) is less than the length of empty ZIP-file placeholder '%s' (%d bytes).",
+                    maxLength, new String(emptyZipFilePlaceholderBytes, charset), emptyZipFilePlaceholderBytes.length
+            ));
+        }
+
+        return new FileUtil.FirstBytes(false, emptyZipFilePlaceholderBytes);
+    }
+
+    private static boolean writeBytesForView(
+            CountingOutputStream countingOutputStream, byte[] bytes, int maxLength, Mutable<Boolean> truncated) {
+        if (truncated.get()) {
+            return false;
+        }
+
+        if (countingOutputStream.getTotalWrittenByteCount() + bytes.length > maxLength) {
+            truncated.set(true);
+            return false;
+        } else {
+            try {
+                countingOutputStream.write(bytes);
+                return true;
+            } catch (IOException ignored) {
+                truncated.set(true);
+                return false;
             }
         }
     }

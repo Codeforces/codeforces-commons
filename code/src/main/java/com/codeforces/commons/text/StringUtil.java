@@ -28,6 +28,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
+import static java.lang.StrictMath.min;
+
 /**
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -947,22 +949,24 @@ public final class StringUtil {
     }
 
     public static List<String> shrinkLinesTo(List<String> lines, int maxLineLength, int maxLineCount) {
-        if (maxLineCount < 8) {
-            throw new IllegalArgumentException("Argument maxLineCount is expected to be at least 8.");
+        if (maxLineCount < 3) {
+            throw new IllegalArgumentException("Argument 'maxLineCount' is expected to be at least 3.");
         }
 
         if (lines == null) {
             return null;
         }
 
-        List<String> result = new ArrayList<>(maxLineCount);
-        if (lines.size() <= maxLineCount) {
+        int lineCount = lines.size();
+        List<String> result = new ArrayList<>(min(maxLineCount, lineCount));
+
+        if (lineCount <= maxLineCount) {
             for (String line : lines) {
                 result.add(shrinkTo(line, maxLineLength));
             }
         } else {
             int prefixLineCount = maxLineCount / 2;
-            int suffixLineCount = maxLineCount - prefixLineCount - 1;
+            int postfixLineCount = maxLineCount - prefixLineCount - 1;
 
             for (int lineIndex = 0; lineIndex < prefixLineCount; ++lineIndex) {
                 result.add(shrinkTo(lines.get(lineIndex), maxLineLength));
@@ -970,8 +974,43 @@ public final class StringUtil {
 
             result.add("...");
 
-            for (int lineIndex = lines.size() - suffixLineCount; lineIndex < lines.size(); ++lineIndex) {
+            for (int lineIndex = lineCount - postfixLineCount; lineIndex < lineCount; ++lineIndex) {
                 result.add(shrinkTo(lines.get(lineIndex), maxLineLength));
+            }
+        }
+
+        return result;
+    }
+
+    public static String[] shrinkLinesTo(String[] lines, int maxLineLength, int maxLineCount) {
+        if (maxLineCount < 3) {
+            throw new IllegalArgumentException("Argument 'maxLineCount' is expected to be at least 3.");
+        }
+
+        if (lines == null) {
+            return null;
+        }
+
+        int lineCount = lines.length;
+        String[] result = new String[min(maxLineCount, lineCount)];
+
+        if (lineCount <= maxLineCount) {
+            for (int lineIndex = 0; lineIndex < lineCount; ++lineIndex) {
+                result[lineIndex] = shrinkTo(lines[lineIndex], maxLineLength);
+            }
+        } else {
+            int prefixLineCount = maxLineCount / 2;
+            int postfixLineCount = maxLineCount - prefixLineCount - 1;
+
+            for (int lineIndex = 0; lineIndex < prefixLineCount; ++lineIndex) {
+                result[lineIndex] = shrinkTo(lines[lineIndex], maxLineLength);
+            }
+
+            int resultPosition = prefixLineCount;
+            result[resultPosition] = "...";
+
+            for (int lineIndex = lineCount - postfixLineCount; lineIndex < lineCount; ++lineIndex) {
+                result[++resultPosition] = shrinkTo(lines[lineIndex], maxLineLength);
             }
         }
 
