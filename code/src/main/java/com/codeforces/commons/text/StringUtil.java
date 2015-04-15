@@ -258,6 +258,11 @@ public final class StringUtil {
     }
 
     @Nullable
+    public static String nullToDefault(@Nullable String s, @Nullable String defaultValue) {
+        return s == null ? defaultValue : s;
+    }
+
+    @Nullable
     public static String trim(@Nullable String s) {
         if (s == null) {
             return null;

@@ -581,6 +581,56 @@ public final class ZipUtil {
     }
 
     /**
+     * @see #formatZipArchiveContentForView(File, int, int, int)
+     */
+    public static FileUtil.FirstBytes formatZipArchiveContentForView(
+            byte[] zipFileBytes, int maxLength, int maxEntryLineCount, int maxEntryLineLength) throws IOException {
+        File tempDir = null;
+
+        try {
+            tempDir = FileUtil.createTemporaryDirectory("zip-file-for-view");
+
+            File zipFile = new File(tempDir, "zip.zip");
+            FileUtil.writeFile(zipFile, zipFileBytes);
+
+            return formatZipArchiveContentForView(zipFile, maxLength, maxEntryLineCount, maxEntryLineLength);
+        } finally {
+            FileUtil.deleteTotallyAsync(tempDir);
+        }
+    }
+
+    /**
+     * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
+     */
+    public static FileUtil.FirstBytes formatZipArchiveContentForView(
+            byte[] zipFileBytes, int maxLength, int maxEntryLineCount, int maxEntryLineLength,
+            String entryListHeaderPattern, String entryListItemPattern,
+            String entryListItemSeparatorPattern, String entryListCloserPattern,
+            String entryContentHeaderPattern, String entryContentLinePattern,
+            String entryContentLineSeparatorPattern, String entryContentCloserPattern,
+            String binaryEntryContentPlaceholderPattern, String emptyZipFilePlaceholderPattern) throws IOException {
+        File tempDir = null;
+
+        try {
+            tempDir = FileUtil.createTemporaryDirectory("zip-file-for-view");
+
+            File zipFile = new File(tempDir, "zip.zip");
+            FileUtil.writeFile(zipFile, zipFileBytes);
+
+            return formatZipArchiveContentForView(
+                    zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
+                    entryListHeaderPattern, entryListItemPattern,
+                    entryListItemSeparatorPattern, entryListCloserPattern,
+                    entryContentHeaderPattern, entryContentLinePattern,
+                    entryContentLineSeparatorPattern, entryContentCloserPattern,
+                    binaryEntryContentPlaceholderPattern, emptyZipFilePlaceholderPattern
+            );
+        } finally {
+            FileUtil.deleteTotallyAsync(tempDir);
+        }
+    }
+
+    /**
      * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
      * indicates that the length of returned view was restricted by {@code maxLength} parameter.
      * This method delegates to
@@ -598,9 +648,7 @@ public final class ZipUtil {
             File zipFile, int maxLength, int maxEntryLineCount, int maxEntryLineLength) throws IOException {
         return formatZipArchiveContentForView(
                 zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
-                "ZIP-file entries {\n", "    %2$03d. %1$s", "\n", "\n}\n\n",
-                "Entry %1$s (%2$d B) {\n", "    %1$s", "\n", "\n}\n\n",
-                "    BINARY DATA (%1$d B)", "Empty ZIP-file."
+                null, null, null, null, null, null, null, null, null, null
         );
     }
 
@@ -613,7 +661,7 @@ public final class ZipUtil {
      * @param maxEntryLineCount              maximal allowed number of content lines to display for a single ZIP-archive entry
      * @param maxEntryLineLength             maximal allowed length of ZIP-archive entry content line
      * @param entryListHeaderPattern         pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
-     * @param entryListItemPattern           pattern of entry list item; parameters: {@code entryName}, {@code entryIndex} (1-based)
+     * @param entryListItemPattern           pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
      * @param entryListItemSeparatorPattern  pattern of entry list separator
      * @param entryListCloserPattern         pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
      * @param entryContentHeaderPattern      pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
@@ -634,8 +682,22 @@ public final class ZipUtil {
             String entryListItemSeparatorPattern, String entryListCloserPattern,
             String entryContentHeaderPattern, String entryContentLinePattern,
             String entryContentLineSeparatorPattern, String entryContentCloserPattern,
-            String binaryEntryContentPlaceholderPattern, String emptyZipFilePlaceholderPattern
-    ) throws IOException {
+            String binaryEntryContentPlaceholderPattern, String emptyZipFilePlaceholderPattern) throws IOException {
+        entryListHeaderPattern = StringUtil.nullToDefault(entryListHeaderPattern, "ZIP-file entries {\n");
+        entryListItemPattern = StringUtil.nullToDefault(entryListItemPattern, "    %3$03d. %1$s (%2$d B)");
+        entryListItemSeparatorPattern = StringUtil.nullToDefault(entryListItemSeparatorPattern, "\n");
+        entryListCloserPattern = StringUtil.nullToDefault(entryListCloserPattern, "\n}\n\n");
+
+        entryContentHeaderPattern = StringUtil.nullToDefault(entryContentHeaderPattern, "Entry %1$s (%2$d B) {\n");
+        entryContentLinePattern = StringUtil.nullToDefault(entryContentLinePattern, "    %1$s");
+        entryContentLineSeparatorPattern = StringUtil.nullToDefault(entryContentLineSeparatorPattern, "\n");
+        entryContentCloserPattern = StringUtil.nullToDefault(entryContentCloserPattern, "\n} // %1$s\n\n");
+
+        binaryEntryContentPlaceholderPattern = StringUtil.nullToDefault(
+                binaryEntryContentPlaceholderPattern, "    *** BINARY DATA (%1$d B) ***"
+        );
+        emptyZipFilePlaceholderPattern = StringUtil.nullToDefault(emptyZipFilePlaceholderPattern, "Empty ZIP-file.");
+
         try {
             Charset charset = StandardCharsets.UTF_8;
 
@@ -678,7 +740,7 @@ public final class ZipUtil {
                         : entryListItemSeparatorPattern;
 
                 byte[] entryListItemBytes = (String.format(
-                        entryListItemPattern, fileName, headerIndex + 1
+                        entryListItemPattern, fileName, header.getUncompressedSize(), headerIndex + 1
                 ) + entryListItemAppendix).getBytes(charset);
 
                 if (!writeBytesForView(countingOutputStream, entryListItemBytes, maxLength, truncated)) {

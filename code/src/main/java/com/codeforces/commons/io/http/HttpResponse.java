@@ -1,13 +1,13 @@
 package com.codeforces.commons.io.http;
 
 import com.codeforces.commons.text.StringUtil;
-import org.apache.commons.io.Charsets;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +103,7 @@ public final class HttpResponse {
 
     @Nullable
     public String getUtf8String() {
-        return bytes == null ? null : new String(bytes, Charsets.UTF_8);
+        return bytes == null ? null : new String(bytes, StandardCharsets.UTF_8);
     }
 
     @Nullable

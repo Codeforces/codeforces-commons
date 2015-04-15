@@ -11,6 +11,8 @@ import org.apache.commons.lang.ArrayUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -790,6 +792,21 @@ public class FileUtil {
             return bytes;
         }
 
+        @Nullable
+        public String getUtf8String() {
+            return bytes == null ? null : new String(bytes, StandardCharsets.UTF_8);
+        }
+
+        @Nullable
+        public String getString(String charset) throws UnsupportedEncodingException {
+            return bytes == null ? null : new String(bytes, charset);
+        }
+
+        @Nullable
+        public String getString(Charset charset) {
+            return bytes == null ? null : new String(bytes, charset);
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -817,6 +834,7 @@ public class FileUtil {
         if (ArrayUtils.isEmpty(first.bytes)) {
             return second;
         }
+
         if (ArrayUtils.isEmpty(second.bytes)) {
             return first;
         }
