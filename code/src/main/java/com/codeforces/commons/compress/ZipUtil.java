@@ -584,31 +584,62 @@ public final class ZipUtil {
      * @see #formatZipArchiveContentForView(File, int, int, int)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
-            byte[] zipFileBytes, int maxLength, int maxEntryLineCount, int maxEntryLineLength) throws IOException {
-        File tempDir = null;
+            byte[] zipFileBytes, final int maxLength, final int maxEntryLineCount, final int maxEntryLineLength)
+            throws IOException {
+        return formatZipArchiveContentForView(zipFileBytes, new ZipFileFormatHandler() {
+            @Override
+            public FileUtil.FirstBytes formatZipArchiveContentForView(File zipFile) throws IOException {
+                return ZipUtil.formatZipArchiveContentForView(
+                        zipFile, maxLength, maxEntryLineCount, maxEntryLineLength
+                );
+            }
+        });
+    }
 
-        try {
-            tempDir = FileUtil.createTemporaryDirectory("zip-file-for-view");
-
-            File zipFile = new File(tempDir, "zip.zip");
-            FileUtil.writeFile(zipFile, zipFileBytes);
-
-            return formatZipArchiveContentForView(zipFile, maxLength, maxEntryLineCount, maxEntryLineLength);
-        } finally {
-            FileUtil.deleteTotallyAsync(tempDir);
-        }
+    /**
+     * @see #formatZipArchiveContentForView(File, int, int, int, ZipUtil.ZipFileFormatConfiguration)
+     */
+    public static FileUtil.FirstBytes formatZipArchiveContentForView(
+            byte[] zipFileBytes, final int maxLength, final int maxEntryLineCount, final int maxEntryLineLength,
+            final ZipFileFormatConfiguration configuration) throws IOException {
+        return formatZipArchiveContentForView(zipFileBytes, new ZipFileFormatHandler() {
+            @Override
+            public FileUtil.FirstBytes formatZipArchiveContentForView(File zipFile) throws IOException {
+                return ZipUtil.formatZipArchiveContentForView(
+                        zipFile, maxLength, maxEntryLineCount, maxEntryLineLength, configuration
+                );
+            }
+        });
     }
 
     /**
      * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
-            byte[] zipFileBytes, int maxLength, int maxEntryLineCount, int maxEntryLineLength,
-            String entryListHeaderPattern, String entryListItemPattern,
-            String entryListItemSeparatorPattern, String entryListCloserPattern,
-            String entryContentHeaderPattern, String entryContentLinePattern,
-            String entryContentLineSeparatorPattern, String entryContentCloserPattern,
-            String binaryEntryContentPlaceholderPattern, String emptyZipFilePlaceholderPattern) throws IOException {
+            byte[] zipFileBytes, final int maxLength, final int maxEntryLineCount, final int maxEntryLineLength,
+            final String entryListHeaderPattern, final String entryListItemPattern,
+            final String entryListItemSeparatorPattern, final String entryListCloserPattern,
+            final String entryContentHeaderPattern, final String entryContentLinePattern,
+            final String entryContentLineSeparatorPattern, final String entryContentCloserPattern,
+            final String binaryEntryContentPlaceholderPattern, final String emptyZipFilePlaceholderPattern)
+            throws IOException {
+        return formatZipArchiveContentForView(zipFileBytes, new ZipFileFormatHandler() {
+            @Override
+            public FileUtil.FirstBytes formatZipArchiveContentForView(File zipFile) throws IOException {
+                return ZipUtil.formatZipArchiveContentForView(
+                        zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
+                        entryListHeaderPattern, entryListItemPattern,
+                        entryListItemSeparatorPattern, entryListCloserPattern,
+                        entryContentHeaderPattern, entryContentLinePattern,
+                        entryContentLineSeparatorPattern, entryContentCloserPattern,
+                        binaryEntryContentPlaceholderPattern, emptyZipFilePlaceholderPattern
+                );
+            }
+        });
+    }
+
+    private static FileUtil.FirstBytes formatZipArchiveContentForView(
+            byte[] zipFileBytes, ZipFileFormatHandler handler) throws IOException {
         File tempDir = null;
 
         try {
@@ -617,14 +648,7 @@ public final class ZipUtil {
             File zipFile = new File(tempDir, "zip.zip");
             FileUtil.writeFile(zipFile, zipFileBytes);
 
-            return formatZipArchiveContentForView(
-                    zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
-                    entryListHeaderPattern, entryListItemPattern,
-                    entryListItemSeparatorPattern, entryListCloserPattern,
-                    entryContentHeaderPattern, entryContentLinePattern,
-                    entryContentLineSeparatorPattern, entryContentCloserPattern,
-                    binaryEntryContentPlaceholderPattern, emptyZipFilePlaceholderPattern
-            );
+            return handler.formatZipArchiveContentForView(zipFile);
         } finally {
             FileUtil.deleteTotallyAsync(tempDir);
         }
@@ -649,6 +673,34 @@ public final class ZipUtil {
         return formatZipArchiveContentForView(
                 zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
                 null, null, null, null, null, null, null, null, null, null
+        );
+    }
+
+    /**
+     * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
+     * indicates that the length of returned view was restricted by {@code maxLength} parameter.
+     * This method delegates to
+     * {@code {@link #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)}}
+     * using {@code configuration} values for different string patterns.
+     *
+     * @param zipFile            ZIP-archive to format
+     * @param maxLength          maximal allowed length of result
+     * @param maxEntryLineCount  maximal allowed number of lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength maximal allowed length of ZIP-archive entry line
+     * @param configuration      configuration containing string patterns
+     * @return formatted view of ZIP-archive
+     * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
+     */
+    public static FileUtil.FirstBytes formatZipArchiveContentForView(
+            File zipFile, int maxLength, int maxEntryLineCount, int maxEntryLineLength,
+            ZipFileFormatConfiguration configuration) throws IOException {
+        return formatZipArchiveContentForView(
+                zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
+                configuration.getEntryListHeaderPattern(), configuration.getEntryListItemPattern(),
+                configuration.getEntryListItemSeparatorPattern(), configuration.getEntryListCloserPattern(),
+                configuration.getEntryContentHeaderPattern(), configuration.getEntryContentLinePattern(),
+                configuration.getEntryContentLineSeparatorPattern(), configuration.getEntryContentCloserPattern(),
+                configuration.getBinaryEntryContentPlaceholderPattern(), configuration.getEmptyZipFilePlaceholderPattern()
         );
     }
 
@@ -889,5 +941,114 @@ public final class ZipUtil {
         public String toString() {
             return StringUtil.toString(this, true, "uncompressedSize", "entryCount");
         }
+    }
+
+    public static final class ZipFileFormatConfiguration {
+        private String entryListHeaderPattern = "ZIP-file entries {\n";
+        private String entryListItemPattern = "    %3$03d. %1$s (%2$d B)";
+        private String entryListItemSeparatorPattern = "\n";
+        private String entryListCloserPattern = "\n}\n\n";
+
+        private String entryContentHeaderPattern = "Entry %1$s (%2$d B) {\n";
+        private String entryContentLinePattern = "    %1$s";
+        private String entryContentLineSeparatorPattern = "\n";
+        private String entryContentCloserPattern = "\n} // %1$s\n\n";
+
+        private String binaryEntryContentPlaceholderPattern = "    *** BINARY DATA (%1$d B) ***";
+        private String emptyZipFilePlaceholderPattern = "Empty ZIP-file.";
+
+        public String getEntryListHeaderPattern() {
+            return entryListHeaderPattern;
+        }
+
+        public ZipFileFormatConfiguration setEntryListHeaderPattern(String entryListHeaderPattern) {
+            this.entryListHeaderPattern = entryListHeaderPattern;
+            return this;
+        }
+
+        public String getEntryListItemPattern() {
+            return entryListItemPattern;
+        }
+
+        public ZipFileFormatConfiguration setEntryListItemPattern(String entryListItemPattern) {
+            this.entryListItemPattern = entryListItemPattern;
+            return this;
+        }
+
+        public String getEntryListItemSeparatorPattern() {
+            return entryListItemSeparatorPattern;
+        }
+
+        public ZipFileFormatConfiguration setEntryListItemSeparatorPattern(String entryListItemSeparatorPattern) {
+            this.entryListItemSeparatorPattern = entryListItemSeparatorPattern;
+            return this;
+        }
+
+        public String getEntryListCloserPattern() {
+            return entryListCloserPattern;
+        }
+
+        public ZipFileFormatConfiguration setEntryListCloserPattern(String entryListCloserPattern) {
+            this.entryListCloserPattern = entryListCloserPattern;
+            return this;
+        }
+
+        public String getEntryContentHeaderPattern() {
+            return entryContentHeaderPattern;
+        }
+
+        public ZipFileFormatConfiguration setEntryContentHeaderPattern(String entryContentHeaderPattern) {
+            this.entryContentHeaderPattern = entryContentHeaderPattern;
+            return this;
+        }
+
+        public String getEntryContentLinePattern() {
+            return entryContentLinePattern;
+        }
+
+        public ZipFileFormatConfiguration setEntryContentLinePattern(String entryContentLinePattern) {
+            this.entryContentLinePattern = entryContentLinePattern;
+            return this;
+        }
+
+        public String getEntryContentLineSeparatorPattern() {
+            return entryContentLineSeparatorPattern;
+        }
+
+        public ZipFileFormatConfiguration setEntryContentLineSeparatorPattern(String entryContentLineSeparatorPattern) {
+            this.entryContentLineSeparatorPattern = entryContentLineSeparatorPattern;
+            return this;
+        }
+
+        public String getEntryContentCloserPattern() {
+            return entryContentCloserPattern;
+        }
+
+        public ZipFileFormatConfiguration setEntryContentCloserPattern(String entryContentCloserPattern) {
+            this.entryContentCloserPattern = entryContentCloserPattern;
+            return this;
+        }
+
+        public String getBinaryEntryContentPlaceholderPattern() {
+            return binaryEntryContentPlaceholderPattern;
+        }
+
+        public ZipFileFormatConfiguration setBinaryEntryContentPlaceholderPattern(String binaryEntryContentPlaceholderPattern) {
+            this.binaryEntryContentPlaceholderPattern = binaryEntryContentPlaceholderPattern;
+            return this;
+        }
+
+        public String getEmptyZipFilePlaceholderPattern() {
+            return emptyZipFilePlaceholderPattern;
+        }
+
+        public ZipFileFormatConfiguration setEmptyZipFilePlaceholderPattern(String emptyZipFilePlaceholderPattern) {
+            this.emptyZipFilePlaceholderPattern = emptyZipFilePlaceholderPattern;
+            return this;
+        }
+    }
+
+    private interface ZipFileFormatHandler {
+        FileUtil.FirstBytes formatZipArchiveContentForView(File zipFile) throws IOException;
     }
 }
