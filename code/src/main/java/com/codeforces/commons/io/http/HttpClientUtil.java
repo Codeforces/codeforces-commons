@@ -687,6 +687,9 @@ public class HttpClientUtil {
     }
 
     /**
+     * @param httpClient http client to close
+     * @param request    http request to close
+     * @param response   http response to close
      * @deprecated Use {@link #closeQuietly(CloseableHttpClient, HttpPost, HttpResponse)}.
      */
     @SuppressWarnings("deprecation")
@@ -703,13 +706,14 @@ public class HttpClientUtil {
     }
 
     /**
+     * @param httpClient http client to close
      * @deprecated Use {@link #closeQuietly(CloseableHttpClient)}.
      */
     @SuppressWarnings("deprecation")
     @Deprecated
     public static void closeQuietly(@Nullable HttpClient httpClient) {
         if (httpClient instanceof Closeable) {
-            IoUtil.closeQuietly((Closeable) httpClient);
+            IoUtil.closeQuietly((AutoCloseable) httpClient);
         } else if (httpClient != null) {
             httpClient.getConnectionManager().shutdown();
         }
@@ -736,7 +740,7 @@ public class HttpClientUtil {
             }
 
             if (response instanceof Closeable) {
-                IoUtil.closeQuietly((Closeable) response);
+                IoUtil.closeQuietly((AutoCloseable) response);
             }
         }
     }

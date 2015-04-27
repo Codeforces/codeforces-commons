@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 /**
  * Utility class with the only public method {@code public static String format(String pattern, Method method, Object[] args)}.
- * <p/>
+ * <p>&nbsp;</p>
  * Use it to format string containing expressions like "${user}", "${city.name.length}" and so on,
  * there "user" and "city" and named parameters of the method (see @Name).
  */

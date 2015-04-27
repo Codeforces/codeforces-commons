@@ -63,6 +63,7 @@ public class RandomUtil {
      * Returns a pseudo-random, uniformly distributed {@code int} value
      * between 0 (inclusive) and the specified value (exclusive).
      *
+     * @param n upper bound (exclusive)
      * @return random {@code int}
      */
     public static int getRandomInt(int n) {

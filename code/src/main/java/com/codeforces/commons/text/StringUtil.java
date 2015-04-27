@@ -812,7 +812,7 @@ public final class StringUtil {
 
     /**
      * @param html Raw HTML.
-     * @return Replaces "<", ">" and "&" with entities.
+     * @return Replaces "&lt;", "&gt;" and "&amp;" with entities.
      */
     public static String quoteHtml(String html) {
         html = Patterns.AMP_PATTERN.matcher(html).replaceAll("&amp;");

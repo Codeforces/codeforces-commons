@@ -74,7 +74,7 @@ public final class HttpCode {
      * Status code (302) indicating that the resource has temporarily
      * moved to another location, but that future references should
      * still use the original URI to access the resource.
-     * <p/>
+     * <p>&nbsp;</p>
      * This definition is being retained for backwards compatibility.
      * FOUND is now the preferred definition.
      */

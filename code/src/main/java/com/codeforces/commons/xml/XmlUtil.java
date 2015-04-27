@@ -248,7 +248,7 @@ public final class XmlUtil {
 
     /**
      * Ensures that XML-element with {@code newAttributes} does exist and creates it if not.
-     * <p/>
+     * <p>&nbsp;</p>
      * Method uses {@code filterAttributes} to uniquely identify an XML-element.
      * If such element does exist, all its attributes will be overridden with values of {@code newAttributes},
      * else a new element will be created.
@@ -299,7 +299,7 @@ public final class XmlUtil {
 
     /**
      * Ensures that XML-element with {@code newAttributes} does exist and creates it if not.
-     * <p/>
+     * <p>&nbsp;</p>
      * Method uses {@code filterAttributes} to uniquely identify an XML-element.
      * If such element does exist, all its attributes will be overridden with values of {@code newAttributes},
      * else a new element will be created.
@@ -368,7 +368,8 @@ public final class XmlUtil {
      *
      * @param xmlInputStream  Stream to read.
      * @param xmlOutputStream Stream to write.
-     * @param elementXPath    XPath of elements to remove.  @throws IOException In case of I/O error.
+     * @param elementXPath    XPath of elements to remove.
+     * @throws IOException In case of I/O error.
      */
     public static void removeElementsIfExists(
             @Nonnull InputStream xmlInputStream, @Nonnull OutputStream xmlOutputStream,

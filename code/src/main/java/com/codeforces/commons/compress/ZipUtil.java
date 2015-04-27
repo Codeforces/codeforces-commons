@@ -581,6 +581,18 @@ public final class ZipUtil {
     }
 
     /**
+     * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
+     * indicates that the length of returned view was restricted by {@code maxLength} parameter.
+     * This method delegates to
+     * {@code {@link #formatZipArchiveContentForView(File, int, int, int)}}
+     * using default values for different string patterns.
+     *
+     * @param zipFileBytes       bytes of ZIP-archive to format
+     * @param maxLength          maximal allowed length of result
+     * @param maxEntryLineCount  maximal allowed number of lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength maximal allowed length of ZIP-archive entry line
+     * @return formatted view of ZIP-archive
+     * @throws IOException if {@code zipFileBytes} is not a correct bytes of ZIP-archive or any other I/O-error has been occured
      * @see #formatZipArchiveContentForView(File, int, int, int)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
@@ -597,6 +609,19 @@ public final class ZipUtil {
     }
 
     /**
+     * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
+     * indicates that the length of returned view was restricted by {@code maxLength} parameter.
+     * This method delegates to
+     * {@code {@link #formatZipArchiveContentForView(File, int, int, int, ZipUtil.ZipFileFormatConfiguration)}}
+     * using {@code configuration} values for different string patterns.
+     *
+     * @param zipFileBytes       bytes of ZIP-archive to format
+     * @param maxLength          maximal allowed length of result
+     * @param maxEntryLineCount  maximal allowed number of lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength maximal allowed length of ZIP-archive entry line
+     * @param configuration      configuration containing string patterns
+     * @return formatted view of ZIP-archive
+     * @throws IOException if {@code zipFileBytes} is not a correct bytes of ZIP-archive or any other I/O-error has been occured
      * @see #formatZipArchiveContentForView(File, int, int, int, ZipUtil.ZipFileFormatConfiguration)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
@@ -613,6 +638,30 @@ public final class ZipUtil {
     }
 
     /**
+     * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
+     * indicates that the length of returned view was restricted by {@code maxLength} parameter.
+     * This method delegates to
+     * {@code {@link #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)}}
+     * using {@code configuration} values for different string patterns.
+     *
+     * @param zipFileBytes                   bytes of ZIP-archive to format
+     * @param maxLength                      maximal allowed length of result
+     * @param maxEntryLineCount              maximal allowed number of content lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength             maximal allowed length of ZIP-archive entry content line
+     * @param entryListHeaderPattern         pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
+     * @param entryListItemPattern           pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
+     * @param entryListItemSeparatorPattern  pattern of entry list separator
+     * @param entryListCloserPattern         pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
+     * @param entryContentHeaderPattern      pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
+     * @param entryContentLinePattern        pattern of entry content line; parameters: {@code entryLine}
+     * @param entryContentLineSeparatorPattern
+     *                                       pattern of entry content separator
+     * @param entryContentCloserPattern      pattern of entry content closer; parameters: {@code entryName}
+     * @param binaryEntryContentPlaceholderPattern
+     *                                       pattern of binary entry content placeholder; parameters: {@code entrySize}
+     * @param emptyZipFilePlaceholderPattern pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
+     * @return formatted view of ZIP-archive
+     * @throws IOException if {@code zipFileBytes} is not a correct bytes of ZIP-archive or any other I/O-error has been occured
      * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
@@ -666,6 +715,7 @@ public final class ZipUtil {
      * @param maxEntryLineCount  maximal allowed number of lines to display for a single ZIP-archive entry
      * @param maxEntryLineLength maximal allowed length of ZIP-archive entry line
      * @return formatted view of ZIP-archive
+     * @throws IOException if {@code zipFile} is not a correct ZIP-archive or any other I/O-error has been occured
      * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
@@ -689,6 +739,7 @@ public final class ZipUtil {
      * @param maxEntryLineLength maximal allowed length of ZIP-archive entry line
      * @param configuration      configuration containing string patterns
      * @return formatted view of ZIP-archive
+     * @throws IOException if {@code zipFile} is not a correct ZIP-archive or any other I/O-error has been occured
      * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
@@ -725,6 +776,7 @@ public final class ZipUtil {
      *                                       pattern of binary entry content placeholder; parameters: {@code entrySize}
      * @param emptyZipFilePlaceholderPattern pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
      * @return formatted view of ZIP-archive
+     * @throws IOException if {@code zipFile} is not a correct ZIP-archive or any other I/O-error has been occured
      * @see String#format(String, Object...)
      */
     @SuppressWarnings("OverlyLongMethod")
@@ -754,7 +806,7 @@ public final class ZipUtil {
             Charset charset = StandardCharsets.UTF_8;
 
             ZipFile internalZipFile = new ZipFile(zipFile);
-            List fileHeaders = internalZipFile.getFileHeaders();
+            List<?> fileHeaders = internalZipFile.getFileHeaders();
             int headerCount = fileHeaders.size();
 
             if (headerCount <= 0) {
@@ -776,7 +828,7 @@ public final class ZipUtil {
                 ));
             }
 
-            Collections.sort(fileHeaders, new Comparator() {
+            Collections.sort(fileHeaders, new Comparator<Object>() {
                 @Override
                 public int compare(Object headerA, Object headerB) {
                     return ((FileHeader) headerA).getFileName().compareTo(((FileHeader) headerB).getFileName());
