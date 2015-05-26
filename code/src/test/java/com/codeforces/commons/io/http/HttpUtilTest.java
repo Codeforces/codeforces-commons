@@ -712,4 +712,10 @@ public class HttpUtilTest extends TestCase {
             return RandomStringUtils.randomAlphanumeric(length);
         }
     }
+
+    public static void main(String[] args) {
+        HttpResponse httpResponse
+                = HttpUtil.executePostRequestAndReturnResponse(15000, "http://assets.codeforces.com/problems/537/cheating-detection-problem");
+        System.out.println(httpResponse);
+    }
 }

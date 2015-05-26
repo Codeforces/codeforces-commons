@@ -52,6 +52,7 @@ public final class HttpRequest {
     private final Map<String, List<String>> headersByName = new LinkedHashMap<>(8);
     private HttpMethod method = HttpMethod.GET;
     private int timeoutMillis = NumberUtil.toInt(10L * TimeUtil.MILLIS_PER_MINUTE);
+    private long maxSizeBytes = FileUtil.BYTES_PER_GB;
 
     public static HttpRequest create(String url, Object... parameters) {
         return new HttpRequest(url, parameters);
@@ -382,6 +383,16 @@ public final class HttpRequest {
         return setTimeoutMillis(NumberUtil.toInt(unit.toMillis(value)));
     }
 
+    public long getMaxSizeBytes() {
+        return maxSizeBytes;
+    }
+
+    public HttpRequest setMaxSizeBytes(long maxSizeBytes) {
+        Preconditions.checkArgument(maxSizeBytes > 0, "Argument 'maxSizeBytes' is zero or negative.");
+        this.maxSizeBytes = maxSizeBytes;
+        return this;
+    }
+
     public int execute() {
         return internalExecute(false).getCode();
     }
@@ -487,7 +498,7 @@ public final class HttpRequest {
                     }
                 });
 
-                bytes = IoUtil.toByteArray(connectionInputStream, NumberUtil.toInt(FileUtil.BYTES_PER_GB), true);
+                bytes = IoUtil.toByteArray(connectionInputStream, NumberUtil.toInt(maxSizeBytes), true);
             }
         } else {
             bytes = null;
