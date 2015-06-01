@@ -5,6 +5,7 @@ import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.io.MimeUtil;
 import com.codeforces.commons.math.NumberUtil;
+import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.text.StringUtil;
 import com.codeforces.commons.text.UrlUtil;
@@ -52,6 +53,7 @@ public final class HttpRequest {
     private final Map<String, List<String>> headersByName = new LinkedHashMap<>(8);
     private HttpMethod method = HttpMethod.GET;
     private int timeoutMillis = NumberUtil.toInt(10L * TimeUtil.MILLIS_PER_MINUTE);
+    private int maxRetryCount = 1;
     private long maxSizeBytes = FileUtil.BYTES_PER_GB;
 
     public static HttpRequest create(String url, Object... parameters) {
@@ -393,6 +395,16 @@ public final class HttpRequest {
         return this;
     }
 
+    public int getMaxRetryCount() {
+        return maxRetryCount;
+    }
+
+    public HttpRequest setMaxRetryCount(int maxRetryCount) {
+        Preconditions.checkArgument(maxRetryCount > 0, "Argument 'maxRetryCount' is zero or negative.");
+        this.maxRetryCount = maxRetryCount;
+        return this;
+    }
+
     public int execute() {
         return internalExecute(false).getCode();
     }
@@ -411,6 +423,21 @@ public final class HttpRequest {
             return new HttpResponse(-1, null, null, new IOException(message));
         }
 
+        long startTimeMillis = System.currentTimeMillis();
+        HttpResponse httpResponse = new HttpResponse(-1, null, Collections.<String, List<String>>emptyMap(), new IOException());
+        for (int i = 0; i < maxRetryCount; i++) {
+            httpResponse = internalGetHttpResponse(readBytes, internalUrl, startTimeMillis);
+            if (httpResponse.getCode() == HttpCode.OK && !ArrayUtils.isEmpty(httpResponse.getBytes())) {
+                return httpResponse;
+            } else {
+                ThreadUtil.sleep(Math.max(1000, 200 * i));
+            }
+        }
+
+        return httpResponse;
+    }
+
+    private HttpResponse internalGetHttpResponse(boolean readBytes, String internalUrl, long startTimeMillis) {
         HttpURLConnection connection;
         try {
             connection = newConnection(
@@ -444,7 +471,7 @@ public final class HttpRequest {
             }
         }
 
-        long startTimeMillis = System.currentTimeMillis();
+        connection.setInstanceFollowRedirects(true);
 
         try {
             connection.connect();
