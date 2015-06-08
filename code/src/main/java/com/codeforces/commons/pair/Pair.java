@@ -22,7 +22,7 @@ public class Pair<F extends Comparable<F>, S extends Comparable<S>>
 
     @SuppressWarnings("ObjectEquality")
     @Override
-    public int compareTo(Pair<F, S> pair) {
+    public int compareTo(@Nonnull Pair<F, S> pair) {
         if (getFirst() != pair.getFirst()) {
             if (getFirst() == null) {
                 return -1;
@@ -56,6 +56,12 @@ public class Pair<F extends Comparable<F>, S extends Comparable<S>>
         return 0;
     }
 
+    public boolean equals(@Nullable F first, @Nullable S second) {
+        return (getFirst() == null ? first == null : getFirst().equals(first))
+                && (getSecond() == null ? second == null : getSecond().equals(second));
+    }
+
+    @SuppressWarnings("EqualsBetweenInconvertibleTypes")
     @Override
     public boolean equals(Object o) {
         return super.equals(o);
@@ -71,6 +77,7 @@ public class Pair<F extends Comparable<F>, S extends Comparable<S>>
         return toString(this);
     }
 
+    @Nonnull
     public static String toString(@Nullable Pair pair) {
         return toString(Pair.class, pair);
     }

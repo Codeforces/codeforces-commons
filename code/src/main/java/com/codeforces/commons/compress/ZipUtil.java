@@ -644,22 +644,20 @@ public final class ZipUtil {
      * {@code {@link #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)}}
      * using {@code configuration} values for different string patterns.
      *
-     * @param zipFileBytes                   bytes of ZIP-archive to format
-     * @param maxLength                      maximal allowed length of result
-     * @param maxEntryLineCount              maximal allowed number of content lines to display for a single ZIP-archive entry
-     * @param maxEntryLineLength             maximal allowed length of ZIP-archive entry content line
-     * @param entryListHeaderPattern         pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
-     * @param entryListItemPattern           pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
-     * @param entryListItemSeparatorPattern  pattern of entry list separator
-     * @param entryListCloserPattern         pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
-     * @param entryContentHeaderPattern      pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
-     * @param entryContentLinePattern        pattern of entry content line; parameters: {@code entryLine}
-     * @param entryContentLineSeparatorPattern
-     *                                       pattern of entry content separator
-     * @param entryContentCloserPattern      pattern of entry content closer; parameters: {@code entryName}
-     * @param binaryEntryContentPlaceholderPattern
-     *                                       pattern of binary entry content placeholder; parameters: {@code entrySize}
-     * @param emptyZipFilePlaceholderPattern pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
+     * @param zipFileBytes                         bytes of ZIP-archive to format
+     * @param maxLength                            maximal allowed length of result
+     * @param maxEntryLineCount                    maximal allowed number of content lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength                   maximal allowed length of ZIP-archive entry content line
+     * @param entryListHeaderPattern               pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
+     * @param entryListItemPattern                 pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
+     * @param entryListItemSeparatorPattern        pattern of entry list separator
+     * @param entryListCloserPattern               pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
+     * @param entryContentHeaderPattern            pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
+     * @param entryContentLinePattern              pattern of entry content line; parameters: {@code entryLine}
+     * @param entryContentLineSeparatorPattern     pattern of entry content separator
+     * @param entryContentCloserPattern            pattern of entry content closer; parameters: {@code entryName}
+     * @param binaryEntryContentPlaceholderPattern pattern of binary entry content placeholder; parameters: {@code entrySize}
+     * @param emptyZipFilePlaceholderPattern       pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
      * @return formatted view of ZIP-archive
      * @throws IOException if {@code zipFileBytes} is not a correct bytes of ZIP-archive or any other I/O-error has been occured
      * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
@@ -759,22 +757,20 @@ public final class ZipUtil {
      * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
      * indicates that the length of returned view was restricted by {@code maxLength} parameter.
      *
-     * @param zipFile                        ZIP-archive to format
-     * @param maxLength                      maximal allowed length of result
-     * @param maxEntryLineCount              maximal allowed number of content lines to display for a single ZIP-archive entry
-     * @param maxEntryLineLength             maximal allowed length of ZIP-archive entry content line
-     * @param entryListHeaderPattern         pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
-     * @param entryListItemPattern           pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
-     * @param entryListItemSeparatorPattern  pattern of entry list separator
-     * @param entryListCloserPattern         pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
-     * @param entryContentHeaderPattern      pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
-     * @param entryContentLinePattern        pattern of entry content line; parameters: {@code entryLine}
-     * @param entryContentLineSeparatorPattern
-     *                                       pattern of entry content separator
-     * @param entryContentCloserPattern      pattern of entry content closer; parameters: {@code entryName}
-     * @param binaryEntryContentPlaceholderPattern
-     *                                       pattern of binary entry content placeholder; parameters: {@code entrySize}
-     * @param emptyZipFilePlaceholderPattern pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
+     * @param zipFile                              ZIP-archive to format
+     * @param maxLength                            maximal allowed length of result
+     * @param maxEntryLineCount                    maximal allowed number of content lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength                   maximal allowed length of ZIP-archive entry content line
+     * @param entryListHeaderPattern               pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
+     * @param entryListItemPattern                 pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
+     * @param entryListItemSeparatorPattern        pattern of entry list separator
+     * @param entryListCloserPattern               pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
+     * @param entryContentHeaderPattern            pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
+     * @param entryContentLinePattern              pattern of entry content line; parameters: {@code entryLine}
+     * @param entryContentLineSeparatorPattern     pattern of entry content separator
+     * @param entryContentCloserPattern            pattern of entry content closer; parameters: {@code entryName}
+     * @param binaryEntryContentPlaceholderPattern pattern of binary entry content placeholder; parameters: {@code entrySize}
+     * @param emptyZipFilePlaceholderPattern       pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
      * @return formatted view of ZIP-archive
      * @throws IOException if {@code zipFile} is not a correct ZIP-archive or any other I/O-error has been occured
      * @see String#format(String, Object...)

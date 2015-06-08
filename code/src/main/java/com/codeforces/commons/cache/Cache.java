@@ -6,12 +6,10 @@ import java.io.Closeable;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 14.02.11
- */
-
-/**
  * All methods of this class throws {@code {@link IllegalArgumentException}} if either section or key is {@code null}.
+ *
+ * @author Maxim Shipko (sladethe@gmail.com)
+ *         Date: 14.02.2011
  */
 public abstract class Cache<K, V> implements Closeable {
     private static final AtomicLong cacheIndex = new AtomicLong();
@@ -112,7 +110,7 @@ public abstract class Cache<K, V> implements Closeable {
      * @param section storage section
      * @param key     storage key (unique for each section)
      * @return {@code true} iff storage contained specified value and value has been successfully deleted,
-     *         otherwise returns {@code false}
+     * otherwise returns {@code false}
      */
     public abstract boolean remove(@Nonnull String section, @Nonnull K key);
 

@@ -326,9 +326,8 @@ public class UnsafeFileUtil {
      * @param file     File to be write.
      * @param content  Content to be write.
      * @param encoding File encoding.
-     * @throws java.io.UnsupportedEncodingException
-     *                             if the named encoding is not supported
-     * @throws java.io.IOException if can't read file.
+     * @throws java.io.UnsupportedEncodingException if the named encoding is not supported
+     * @throws java.io.IOException                  if can't read file.
      */
     public static void writeFile(File file, String content, @Nullable String encoding) throws IOException {
         ensureParentDirectoryExists(file);
@@ -579,7 +578,7 @@ public class UnsafeFileUtil {
 
     /**
      * @return System temporary directory. It expected that current process
-     *         has permissions for read, write and execution in it.
+     * has permissions for read, write and execution in it.
      */
     public static File getTemporaryDirectory() {
         return new File(getTemporaryDirFromResources());
@@ -611,7 +610,7 @@ public class UnsafeFileUtil {
     /**
      * @param directory Directory to be scanned.
      * @return List of nested files (scans nested directories recursively). Doesn't scan
-     *         hidden directories and doesn't return hidden files.
+     * hidden directories and doesn't return hidden files.
      */
     public static List<File> list(File directory) {
         if (directory.isDirectory()) {

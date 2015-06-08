@@ -114,10 +114,12 @@ public class Line2D {
         return StringUtil.toString(this, false, "a", "b", "c");
     }
 
+    @Nonnull
     public static Line2D getLineByTwoPoints(double x1, double y1, double x2, double y2) {
         return new Line2D(y2 - y1, x1 - x2, (y1 - y2) * x1 + (x2 - x1) * y1);
     }
 
+    @Nonnull
     public static Line2D getLineByTwoPoints(Point2D point1, Point2D point2) {
         return getLineByTwoPoints(point1.getX(), point1.getY(), point2.getX(), point2.getY());
     }

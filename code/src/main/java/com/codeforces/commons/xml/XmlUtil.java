@@ -519,7 +519,7 @@ public final class XmlUtil {
 
     /**
      * Ensures that XML-element with {@code newAttributes} does exist and creates it if not.
-     * <p/>
+     * <p>
      * Method uses {@code filterAttributes} to uniquely identify an XML-element.
      * If such element does exist, all its attributes will be overridden with values of {@code newAttributes},
      * else a new element will be created.

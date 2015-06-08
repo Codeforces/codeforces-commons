@@ -59,7 +59,7 @@ public class TimeUtil {
      * @param beginDate From date.
      * @param endDate   To date.
      * @return Returns endDate - beginDate in days. Hours, minutes and seconds are ignored, so
-     *         beginDate and endDate are used as dates.
+     * beginDate and endDate are used as dates.
      */
     public static int getDaysBetween(@Nonnull Date beginDate, @Nonnull Date endDate) {
         Calendar beginCalendar = new GregorianCalendar();

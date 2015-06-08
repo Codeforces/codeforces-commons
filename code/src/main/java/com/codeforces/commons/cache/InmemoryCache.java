@@ -9,6 +9,7 @@ import com.google.inject.matcher.Matchers;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.naming.ConfigurationException;
@@ -23,13 +24,11 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 29.03.12
- */
-
-/**
  * Important! Any method should lock section in first case
  * and only then lock cache (if both locks are needed) to avoid deadlocks.
+ *
+ * @author Maxim Shipko (sladethe@gmail.com)
+ *         Date: 29.03.2012
  */
 public class InmemoryCache<K, V> extends Cache<K, V> {
     private static final Logger logger = Logger.getLogger(InmemoryCache.class);
@@ -83,6 +82,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     InmemoryCache() {
     }
 
+    @Contract(pure = true)
     @Override
     public final boolean validate() {
         return !stopBackgroundThreads.get();
@@ -375,8 +375,9 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
             return expirationTimeMillis;
         }
 
+        @Contract(pure = true)
         @Override
-        public int compareTo(CacheEntryExpirationInfo<K, V> o) {
+        public int compareTo(@Nonnull CacheEntryExpirationInfo<K, V> o) {
             if (expirationTimeMillis > o.expirationTimeMillis) {
                 return 1;
             }
