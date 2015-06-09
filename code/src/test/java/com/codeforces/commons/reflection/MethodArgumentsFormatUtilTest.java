@@ -2,7 +2,7 @@ package com.codeforces.commons.reflection;
 
 import org.junit.Assert;
 import junit.framework.TestCase;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.reflect.Method;
 

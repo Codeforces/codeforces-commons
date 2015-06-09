@@ -1,8 +1,9 @@
 package com.codeforces.commons.math;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
+import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -17,6 +18,7 @@ public class RandomUtil {
         throw new UnsupportedOperationException();
     }
 
+    @Nonnull
     private static byte[] generateSeed() {
         return ByteBuffer.allocate(5 * Long.SIZE / Byte.SIZE)
                 .putLong(System.nanoTime())

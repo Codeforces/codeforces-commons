@@ -1,7 +1,7 @@
 package com.codeforces.commons.reflection;
 
 import com.codeforces.commons.text.StringUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

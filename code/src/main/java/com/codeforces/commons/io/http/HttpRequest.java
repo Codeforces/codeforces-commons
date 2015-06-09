@@ -12,7 +12,7 @@ import com.codeforces.commons.text.UrlUtil;
 import com.codeforces.commons.time.TimeUtil;
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;

@@ -4,8 +4,7 @@ import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
 
-import static java.lang.StrictMath.atan2;
-import static java.lang.StrictMath.hypot;
+import static java.lang.StrictMath.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -20,6 +19,10 @@ public class Vector2D extends DoublePair {
 
     public Vector2D(double x1, double y1, double x2, double y2) {
         super(x2 - x1, y2 - y1);
+    }
+
+    public Vector2D(Point2D point1, Point2D point2) {
+        super(point2.getX() - point1.getX(), point2.getY() - point1.getY());
     }
 
     public Vector2D(Vector2D vector) {
@@ -71,12 +74,37 @@ public class Vector2D extends DoublePair {
         return atan2(getY(), getX());
     }
 
+    public Vector2D setAngle(double angle) {
+        double length = hypot(getX(), getY());
+        if (length != 0.0D) {
+            setX(cos(angle) * length);
+            setY(sin(angle) * length);
+        }
+        return this;
+    }
+
     public double getLength() {
         return hypot(getX(), getY());
     }
 
+    public Vector2D setLength(double length) {
+        double currentLength = getLength();
+        if (currentLength == 0.0D) {
+            throw new IllegalStateException("Can't resize zero-width vector.");
+        }
+        return multiply(length / currentLength);
+    }
+
     public double getSquaredLength() {
         return getX() * getX() + getY() * getY();
+    }
+
+    public Vector2D setSquaredLength(double squaredLength) {
+        double currentSquaredLength = getSquaredLength();
+        if (currentSquaredLength == 0.0D) {
+            throw new IllegalStateException("Can't resize zero-width vector.");
+        }
+        return multiply(sqrt(squaredLength / currentSquaredLength));
     }
 
     public Vector2D copy() {

@@ -10,7 +10,7 @@ import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TVFS;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -44,7 +44,7 @@ public class UnsafeFileUtil {
     /**
      * @param file Existing file.
      * @return SHA-1 hashCode in hexadecimal.
-     * @throws java.io.IOException Can't perform IO.
+     * @throws IOException Can't perform IO.
      */
     public static String sha1Hex(File file) throws IOException {
         return IoUtil.sha1Hex(new BufferedInputStream(new FileInputStream(file)));
@@ -55,7 +55,7 @@ public class UnsafeFileUtil {
      *
      * @param source      Source file.
      * @param destination Destination file.
-     * @throws java.io.IOException Can't perform copy.
+     * @throws IOException Can't perform copy.
      */
     public static void copyFile(File source, File destination) throws IOException {
         internalCopyFile(source, destination, true);
@@ -109,12 +109,13 @@ public class UnsafeFileUtil {
      *
      * @param source      Source directory.
      * @param destination Destination directory.
-     * @throws java.io.IOException when can't perform copy.
+     * @throws IOException when can't perform copy.
      */
     public static void copyDirectory(File source, File destination) throws IOException {
         internalCopyDirectory(source, destination, true);
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     private static void internalCopyDirectory(File source, File destination, boolean synchronize) throws IOException {
         if (destination instanceof TFile) {
             throw new UnsupportedOperationException("Can't copy directory into archive file.");
@@ -168,8 +169,9 @@ public class UnsafeFileUtil {
      *
      * @param file File to check
      * @return created file
-     * @throws java.io.IOException if file does not exist and can't be created
+     * @throws IOException if file does not exist and can't be created
      */
+    @SuppressWarnings({"DuplicateCondition", "DuplicateBooleanBranch"})
     public static File ensureFileExists(File file) throws IOException {
         File parentFile = file.getParentFile();
         if (parentFile != null) {
@@ -188,8 +190,9 @@ public class UnsafeFileUtil {
      *
      * @param directory Directory to check
      * @return created directory
-     * @throws java.io.IOException if directory does not exist and can't be created
+     * @throws IOException if directory does not exist and can't be created
      */
+    @SuppressWarnings({"DuplicateCondition", "DuplicateBooleanBranch"})
     public static File ensureDirectoryExists(File directory) throws IOException {
         if (directory.isDirectory() || directory.mkdirs() || directory.isDirectory()) {
             return directory;
@@ -203,8 +206,9 @@ public class UnsafeFileUtil {
      * Directory will be deleted with each nested element.
      *
      * @param file File to be deleted.
-     * @throws java.io.IOException if can't delete file.
+     * @throws IOException if can't delete file.
      */
+    @SuppressWarnings("OverlyComplexMethod")
     public static void deleteTotally(@Nullable File file) throws IOException {
         if (file == null) {
             return;
@@ -235,7 +239,7 @@ public class UnsafeFileUtil {
     /**
      * @param file File to be read.
      * @return String containing file data.
-     * @throws java.io.IOException if can't read file. Possibly, file parameter
+     * @throws IOException if can't read file. Possibly, file parameter
      *                             doesn't exist, is directory or not enough permissions.
      */
     public static String readFile(File file) throws IOException {
@@ -254,7 +258,7 @@ public class UnsafeFileUtil {
      *
      * @param directory        Directory to be deleted.
      * @param deleteFileFilter Filter of files to delete.
-     * @throws java.io.IOException if argument is not a directory or can't clean directory
+     * @throws IOException if argument is not a directory or can't clean directory
      */
     public static void cleanDirectory(File directory, @Nullable FileFilter deleteFileFilter) throws IOException {
         if (!directory.isDirectory()) {
@@ -283,7 +287,7 @@ public class UnsafeFileUtil {
      *
      * @param file        File to be write.
      * @param inputStream Input stream to get data.
-     * @throws java.io.IOException if can't read file.
+     * @throws IOException if can't read file.
      */
     public static void writeFile(File file, InputStream inputStream) throws IOException {
         ensureParentDirectoryExists(file);
@@ -313,7 +317,7 @@ public class UnsafeFileUtil {
      *
      * @param file    File to be write.
      * @param content Content to be write.
-     * @throws java.io.IOException if can't read file.
+     * @throws IOException if can't read file.
      */
     public static void writeFile(File file, String content) throws IOException {
         writeFile(file, content, null);
@@ -326,8 +330,8 @@ public class UnsafeFileUtil {
      * @param file     File to be write.
      * @param content  Content to be write.
      * @param encoding File encoding.
-     * @throws java.io.UnsupportedEncodingException if the named encoding is not supported
-     * @throws java.io.IOException                  if can't read file.
+     * @throws UnsupportedEncodingException if the named encoding is not supported
+     * @throws IOException                  if can't read file.
      */
     public static void writeFile(File file, String content, @Nullable String encoding) throws IOException {
         ensureParentDirectoryExists(file);
@@ -349,7 +353,7 @@ public class UnsafeFileUtil {
      *
      * @param file  File to be write.
      * @param bytes Bytes to be write.
-     * @throws java.io.IOException if can't write file.
+     * @throws IOException if can't write file.
      */
     public static void writeFile(File file, byte[] bytes) throws IOException {
         ensureParentDirectoryExists(file);
@@ -369,7 +373,7 @@ public class UnsafeFileUtil {
      *
      * @param file  File to write.
      * @param bytes Bytes to write into file.
-     * @throws java.io.IOException If file exists or can't write file.
+     * @throws IOException If file exists or can't write file.
      */
     public static void createFile(File file, byte[] bytes) throws IOException {
         if (file.exists()) {
@@ -384,7 +388,7 @@ public class UnsafeFileUtil {
      *
      * @param file    File to write.
      * @param content String to write into file.
-     * @throws java.io.IOException If file exists or can't write file.
+     * @throws IOException If file exists or can't write file.
      */
     public static void createFile(File file, String content) throws IOException {
         if (file.exists()) {
@@ -396,7 +400,7 @@ public class UnsafeFileUtil {
 
     /**
      * @param file File to remove.
-     * @throws java.io.IOException If file not found or can't be removed.
+     * @throws IOException If file not found or can't be removed.
      */
     public static void removeFile(File file) throws IOException {
         if (!file.exists()) {
@@ -411,8 +415,8 @@ public class UnsafeFileUtil {
     /**
      * @param file File to be read.
      * @return File content as a byte array.
-     * @throws java.io.IOException           if can't read file.
-     * @throws java.io.FileNotFoundException if can't find file.
+     * @throws IOException           if can't read file.
+     * @throws FileNotFoundException if can't find file.
      */
     public static byte[] getBytes(File file) throws IOException {
         if (file instanceof TFile) {
@@ -468,8 +472,8 @@ public class UnsafeFileUtil {
      *
      * @param file File to be read.
      * @return File content as a byte array.
-     * @throws java.io.IOException           if can't read file.
-     * @throws java.io.FileNotFoundException if can't find file.
+     * @throws IOException           if can't read file.
+     * @throws FileNotFoundException if can't find file.
      */
     public static FileUtil.FirstBytes getFirstBytes(File file) throws IOException {
         return getFirstBytes(file, 511);
@@ -481,8 +485,8 @@ public class UnsafeFileUtil {
      * @param file    File to be read.
      * @param maxSize Max bytes to return.
      * @return File content as a byte array.
-     * @throws java.io.IOException           if can't read file.
-     * @throws java.io.FileNotFoundException if can't find file.
+     * @throws IOException           if can't read file.
+     * @throws FileNotFoundException if can't find file.
      */
     public static FileUtil.FirstBytes getFirstBytes(File file, long maxSize) throws IOException {
         if (file.isFile()) {
@@ -509,7 +513,7 @@ public class UnsafeFileUtil {
      *
      * @param prefix Prefix for directory name.
      * @return File instance.
-     * @throws java.io.IOException if can't create directory.
+     * @throws IOException if can't create directory.
      */
     public static File createTemporaryDirectory(String prefix) throws IOException {
         File file = internalCreateTempFile(prefix);
@@ -526,7 +530,7 @@ public class UnsafeFileUtil {
      * @param prefix          Prefix for directory name.
      * @param parentDirectory Parent directory for created one
      * @return File instance.
-     * @throws java.io.IOException if can't create directory.
+     * @throws IOException if can't create directory.
      */
     public static File createTemporaryDirectory(String prefix, File parentDirectory) throws IOException {
         File temporaryDirectory = new File(parentDirectory, prefix + '-' + RandomUtil.getRandomToken());
@@ -678,7 +682,7 @@ public class UnsafeFileUtil {
      * @param sourceFile      Source.
      * @param destinationFile Destination.
      * @param overwrite       overwrite destinationFile if it exists
-     * @throws java.io.IOException if can't rename.
+     * @throws IOException if can't rename.
      */
     public static void renameFile(File sourceFile, File destinationFile, boolean overwrite) throws IOException {
         ensureParentDirectoryExists(destinationFile);

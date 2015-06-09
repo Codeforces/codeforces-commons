@@ -69,17 +69,29 @@ public class Line2D {
         return abs((a * x + b * y + c) / sqrt(a * a + b * b));
     }
 
-    public Point2D getUnitNormalFrom(double x, double y) {
+    public double getDistanceFrom(Point2D point) {
+        return getDistanceFrom(point.getX(), point.getY());
+    }
+
+    public Vector2D getUnitNormalFrom(double x, double y) {
         double length = sqrt(a * a + b * b);
         return getDistanceFrom(x + a, y + b) < getDistanceFrom(x - a, y - b)
-                ? new Point2D(a / length, b / length)
-                : new Point2D(-a / length, -b / length);
+                ? new Vector2D(a / length, b / length)
+                : new Vector2D(-a / length, -b / length);
+    }
+
+    public Vector2D getUnitNormalFrom(Point2D point) {
+        return getUnitNormalFrom(point.getX(), point.getY());
     }
 
     public Point2D getProjectionOf(double x, double y) {
-        Point2D unitNormal = getUnitNormalFrom(x, y);
+        Vector2D unitNormal = getUnitNormalFrom(x, y);
         double distance = getDistanceFrom(x, y);
         return new Point2D(x + unitNormal.getX() * distance, y + unitNormal.getY() * distance);
+    }
+
+    public Point2D getProjectionOf(Point2D point) {
+        return getProjectionOf(point.getX(), point.getY());
     }
 
     /**
@@ -120,7 +132,7 @@ public class Line2D {
     }
 
     @Nonnull
-    public static Line2D getLineByTwoPoints(Point2D point1, Point2D point2) {
+    public static Line2D getLineByTwoPoints(@Nonnull Point2D point1, @Nonnull Point2D point2) {
         return getLineByTwoPoints(point1.getX(), point1.getY(), point2.getX(), point2.getY());
     }
 }

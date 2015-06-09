@@ -6,7 +6,7 @@ import com.codeforces.commons.process.ThreadUtil;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -75,7 +75,7 @@ public class FileUtil {
     /**
      * @param file Existing file.
      * @return SHA-1 hashCode in hexadecimal.
-     * @throws java.io.IOException Can't perform IO.
+     * @throws IOException Can't perform IO.
      */
     public static String sha1(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<String>() {
@@ -91,7 +91,7 @@ public class FileUtil {
      *
      * @param source      Source file.
      * @param destination Destination file.
-     * @throws java.io.IOException Can't perform copy.
+     * @throws IOException Can't perform copy.
      */
     public static void copyFile(final File source, final File destination) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -109,7 +109,7 @@ public class FileUtil {
      *
      * @param source      Source directory.
      * @param destination Destination directory.
-     * @throws java.io.IOException when can't perform copy.
+     * @throws IOException when can't perform copy.
      */
     public static void copyDirectory(final File source, final File destination) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -126,7 +126,7 @@ public class FileUtil {
      *
      * @param file File to check
      * @return created file
-     * @throws java.io.IOException if file does not exist and can't be created
+     * @throws IOException if file does not exist and can't be created
      */
     public static File ensureFileExists(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
@@ -142,7 +142,7 @@ public class FileUtil {
      *
      * @param directory Directory to check
      * @return created directory
-     * @throws java.io.IOException if directory does not exist and can't be created
+     * @throws IOException if directory does not exist and can't be created
      */
     public static File ensureDirectoryExists(final File directory) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
@@ -158,7 +158,7 @@ public class FileUtil {
      *
      * @param file Directory or file to get parent directory
      * @return created directory
-     * @throws java.io.IOException if directory does not exist and can't be created
+     * @throws IOException if directory does not exist and can't be created
      */
     public static File ensureParentDirectoryExists(File file) throws IOException {
         final File directory = file.getParentFile();
@@ -179,7 +179,7 @@ public class FileUtil {
      * Directory will be deleted with each nested element.
      *
      * @param file File to be deleted.
-     * @throws java.io.IOException if can't delete file.
+     * @throws IOException if can't delete file.
      */
     public static void deleteTotally(@Nullable final File file) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -229,7 +229,7 @@ public class FileUtil {
      *
      * @param directory        Directory to be deleted
      * @param deleteFileFilter Filter of files to delete
-     * @throws java.io.IOException if argument is not a directory or can't clean directory
+     * @throws IOException if argument is not a directory or can't clean directory
      */
     public static void cleanDirectory(final File directory, @Nullable final FileFilter deleteFileFilter)
             throws IOException {
@@ -246,7 +246,7 @@ public class FileUtil {
      * Cleans directory. All nested elements will be recursively deleted.
      *
      * @param directory Directory to be deleted
-     * @throws java.io.IOException if argument is not a directory or can't clean directory
+     * @throws IOException if argument is not a directory or can't clean directory
      */
     public static void cleanDirectory(final File directory) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -298,7 +298,7 @@ public class FileUtil {
     /**
      * @param file File to be read.
      * @return String containing file data.
-     * @throws java.io.IOException if can't read file. Possibly, file parameter
+     * @throws IOException if can't read file. Possibly, file parameter
      *                             doesn't exists, is directory or not enough permissions.
      */
     public static String readFile(final File file) throws IOException {
@@ -316,7 +316,7 @@ public class FileUtil {
      *
      * @param file        File to be write.
      * @param inputStream Input stream to get data.
-     * @throws java.io.IOException if can't read file.
+     * @throws IOException if can't read file.
      */
     public static void writeFile(File file, InputStream inputStream) throws IOException {
         UnsafeFileUtil.writeFile(file, inputStream);
@@ -328,7 +328,7 @@ public class FileUtil {
      *
      * @param file    File to be write.
      * @param content Content to be write.
-     * @throws java.io.IOException if can't read file.
+     * @throws IOException if can't read file.
      */
     public static void writeFile(final File file, final String content) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -347,8 +347,8 @@ public class FileUtil {
      * @param file     File to be write.
      * @param content  Content to be write.
      * @param encoding File encoding.
-     * @throws java.io.IOException                  if can't read file.
-     * @throws java.io.UnsupportedEncodingException illegal encoding.
+     * @throws IOException                  if can't read file.
+     * @throws UnsupportedEncodingException illegal encoding.
      */
     public static void writeFile(final File file, final String content, final String encoding) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -366,7 +366,7 @@ public class FileUtil {
      *
      * @param file  File to be write.
      * @param bytes Bytes to be write.
-     * @throws java.io.IOException if can't write file.
+     * @throws IOException if can't write file.
      */
     public static void writeFile(final File file, final byte[] bytes) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -384,7 +384,7 @@ public class FileUtil {
      *
      * @param file  File to write.
      * @param bytes Bytes to write into file.
-     * @throws java.io.IOException If file exists or can't write file.
+     * @throws IOException If file exists or can't write file.
      */
     public static void createFile(final File file, final byte[] bytes) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -401,7 +401,7 @@ public class FileUtil {
      *
      * @param file    File to write.
      * @param content String to write into file.
-     * @throws java.io.IOException If file exists or can't write file.
+     * @throws IOException If file exists or can't write file.
      */
     public static void createFile(final File file, final String content) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -415,7 +415,7 @@ public class FileUtil {
 
     /**
      * @param file File to remove.
-     * @throws java.io.IOException If file not found or can't be removed.
+     * @throws IOException If file not found or can't be removed.
      */
     public static void removeFile(final File file) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -433,7 +433,7 @@ public class FileUtil {
      * @param sourceFile      Source.
      * @param destinationFile Destination.
      * @param overwrite       overwrite destinationFile if it exists
-     * @throws java.io.IOException if can't rename.
+     * @throws IOException if can't rename.
      */
     public static void renameFile(final File sourceFile, final File destinationFile, final boolean overwrite) throws IOException {
         executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -459,8 +459,8 @@ public class FileUtil {
     /**
      * @param file File to be read.
      * @return File content as a byte array.
-     * @throws java.io.IOException           if can't read file.
-     * @throws java.io.FileNotFoundException if can't find file.
+     * @throws IOException           if can't read file.
+     * @throws FileNotFoundException if can't find file.
      */
     public static byte[] getBytes(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<byte[]>() {
@@ -474,8 +474,8 @@ public class FileUtil {
     /**
      * @param file File to be read.
      * @return File content as a byte array.
-     * @throws java.io.IOException           if can't read file.
-     * @throws java.io.FileNotFoundException if can't find file.
+     * @throws IOException           if can't read file.
+     * @throws FileNotFoundException if can't find file.
      */
     public static byte[] getBytes(String file) throws IOException {
         return getBytes(new File(file));
@@ -486,8 +486,8 @@ public class FileUtil {
      *
      * @param file File to be read.
      * @return File content as a byte array.
-     * @throws java.io.IOException           if can't read file.
-     * @throws java.io.FileNotFoundException if can't find file.
+     * @throws IOException           if can't read file.
+     * @throws FileNotFoundException if can't find file.
      */
     public static FirstBytes getFirstBytes(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
@@ -504,8 +504,8 @@ public class FileUtil {
      * @param file    File to be read.
      * @param maxSize Max bytes to return.
      * @return File content as a byte array.
-     * @throws java.io.IOException           if can't read file.
-     * @throws java.io.FileNotFoundException if can't find file.
+     * @throws IOException           if can't read file.
+     * @throws FileNotFoundException if can't find file.
      */
     public static FirstBytes getFirstBytes(final File file, final long maxSize) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
@@ -521,7 +521,7 @@ public class FileUtil {
      *
      * @param prefix Prefix for directory name.
      * @return File instance.
-     * @throws java.io.IOException if can't create directory.
+     * @throws IOException if can't create directory.
      */
     public static File createTemporaryDirectory(final String prefix) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
@@ -538,7 +538,7 @@ public class FileUtil {
      * @param prefix          Prefix for directory name.
      * @param parentDirectory Parent directory for created one
      * @return File instance.
-     * @throws java.io.IOException if can't create directory.
+     * @throws IOException if can't create directory.
      */
     public static File createTemporaryDirectory(final String prefix, final File parentDirectory) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
@@ -630,7 +630,7 @@ public class FileUtil {
     /**
      * @return System temporary directory. It expected that current process
      * has permissions for read, write and execution in it.
-     * @throws java.io.IOException error.
+     * @throws IOException error.
      */
     public static File getTemporaryDirectory() throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
@@ -645,7 +645,7 @@ public class FileUtil {
      * @param directory Directory to be scanned.
      * @return List of nested files (scans nested directories recursively). Doesn't scan
      * hidden directories and doesn't return hidden files.
-     * @throws java.io.IOException error.
+     * @throws IOException error.
      */
     public static List<File> list(final File directory) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<List<File>>() {
@@ -694,8 +694,8 @@ public class FileUtil {
      * @param fileA first file or directory
      * @param fileB second file or directory
      * @return {@code true} iff both items A and B are {@code null},
-     * {@link java.io.File#equals(Object) equals} or have the same content
-     * @throws java.io.IOException in case of any I/O-exception
+     * {@link File#equals(Object) equals} or have the same content
+     * @throws IOException in case of any I/O-exception
      */
     public static boolean equalsOrSameContent(@Nullable File fileA, @Nullable File fileB) throws IOException {
         if (fileA == null && fileB == null) {
@@ -713,6 +713,7 @@ public class FileUtil {
         }
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     private static boolean internalEqualsOrSameContent(@Nonnull File fileA, @Nonnull File fileB) throws IOException {
         if (fileA.equals(fileB)) {
             return true;

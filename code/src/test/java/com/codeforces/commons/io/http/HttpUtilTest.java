@@ -11,7 +11,7 @@ import com.codeforces.commons.text.StringUtil;
 import fi.iki.elonen.NanoHTTPD;
 import junit.framework.TestCase;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.InputStreamEntity;
