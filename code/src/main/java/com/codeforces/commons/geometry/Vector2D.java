@@ -3,6 +3,7 @@ package com.codeforces.commons.geometry;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
+import org.apache.commons.math3.util.MathArrays;
 
 import static java.lang.StrictMath.*;
 
@@ -61,6 +62,10 @@ public class Vector2D extends DoublePair {
         setX(factor * getX());
         setY(factor * getY());
         return this;
+    }
+
+    public double dotProduct(Vector2D vector) {
+        return MathArrays.linearCombination(getX(), vector.getX(), getY(), vector.getY());
     }
 
     public Vector2D normalize() {
