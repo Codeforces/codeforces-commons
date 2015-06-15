@@ -5,17 +5,13 @@ import com.codeforces.commons.holder.Mutable;
 import com.codeforces.commons.holder.SimpleMutable;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
-import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.pair.SimplePair;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.reflection.ReflectionUtil;
-import com.google.common.base.Preconditions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -31,7 +27,6 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.StrictMath.max;
@@ -1503,137 +1498,5 @@ public final class StringUtil {
         public void setAddEnclosingClassNames(boolean addEnclosingClassNames) {
             this.addEnclosingClassNames = addEnclosingClassNames;
         }
-    }
-
-    public static void main(String[] args) {
-        Preconditions.checkArgument(replace(StringUtils.repeat("czxaba", 3) + "czx", "aba", "wata").equals(StringUtils.repeat("czxwata", 3) + "czx"));
-        System.out.println(replace(StringUtils.repeat("czxaba", 3) + "czx", "aba", "wata"));
-        Preconditions.checkArgument(replace(StringUtils.repeat("czxaba", 3) + "czx", "aba", "wa").equals(StringUtils.repeat("czxwa", 3) + "czx"));
-        System.out.println(replace(StringUtils.repeat("czxaba", 3) + "czx", "aba", "wa"));
-
-        Preconditions.checkArgument(replace(StringUtils.repeat("czxaba", 3) + "czx", "czx", "").equals(StringUtils.repeat("aba", 3)));
-
-        int count = 1000000;
-        String[] strings = new String[count];
-        String[] targets = new String[count];
-        String[] replacements = new String[count];
-        Pattern[] patterns = new Pattern[count];
-
-        for (int i = 0; i < count; ++i) {
-            strings[i] = RandomStringUtils.randomAlphanumeric(RandomUtil.getRandomInt(1000));
-            targets[i] = RandomStringUtils.randomAlphanumeric(RandomUtil.getRandomInt(6) + 1);
-            replacements[i] = RandomStringUtils.randomAlphanumeric(RandomUtil.getRandomInt(7));
-            patterns[i] = Pattern.compile(targets[i], Pattern.LITERAL);
-        }
-
-        check(strings, targets, replacements, patterns);
-
-        testStandard(strings, targets, replacements);
-        testStandardPrecompiled(strings, patterns, replacements);
-        testMine(strings, targets, replacements);
-        testApache(strings, targets, replacements);
-        System.out.println();
-
-        testStandard(strings, targets, replacements);
-        testStandardPrecompiled(strings, patterns, replacements);
-        testMine(strings, targets, replacements);
-        testApache(strings, targets, replacements);
-        System.out.println();
-
-        testStandard(strings, targets, replacements);
-        testStandardPrecompiled(strings, patterns, replacements);
-        testMine(strings, targets, replacements);
-        testApache(strings, targets, replacements);
-        System.out.println();
-
-        testStandard(strings, targets, replacements);
-        testStandardPrecompiled(strings, patterns, replacements);
-        testMine(strings, targets, replacements);
-        testApache(strings, targets, replacements);
-        System.out.println();
-
-        testStandard(strings, targets, replacements);
-        testStandardPrecompiled(strings, patterns, replacements);
-        testMine(strings, targets, replacements);
-        testApache(strings, targets, replacements);
-        System.out.println();
-    }
-
-    private static void check(String[] strings, String[] targets, String[] replacements, Pattern[] patterns) {
-        int count = strings.length;
-        int replaces = 0;
-
-        for (int i = 0; i < count; ++i) {
-            String s = strings[i];
-            String target = targets[i];
-            String replacement = replacements[i];
-            String result = s.replace(target, replacement);
-
-            if (!result.equals(s)) {
-                ++replaces;
-            }
-
-            if (!result.equals(replace(s, target, replacement))) {
-                System.out.printf("1. %s %s %s%n", s, target, replacement);
-            }
-
-            if (!result.equals(patterns[i].matcher(s).replaceAll(Matcher.quoteReplacement(replacement)))) {
-                System.out.printf("2. %s %s %s%n", s, target, replacement);
-            }
-        }
-
-        System.out.println(replaces + " replaces");
-    }
-
-    @SuppressWarnings({"ResultOfMethodCallIgnored", "CallToSystemGC"})
-    private static void testStandard(String[] strings, String[] targets, String[] replacements) {
-        int count = strings.length;
-        long startTimeNanos = System.nanoTime();
-
-        for (int i = 0; i < count; ++i) {
-            strings[i].replace(targets[i], replacements[i]);
-        }
-
-        System.out.println("Standard " + (System.nanoTime() - startTimeNanos) / 1000000L + " ms");
-        System.gc();
-    }
-
-    @SuppressWarnings({"ResultOfMethodCallIgnored", "CallToSystemGC"})
-    private static void testStandardPrecompiled(String[] strings, Pattern[] patterns, String[] replacements) {
-        int count = strings.length;
-        long startTimeNanos = System.nanoTime();
-
-        for (int i = 0; i < count; ++i) {
-            patterns[i].matcher(strings[i]).replaceAll(Matcher.quoteReplacement(replacements[i]));
-        }
-
-        System.out.println("Standard (pre) " + (System.nanoTime() - startTimeNanos) / 1000000L + " ms");
-        System.gc();
-    }
-
-    @SuppressWarnings({"ResultOfMethodCallIgnored", "CallToSystemGC"})
-    private static void testMine(String[] strings, String[] targets, String[] replacements) {
-        int count = strings.length;
-        long startTimeNanos = System.nanoTime();
-
-        for (int i = 0; i < count; ++i) {
-            replace(strings[i], targets[i], replacements[i]);
-        }
-
-        System.out.println("Mine " + (System.nanoTime() - startTimeNanos) / 1000000L + " ms");
-        System.gc();
-    }
-
-    @SuppressWarnings("CallToSystemGC")
-    private static void testApache(String[] strings, String[] targets, String[] replacements) {
-        int count = strings.length;
-        long startTimeNanos = System.nanoTime();
-
-        for (int i = 0; i < count; ++i) {
-            StringUtils.replace(strings[i], targets[i], replacements[i]);
-        }
-
-        System.out.println("Apache " + (System.nanoTime() - startTimeNanos) / 1000000L + " ms");
-        System.gc();
     }
 }
