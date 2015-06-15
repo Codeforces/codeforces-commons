@@ -46,7 +46,7 @@ public class RandomUtil {
      */
     public static String getRandomToken(int length) {
         if (length < 0 || length % 2 != 0) {
-            throw new IllegalArgumentException("Argument 'length' is negative, zero or not divisible by 2.");
+            throw new IllegalArgumentException("Argument 'length' is negative or not divisible by 2.");
         }
 
         return Hex.encodeHexString(getRandomBytes(length / 2));
