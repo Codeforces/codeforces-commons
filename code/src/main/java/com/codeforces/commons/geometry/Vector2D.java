@@ -64,6 +64,12 @@ public class Vector2D extends DoublePair {
         return this;
     }
 
+    public Vector2D subtract(double x, double y) {
+        setX(getX() - x);
+        setY(getY() - y);
+        return this;
+    }
+
     public Vector2D multiply(double factor) {
         setX(factor * getX());
         setY(factor * getY());

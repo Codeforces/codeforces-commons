@@ -44,9 +44,21 @@ public class Point2D extends DoublePair {
         return this;
     }
 
+    public Point2D add(double x, double y) {
+        setX(getX() + x);
+        setY(getY() + y);
+        return this;
+    }
+
     public Point2D subtract(Vector2D vector) {
         setX(getX() - vector.getX());
         setY(getY() - vector.getY());
+        return this;
+    }
+
+    public Point2D subtract(double x, double y) {
+        setX(getX() - x);
+        setY(getY() - y);
         return this;
     }
 
