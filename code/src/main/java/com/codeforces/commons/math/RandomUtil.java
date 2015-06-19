@@ -11,7 +11,7 @@ import java.util.Random;
 /**
  * @author Mike Mirzayanov
  */
-public class RandomUtil {
+public final class RandomUtil {
     private static final Random random = new SecureRandom(generateSeed());
 
     private RandomUtil() {

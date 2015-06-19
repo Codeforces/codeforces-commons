@@ -5,6 +5,8 @@ import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.math3.util.FastMath;
 
+import static com.codeforces.commons.math.Math.sumSqr;
+
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 22.07.13
@@ -57,11 +59,11 @@ public class Point2D extends DoublePair {
     }
 
     public double getSquaredDistanceTo(Point2D point) {
-        return NumberUtil.sumSqr(getX() - point.getX(), getY() - point.getY());
+        return sumSqr(getX() - point.getX(), getY() - point.getY());
     }
 
     public double getSquaredDistanceTo(double x, double y) {
-        return NumberUtil.sumSqr(getX() - x, getY() - y);
+        return sumSqr(getX() - x, getY() - y);
     }
 
     public Point2D copy() {

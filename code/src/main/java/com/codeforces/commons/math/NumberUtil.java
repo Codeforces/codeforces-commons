@@ -3,21 +3,15 @@ package com.codeforces.commons.math;
 import com.codeforces.commons.text.StringUtil;
 import org.jetbrains.annotations.Contract;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static java.lang.StrictMath.abs;
+import static com.codeforces.commons.math.Math.abs;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 24.07.13
+ *         Date: 24.07.2013
  */
-public class NumberUtil {
-    public static final double E = StrictMath.E;
-    public static final double PI = StrictMath.PI;
-    public static final double HALF_PI = 0.5D * PI;
-    public static final double DOUBLE_PI = 2.0D * PI;
-
+public final class NumberUtil {
     private NumberUtil() {
         throw new UnsupportedOperationException();
     }
@@ -330,101 +324,6 @@ public class NumberUtil {
         }
 
         return StrictMath.abs(numberA - numberB) < epsilon;
-    }
-
-    @SuppressWarnings("AssignmentToMethodParameter")
-    @Contract(pure = true)
-    public static long findGreatestCommonDivisor(long numberA, long numberB) {
-        @SuppressWarnings("TooBroadScope") long temp;
-
-        while (numberA != 0 && numberB != 0) {
-            numberA %= numberB;
-            temp = numberA;
-            numberA = numberB;
-            numberB = temp;
-        }
-
-        return numberA + numberB;
-    }
-
-    @Contract(pure = true)
-    public static long findLeastCommonMultiple(long numberA, long numberB) {
-        return numberA / findGreatestCommonDivisor(numberA, numberB) * numberB;
-    }
-
-    public static long findLeastCommonMultiple(@Nonnull long[] numbers) {
-        int numberCount = numbers.length;
-
-        if (numberCount == 0) {
-            throw new IllegalArgumentException("Can't find LCM for zero numbers.");
-        }
-
-        if (numberCount == 1) {
-            return numbers[0];
-        }
-
-        long leastCommonMultiple = findLeastCommonMultiple(numbers[0], numbers[1]);
-
-        for (int numberIndex = 2; numberIndex < numberCount; ++numberIndex) {
-            leastCommonMultiple = findLeastCommonMultiple(leastCommonMultiple, numbers[numberIndex]);
-        }
-
-        return leastCommonMultiple;
-    }
-
-    @Contract(pure = true)
-    public static int avg(int numberA, int numberB) {
-        return numberA / 2 + numberB / 2 + (numberA % 2 + numberB % 2) / 2;
-    }
-
-    @Contract(pure = true)
-    public static int avg(int numberA, int numberB, int numberC) {
-        return numberA / 3 + numberB / 3 + numberC / 3 + (numberA % 3 + numberB % 3 + numberC % 3) / 3;
-    }
-
-    @Contract(pure = true)
-    public static long avg(long numberA, long numberB) {
-        return numberA / 2L + numberB / 2L + (numberA % 2L + numberB % 2L) / 2L;
-    }
-
-    @Contract(pure = true)
-    public static long avg(long numberA, long numberB, long numberC) {
-        return numberA / 3L + numberB / 3L + numberC / 3L + (numberA % 3L + numberB % 3L + numberC % 3L) / 3L;
-    }
-
-    @Contract(pure = true)
-    public static float avg(float numberA, float numberB) {
-        return numberA * 0.5F + numberB * 0.5F;
-    }
-
-    @Contract(pure = true)
-    public static float avg(float numberA, float numberB, float numberC) {
-        return numberA / 3.0F + numberB / 3.0F + numberC / 3.0F;
-    }
-
-    @Contract(pure = true)
-    public static double avg(double numberA, double numberB) {
-        return numberA * 0.5D + numberB * 0.5D;
-    }
-
-    @Contract(pure = true)
-    public static double avg(double numberA, double numberB, double numberC) {
-        return numberA / 3.0D + numberB / 3.0D + numberC / 3.0D;
-    }
-
-    @Contract(pure = true)
-    public static double sqr(double value) {
-        return value * value;
-    }
-
-    @Contract(pure = true)
-    public static double sumSqr(double numberA, double numberB) {
-        return numberA * numberA + numberB * numberB;
-    }
-
-    @Contract(pure = true)
-    public static double sumSqr(double numberA, double numberB, double numberC) {
-        return numberA * numberA + numberB * numberB + numberC * numberC;
     }
 
     @Contract(pure = true)

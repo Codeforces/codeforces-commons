@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import static java.lang.StrictMath.round;
+import static com.codeforces.commons.math.Math.round;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
