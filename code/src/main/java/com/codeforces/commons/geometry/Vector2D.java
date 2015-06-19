@@ -3,10 +3,9 @@ package com.codeforces.commons.geometry;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 
-import static java.lang.StrictMath.*;
+import static com.codeforces.commons.math.Math.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -109,7 +108,7 @@ public class Vector2D extends DoublePair {
     }
 
     public double getLength() {
-        return FastMath.hypot(getX(), getY());
+        return hypot(getX(), getY());
     }
 
     public Vector2D setLength(double length) {

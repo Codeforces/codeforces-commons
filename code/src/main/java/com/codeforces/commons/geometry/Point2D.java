@@ -3,8 +3,8 @@ package com.codeforces.commons.geometry;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
-import org.apache.commons.math3.util.FastMath;
 
+import static com.codeforces.commons.math.Math.hypot;
 import static com.codeforces.commons.math.Math.sumSqr;
 
 /**
@@ -51,11 +51,11 @@ public class Point2D extends DoublePair {
     }
 
     public double getDistanceTo(Point2D point) {
-        return FastMath.hypot(getX() - point.getX(), getY() - point.getY());
+        return hypot(getX() - point.getX(), getY() - point.getY());
     }
 
     public double getDistanceTo(double x, double y) {
-        return FastMath.hypot(getX() - x, getY() - y);
+        return hypot(getX() - x, getY() - y);
     }
 
     public double getSquaredDistanceTo(Point2D point) {

@@ -5,8 +5,8 @@ import com.codeforces.commons.text.StringUtil;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static java.lang.StrictMath.abs;
-import static java.lang.StrictMath.sqrt;
+import static com.codeforces.commons.math.Math.abs;
+import static com.codeforces.commons.math.Math.sqrt;
 
 /**
  * ax + by + c = 0

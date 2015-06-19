@@ -299,7 +299,7 @@ public class FileUtil {
      * @param file File to be read.
      * @return String containing file data.
      * @throws IOException if can't read file. Possibly, file parameter
-     *                             doesn't exists, is directory or not enough permissions.
+     *                     doesn't exists, is directory or not enough permissions.
      */
     public static String readFile(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<String>() {

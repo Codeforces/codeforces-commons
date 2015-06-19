@@ -304,7 +304,7 @@ public final class NumberUtil {
             return false;
         }
 
-        return StrictMath.abs(numberA - numberB) < epsilon;
+        return abs(numberA - numberB) < epsilon;
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
@@ -323,7 +323,7 @@ public final class NumberUtil {
             return false;
         }
 
-        return StrictMath.abs(numberA - numberB) < epsilon;
+        return abs(numberA - numberB) < epsilon;
     }
 
     @Contract(pure = true)

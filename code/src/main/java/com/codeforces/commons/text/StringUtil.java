@@ -29,8 +29,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
-import static java.lang.StrictMath.max;
-import static java.lang.StrictMath.min;
+import static com.codeforces.commons.math.Math.max;
+import static com.codeforces.commons.math.Math.min;
 
 /**
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)

@@ -40,6 +40,7 @@ public final class Math {
         return numberA / findGreatestCommonDivisor(numberA, numberB) * numberB;
     }
 
+    @Contract(pure = true)
     public static long findLeastCommonMultiple(@Nonnull long[] numbers) {
         int numberCount = numbers.length;
 
@@ -218,5 +219,15 @@ public final class Math {
     @Contract(pure = true)
     public static double ceil(double value) {
         return StrictMath.ceil(value);
+    }
+
+    @Contract(pure = true)
+    public static double hypot(double cathetusA, double cathetusB) {
+        return FastMath.hypot(cathetusA, cathetusB);
+    }
+
+    @Contract(pure = true)
+    public static double atan2(double y, double x) {
+        return StrictMath.atan2(y, x);
     }
 }

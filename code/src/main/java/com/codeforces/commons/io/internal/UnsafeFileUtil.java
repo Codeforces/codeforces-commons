@@ -240,7 +240,7 @@ public class UnsafeFileUtil {
      * @param file File to be read.
      * @return String containing file data.
      * @throws IOException if can't read file. Possibly, file parameter
-     *                             doesn't exist, is directory or not enough permissions.
+     *                     doesn't exist, is directory or not enough permissions.
      */
     public static String readFile(File file) throws IOException {
         return IoUtil.toString(new FileReader(file));
