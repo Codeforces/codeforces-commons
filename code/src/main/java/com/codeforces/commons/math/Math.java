@@ -187,16 +187,6 @@ public final class Math {
     }
 
     @Contract(pure = true)
-    public static double cos(double value) {
-        return FastMath.cos(value);
-    }
-
-    @Contract(pure = true)
-    public static double sin(double value) {
-        return FastMath.sin(value);
-    }
-
-    @Contract(pure = true)
     public static double sqrt(double value) {
         return StrictMath.sqrt(value);
     }
@@ -224,6 +214,36 @@ public final class Math {
     @Contract(pure = true)
     public static double hypot(double cathetusA, double cathetusB) {
         return FastMath.hypot(cathetusA, cathetusB);
+    }
+
+    @Contract(pure = true)
+    public static double sin(double value) {
+        return FastMath.sin(value);
+    }
+
+    @Contract(pure = true)
+    public static double cos(double value) {
+        return FastMath.cos(value);
+    }
+
+    @Contract(pure = true)
+    public static double tan(double value) {
+        return FastMath.tan(value);
+    }
+
+    @Contract(pure = true)
+    public static double asin(double value) {
+        return StrictMath.asin(value);
+    }
+
+    @Contract(pure = true)
+    public static double acos(double value) {
+        return StrictMath.acos(value);
+    }
+
+    @Contract(pure = true)
+    public static double atan(double value) {
+        return StrictMath.atan(value);
     }
 
     @Contract(pure = true)
