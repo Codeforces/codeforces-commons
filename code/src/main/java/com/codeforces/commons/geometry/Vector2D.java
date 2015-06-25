@@ -5,6 +5,8 @@ import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.math3.util.MathArrays;
 
+import javax.annotation.Nonnull;
+
 import static com.codeforces.commons.math.Math.*;
 
 /**
@@ -22,11 +24,11 @@ public class Vector2D extends DoublePair {
         super(x2 - x1, y2 - y1);
     }
 
-    public Vector2D(Point2D point1, Point2D point2) {
+    public Vector2D(@Nonnull Point2D point1, @Nonnull Point2D point2) {
         super(point2.getX() - point1.getX(), point2.getY() - point1.getY());
     }
 
-    public Vector2D(Vector2D vector) {
+    public Vector2D(@Nonnull Vector2D vector) {
         super(vector.getX(), vector.getY());
     }
 
@@ -46,7 +48,7 @@ public class Vector2D extends DoublePair {
         setSecond(y);
     }
 
-    public Vector2D add(Vector2D vector) {
+    public Vector2D add(@Nonnull Vector2D vector) {
         setX(getX() + vector.getX());
         setY(getY() + vector.getY());
         return this;
@@ -58,7 +60,7 @@ public class Vector2D extends DoublePair {
         return this;
     }
 
-    public Vector2D subtract(Vector2D vector) {
+    public Vector2D subtract(@Nonnull Vector2D vector) {
         setX(getX() - vector.getX());
         setY(getY() - vector.getY());
         return this;
@@ -76,7 +78,15 @@ public class Vector2D extends DoublePair {
         return this;
     }
 
-    public double dotProduct(Vector2D vector) {
+    public Vector2D rotate(double angle) {
+        double cos = cos(angle);
+        double sin = sin(angle);
+        setX(getX() * cos - getY() * sin);
+        setY(getX() * sin + getY() * cos);
+        return this;
+    }
+
+    public double dotProduct(@Nonnull Vector2D vector) {
         return MathArrays.linearCombination(getX(), vector.getX(), getY(), vector.getY());
     }
 
@@ -97,13 +107,6 @@ public class Vector2D extends DoublePair {
         return atan2(getY(), getX());
     }
 
-    public double getAngle(Vector2D vector) {
-        return org.apache.commons.math3.geometry.euclidean.twod.Vector2D.angle(
-                new org.apache.commons.math3.geometry.euclidean.twod.Vector2D(getX(), getY()),
-                new org.apache.commons.math3.geometry.euclidean.twod.Vector2D(vector.getX(), vector.getY())
-        );
-    }
-
     public Vector2D setAngle(double angle) {
         double length = getLength();
         if (length != 0.0D) {
@@ -111,6 +114,13 @@ public class Vector2D extends DoublePair {
             setY(sin(angle) * length);
         }
         return this;
+    }
+
+    public double getAngle(Vector2D vector) {
+        return org.apache.commons.math3.geometry.euclidean.twod.Vector2D.angle(
+                new org.apache.commons.math3.geometry.euclidean.twod.Vector2D(getX(), getY()),
+                new org.apache.commons.math3.geometry.euclidean.twod.Vector2D(vector.getX(), vector.getY())
+        );
     }
 
     public double getLength() {
@@ -137,17 +147,18 @@ public class Vector2D extends DoublePair {
         return multiply(sqrt(squaredLength / currentSquaredLength));
     }
 
+    @Nonnull
     public Vector2D copy() {
         return new Vector2D(this);
     }
 
-    public boolean nearlyEquals(Vector2D vector, double epsilon) {
+    public boolean nearlyEquals(@Nonnull Vector2D vector, double epsilon) {
         return vector != null
                 && NumberUtil.nearlyEquals(getX(), vector.getX(), epsilon)
                 && NumberUtil.nearlyEquals(getY(), vector.getY(), epsilon);
     }
 
-    public boolean nearlyEquals(Vector2D vector) {
+    public boolean nearlyEquals(@Nonnull Vector2D vector) {
         return nearlyEquals(vector, DEFAULT_EPSILON);
     }
 

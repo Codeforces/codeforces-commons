@@ -16,6 +16,21 @@ public final class Math {
     public static final double HALF_PI = 0.5D * PI;
     public static final double DOUBLE_PI = 2.0D * PI;
 
+    public static final double SQRT_2 = sqrt(2.0D);
+    public static final double SQRT_3 = sqrt(3.0D);
+    public static final double SQRT_5 = sqrt(5.0D);
+    public static final double SQRT_6 = sqrt(6.0D);
+    public static final double SQRT_7 = sqrt(7.0D);
+    public static final double SQRT_8 = sqrt(8.0D);
+
+    public static final double CBRT_2 = sqrt(2.0D);
+    public static final double CBRT_3 = sqrt(3.0D);
+    public static final double CBRT_4 = sqrt(4.0D);
+    public static final double CBRT_5 = sqrt(5.0D);
+    public static final double CBRT_6 = sqrt(6.0D);
+    public static final double CBRT_7 = sqrt(7.0D);
+    public static final double CBRT_9 = sqrt(9.0D);
+
     private Math() {
         throw new UnsupportedOperationException();
     }
@@ -72,6 +87,12 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static int avg(int numberA, int numberB, int numberC, int numberD) {
+        return numberA / 4 + numberB / 4 + numberC / 4 + numberD / 4
+                + (numberA % 4 + numberB % 4 + numberC % 4 + numberD % 4) / 4;
+    }
+
+    @Contract(pure = true)
     public static long avg(long numberA, long numberB) {
         return numberA / 2L + numberB / 2L + (numberA % 2L + numberB % 2L) / 2L;
     }
@@ -79,6 +100,12 @@ public final class Math {
     @Contract(pure = true)
     public static long avg(long numberA, long numberB, long numberC) {
         return numberA / 3L + numberB / 3L + numberC / 3L + (numberA % 3L + numberB % 3L + numberC % 3L) / 3L;
+    }
+
+    @Contract(pure = true)
+    public static long avg(long numberA, long numberB, long numberC, long numberD) {
+        return numberA / 4L + numberB / 4L + numberC / 4L + numberD / 4L
+                + (numberA % 4L + numberB % 4L + numberC % 4L + numberD % 4L) / 4L;
     }
 
     @Contract(pure = true)
@@ -92,6 +119,11 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static float avg(float numberA, float numberB, float numberC, float numberD) {
+        return numberA * 0.25F + numberB * 0.25F + numberC * 0.25F + numberD * 0.25F;
+    }
+
+    @Contract(pure = true)
     public static double avg(double numberA, double numberB) {
         return numberA * 0.5D + numberB * 0.5D;
     }
@@ -99,6 +131,11 @@ public final class Math {
     @Contract(pure = true)
     public static double avg(double numberA, double numberB, double numberC) {
         return numberA / 3.0D + numberB / 3.0D + numberC / 3.0D;
+    }
+
+    @Contract(pure = true)
+    public static double avg(double numberA, double numberB, double numberC, double numberD) {
+        return numberA * 0.25D + numberB * 0.25D + numberC * 0.25D + numberD * 0.25D;
     }
 
     @Contract(pure = true)
@@ -117,6 +154,11 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static double sumSqr(double numberA, double numberB, double numberC, double numberD) {
+        return numberA * numberA + numberB * numberB + numberC * numberC + numberD * numberD;
+    }
+
+    @Contract(pure = true)
     public static double pow(double base, double exponent) {
         return StrictMath.pow(base, exponent);
     }
@@ -132,8 +174,28 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static int min(int numberA, int numberB, int numberC) {
+        return min(numberA <= numberB ? numberA : numberB, numberC);
+    }
+
+    @Contract(pure = true)
+    public static int min(int numberA, int numberB, int numberC, int numberD) {
+        return min(numberA <= numberB ? numberA : numberB, numberC <= numberD ? numberC : numberD);
+    }
+
+    @Contract(pure = true)
     public static long min(long numberA, long numberB) {
         return numberA <= numberB ? numberA : numberB;
+    }
+
+    @Contract(pure = true)
+    public static long min(long numberA, long numberB, long numberC) {
+        return min(numberA <= numberB ? numberA : numberB, numberC);
+    }
+
+    @Contract(pure = true)
+    public static long min(long numberA, long numberB, long numberC, long numberD) {
+        return min(numberA <= numberB ? numberA : numberB, numberC <= numberD ? numberC : numberD);
     }
 
     @Contract(pure = true)
@@ -142,8 +204,28 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static float min(float numberA, float numberB, float numberC) {
+        return min(min(numberA, numberB), numberC);
+    }
+
+    @Contract(pure = true)
+    public static float min(float numberA, float numberB, float numberC, float numberD) {
+        return min(min(numberA, numberB), min(numberC, numberD));
+    }
+
+    @Contract(pure = true)
     public static double min(double numberA, double numberB) {
         return java.lang.Math.min(numberA, numberB);
+    }
+
+    @Contract(pure = true)
+    public static double min(double numberA, double numberB, double numberC) {
+        return min(min(numberA, numberB), numberC);
+    }
+
+    @Contract(pure = true)
+    public static double min(double numberA, double numberB, double numberC, double numberD) {
+        return min(min(numberA, numberB), min(numberC, numberD));
     }
 
     @Contract(pure = true)
@@ -152,8 +234,28 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static int max(int numberA, int numberB, int numberC) {
+        return max(numberA >= numberB ? numberA : numberB, numberC);
+    }
+
+    @Contract(pure = true)
+    public static int max(int numberA, int numberB, int numberC, int numberD) {
+        return max(numberA >= numberB ? numberA : numberB, numberC >= numberD ? numberC : numberD);
+    }
+
+    @Contract(pure = true)
     public static long max(long numberA, long numberB) {
         return numberA >= numberB ? numberA : numberB;
+    }
+
+    @Contract(pure = true)
+    public static long max(long numberA, long numberB, long numberC) {
+        return max(numberA >= numberB ? numberA : numberB, numberC);
+    }
+
+    @Contract(pure = true)
+    public static long max(long numberA, long numberB, long numberC, long numberD) {
+        return max(numberA >= numberB ? numberA : numberB, numberC >= numberD ? numberC : numberD);
     }
 
     @Contract(pure = true)
@@ -162,8 +264,28 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static float max(float numberA, float numberB, float numberC) {
+        return max(max(numberA, numberB), numberC);
+    }
+
+    @Contract(pure = true)
+    public static float max(float numberA, float numberB, float numberC, float numberD) {
+        return max(max(numberA, numberB), max(numberC, numberD));
+    }
+
+    @Contract(pure = true)
     public static double max(double numberA, double numberB) {
         return java.lang.Math.max(numberA, numberB);
+    }
+
+    @Contract(pure = true)
+    public static double max(double numberA, double numberB, double numberC) {
+        return max(max(numberA, numberB), numberC);
+    }
+
+    @Contract(pure = true)
+    public static double max(double numberA, double numberB, double numberC, double numberD) {
+        return max(max(numberA, numberB), max(numberC, numberD));
     }
 
     @Contract(pure = true)
@@ -189,6 +311,11 @@ public final class Math {
     @Contract(pure = true)
     public static double sqrt(double value) {
         return StrictMath.sqrt(value);
+    }
+
+    @Contract(pure = true)
+    public static double cbrt(double value) {
+        return StrictMath.cbrt(value);
     }
 
     @Contract(pure = true)

@@ -4,6 +4,8 @@ import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
 
+import javax.annotation.Nonnull;
+
 import static com.codeforces.commons.math.Math.hypot;
 import static com.codeforces.commons.math.Math.sumSqr;
 
@@ -18,7 +20,7 @@ public class Point2D extends DoublePair {
         super(x, y);
     }
 
-    public Point2D(Point2D point) {
+    public Point2D(@Nonnull Point2D point) {
         super(point.getX(), point.getY());
     }
 
@@ -62,7 +64,7 @@ public class Point2D extends DoublePair {
         return this;
     }
 
-    public double getDistanceTo(Point2D point) {
+    public double getDistanceTo(@Nonnull Point2D point) {
         return hypot(getX() - point.getX(), getY() - point.getY());
     }
 
@@ -70,7 +72,7 @@ public class Point2D extends DoublePair {
         return hypot(getX() - x, getY() - y);
     }
 
-    public double getSquaredDistanceTo(Point2D point) {
+    public double getSquaredDistanceTo(@Nonnull Point2D point) {
         return sumSqr(getX() - point.getX(), getY() - point.getY());
     }
 
@@ -78,17 +80,18 @@ public class Point2D extends DoublePair {
         return sumSqr(getX() - x, getY() - y);
     }
 
+    @Nonnull
     public Point2D copy() {
         return new Point2D(this);
     }
 
-    public boolean nearlyEquals(Point2D point, double epsilon) {
+    public boolean nearlyEquals(@Nonnull Point2D point, double epsilon) {
         return point != null
                 && NumberUtil.nearlyEquals(getX(), point.getX(), epsilon)
                 && NumberUtil.nearlyEquals(getY(), point.getY(), epsilon);
     }
 
-    public boolean nearlyEquals(Point2D point) {
+    public boolean nearlyEquals(@Nonnull Point2D point) {
         return nearlyEquals(point, DEFAULT_EPSILON);
     }
 
