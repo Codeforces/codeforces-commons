@@ -14,7 +14,7 @@ import static com.codeforces.commons.math.Math.sumSqr;
  *         Date: 22.07.13
  */
 public class Point2D extends DoublePair {
-    public static final double DEFAULT_EPSILON = 1.0E-6D;
+    public static final double DEFAULT_EPSILON = Line2D.DEFAULT_EPSILON;
 
     public Point2D(double x, double y) {
         super(x, y);
