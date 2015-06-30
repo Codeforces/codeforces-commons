@@ -4,6 +4,7 @@ import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.math3.util.MathArrays;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 
@@ -151,7 +152,7 @@ public class Vector2D extends DoublePair {
         return multiply(sqrt(squaredLength / currentSquaredLength));
     }
 
-    @Nonnull
+    @Contract(value = "-> !null", pure = true)
     public Vector2D copy() {
         return new Vector2D(this);
     }
