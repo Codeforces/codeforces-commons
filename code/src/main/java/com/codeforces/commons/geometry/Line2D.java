@@ -38,9 +38,10 @@ public class Line2D {
         this.b = line.b;
         this.c = line.c;
 
-        this.pseudoLength = hypot(this.a, this.b);
+        this.pseudoLength = line.pseudoLength;
     }
 
+    @Contract(pure = true)
     public double getA() {
         return a;
     }
@@ -50,6 +51,7 @@ public class Line2D {
         return new Line2D(a, b, c);
     }
 
+    @Contract(pure = true)
     public double getB() {
         return b;
     }
@@ -59,6 +61,7 @@ public class Line2D {
         return new Line2D(a, b, c);
     }
 
+    @Contract(pure = true)
     public double getC() {
         return c;
     }
@@ -207,7 +210,7 @@ public class Line2D {
         return getIntersectionPoint(line, DEFAULT_EPSILON);
     }
 
-    @Nonnull
+    @Contract(value = "-> !null", pure = true)
     public Line2D copy() {
         return new Line2D(this);
     }

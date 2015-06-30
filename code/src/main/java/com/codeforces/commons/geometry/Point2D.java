@@ -3,6 +3,7 @@ package com.codeforces.commons.geometry;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 
@@ -80,7 +81,7 @@ public class Point2D extends DoublePair {
         return sumSqr(getX() - x, getY() - y);
     }
 
-    @Nonnull
+    @Contract(value = "-> !null", pure = true)
     public Point2D copy() {
         return new Point2D(this);
     }
