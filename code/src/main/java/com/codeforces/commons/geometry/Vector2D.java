@@ -98,6 +98,9 @@ public class Vector2D extends DoublePair {
 
     public Vector2D normalize() {
         double length = getLength();
+        if (length == 0.0D) {
+            throw new IllegalStateException("Can't set angle of zero-width vector.");
+        }
         setX(getX() / length);
         setY(getY() / length);
         return this;
@@ -109,10 +112,11 @@ public class Vector2D extends DoublePair {
 
     public Vector2D setAngle(double angle) {
         double length = getLength();
-        if (length != 0.0D) {
-            setX(cos(angle) * length);
-            setY(sin(angle) * length);
+        if (length == 0.0D) {
+            throw new IllegalStateException("Can't set angle of zero-width vector.");
         }
+        setX(cos(angle) * length);
+        setY(sin(angle) * length);
         return this;
     }
 
