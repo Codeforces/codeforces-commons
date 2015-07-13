@@ -16,6 +16,9 @@ public final class Math {
     public static final double HALF_PI = 0.5D * PI;
     public static final double DOUBLE_PI = 2.0D * PI;
 
+    public static final double RADIANS_PER_DEGREE = PI / 180.0D;
+    public static final double DEGREES_PER_RADIAN = 180.0D / PI;
+
     public static final double SQRT_2 = sqrt(2.0D);
     public static final double SQRT_3 = sqrt(3.0D);
     public static final double SQRT_5 = sqrt(5.0D);
@@ -23,13 +26,13 @@ public final class Math {
     public static final double SQRT_7 = sqrt(7.0D);
     public static final double SQRT_8 = sqrt(8.0D);
 
-    public static final double CBRT_2 = sqrt(2.0D);
-    public static final double CBRT_3 = sqrt(3.0D);
-    public static final double CBRT_4 = sqrt(4.0D);
-    public static final double CBRT_5 = sqrt(5.0D);
-    public static final double CBRT_6 = sqrt(6.0D);
-    public static final double CBRT_7 = sqrt(7.0D);
-    public static final double CBRT_9 = sqrt(9.0D);
+    public static final double CBRT_2 = cbrt(2.0D);
+    public static final double CBRT_3 = cbrt(3.0D);
+    public static final double CBRT_4 = cbrt(4.0D);
+    public static final double CBRT_5 = cbrt(5.0D);
+    public static final double CBRT_6 = cbrt(6.0D);
+    public static final double CBRT_7 = cbrt(7.0D);
+    public static final double CBRT_9 = cbrt(9.0D);
 
     private Math() {
         throw new UnsupportedOperationException();
