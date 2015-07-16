@@ -418,7 +418,7 @@ public final class StringUtil {
         }
     }
 
-    @Contract(value = "null, _, _ -> null", pure = true)
+    @Contract(value = "null, _, _ -> null; !null, _, _ -> !null", pure = true)
     public static String replace(@Nullable String s, @Nullable String target, @Nullable String replacement) {
         if (isEmpty(s) || isEmpty(target) || replacement == null) {
             return s;
