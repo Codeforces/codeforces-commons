@@ -13,8 +13,11 @@ public final class Math {
     public static final double E = StrictMath.E;
 
     public static final double PI = StrictMath.PI;
-    public static final double HALF_PI = 0.5D * PI;
     public static final double DOUBLE_PI = 2.0D * PI;
+    public static final double HALF_PI = PI / 2.0D;
+    public static final double THIRD_PI = PI / 3.0D;
+    public static final double QUARTER_PI = PI / 4.0D;
+    public static final double SIXTH_PI = PI / 6.0D;
 
     public static final double RADIANS_PER_DEGREE = PI / 180.0D;
     public static final double DEGREES_PER_RADIAN = 180.0D / PI;
