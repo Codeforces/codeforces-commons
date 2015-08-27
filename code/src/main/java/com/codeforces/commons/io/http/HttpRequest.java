@@ -12,7 +12,7 @@ import com.codeforces.commons.text.UrlUtil;
 import com.codeforces.commons.time.TimeUtil;
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -54,6 +54,18 @@ public final class HttpRequest {
     private HttpMethod method = HttpMethod.GET;
     private int timeoutMillis = NumberUtil.toInt(10L * TimeUtil.MILLIS_PER_MINUTE);
     private int maxRetryCount = 1;
+
+    private HttpResponseChecker responseChecker = new HttpResponseChecker() {
+        @Override
+        public boolean check(HttpResponse response) {
+            return !response.hasIoException();
+        }
+    };
+
+    private ThreadUtil.ExecutionStrategy retryStrategy = new ThreadUtil.ExecutionStrategy(
+            250L, ThreadUtil.ExecutionStrategy.Type.LINEAR
+    );
+
     private long maxSizeBytes = FileUtil.BYTES_PER_GB;
 
     public static HttpRequest create(String url, Object... parameters) {
@@ -385,6 +397,33 @@ public final class HttpRequest {
         return setTimeoutMillis(NumberUtil.toInt(unit.toMillis(value)));
     }
 
+    public int getMaxRetryCount() {
+        return maxRetryCount;
+    }
+
+    public HttpResponseChecker getResponseChecker() {
+        return responseChecker;
+    }
+
+    public HttpRequest setRetryPolicy(int maxRetryCount, @Nonnull HttpResponseChecker responseChecker) {
+        Preconditions.checkArgument(maxRetryCount > 0, "Argument 'maxRetryCount' is zero or negative.");
+        Preconditions.checkArgument(responseChecker != null, "Argument 'responseChecker' is null.");
+        this.maxRetryCount = maxRetryCount;
+        this.responseChecker = responseChecker;
+        return this;
+    }
+
+    public HttpRequest setRetryPolicy(int maxRetryCount, @Nonnull HttpResponseChecker responseChecker,
+                                      @Nonnull ThreadUtil.ExecutionStrategy retryStrategy) {
+        Preconditions.checkArgument(maxRetryCount > 0, "Argument 'maxRetryCount' is zero or negative.");
+        Preconditions.checkArgument(responseChecker != null, "Argument 'responseChecker' is null.");
+        Preconditions.checkArgument(retryStrategy != null, "Argument 'retryStrategy' is null.");
+        this.maxRetryCount = maxRetryCount;
+        this.responseChecker = responseChecker;
+        this.retryStrategy = retryStrategy;
+        return this;
+    }
+
     public long getMaxSizeBytes() {
         return maxSizeBytes;
     }
@@ -392,16 +431,6 @@ public final class HttpRequest {
     public HttpRequest setMaxSizeBytes(long maxSizeBytes) {
         Preconditions.checkArgument(maxSizeBytes > 0, "Argument 'maxSizeBytes' is zero or negative.");
         this.maxSizeBytes = maxSizeBytes;
-        return this;
-    }
-
-    public int getMaxRetryCount() {
-        return maxRetryCount;
-    }
-
-    public HttpRequest setMaxRetryCount(int maxRetryCount) {
-        Preconditions.checkArgument(maxRetryCount > 0, "Argument 'maxRetryCount' is zero or negative.");
-        this.maxRetryCount = maxRetryCount;
         return this;
     }
 
@@ -413,7 +442,6 @@ public final class HttpRequest {
         return internalExecute(true);
     }
 
-    @SuppressWarnings("OverlyLongMethod")
     private HttpResponse internalExecute(boolean readBytes) {
         String internalUrl = appendGetParametersToUrl(this.url);
 
@@ -424,17 +452,17 @@ public final class HttpRequest {
         }
 
         long startTimeMillis = System.currentTimeMillis();
-        HttpResponse httpResponse = new HttpResponse(-1, null, Collections.<String, List<String>>emptyMap(), new IOException());
-        for (int i = 0; i < maxRetryCount; i++) {
-            httpResponse = internalGetHttpResponse(readBytes, internalUrl, startTimeMillis);
-            if (httpResponse.getCode() == HttpCode.OK && !ArrayUtils.isEmpty(httpResponse.getBytes())) {
-                return httpResponse;
+
+        for (int attemptIndex = 1; attemptIndex < maxRetryCount; ++attemptIndex) {
+            HttpResponse response = internalGetHttpResponse(readBytes, internalUrl, startTimeMillis);
+            if (responseChecker.check(response)) {
+                return response;
             } else {
-                ThreadUtil.sleep(Math.max(1000, 200 * i));
+                ThreadUtil.sleep(retryStrategy.getDelayTimeMillis(attemptIndex));
             }
         }
 
-        return httpResponse;
+        return internalGetHttpResponse(readBytes, internalUrl, startTimeMillis);
     }
 
     private HttpResponse internalGetHttpResponse(boolean readBytes, String internalUrl, long startTimeMillis) {
@@ -470,8 +498,6 @@ public final class HttpRequest {
                 }
             }
         }
-
-        connection.setInstanceFollowRedirects(true);
 
         try {
             connection.connect();
@@ -547,6 +573,7 @@ public final class HttpRequest {
         return url;
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     private static String[] validateAndEncodeParameters(String url, Object... parameters) {
         if (!UrlUtil.isValidUrl(url)) {
             throw new IllegalArgumentException('\'' + url + "' is not a valid URL.");
@@ -632,6 +659,7 @@ public final class HttpRequest {
         }
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     private HttpURLConnection newConnection(String url, boolean doOutput) throws IOException {
         URL urlObject = new URL(url);
         @Nullable Proxy proxy = getProxy(urlObject.getProtocol());
@@ -649,6 +677,7 @@ public final class HttpRequest {
         connection.setRequestMethod(method.name());
         connection.setDoInput(true);
         connection.setDoOutput(doOutput);
+        connection.setInstanceFollowRedirects(true);
 
         connection.setRequestProperty("Connection", "close");
 

@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import static java.lang.StrictMath.round;
+import static com.codeforces.commons.math.Math.round;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -59,7 +59,7 @@ public class TimeUtil {
      * @param beginDate From date.
      * @param endDate   To date.
      * @return Returns endDate - beginDate in days. Hours, minutes and seconds are ignored, so
-     *         beginDate and endDate are used as dates.
+     * beginDate and endDate are used as dates.
      */
     public static int getDaysBetween(@Nonnull Date beginDate, @Nonnull Date endDate) {
         Calendar beginCalendar = new GregorianCalendar();

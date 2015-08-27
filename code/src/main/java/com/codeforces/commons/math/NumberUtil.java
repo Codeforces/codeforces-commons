@@ -1,26 +1,22 @@
 package com.codeforces.commons.math;
 
 import com.codeforces.commons.text.StringUtil;
+import org.jetbrains.annotations.Contract;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static java.lang.StrictMath.abs;
+import static com.codeforces.commons.math.Math.abs;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 24.07.13
+ *         Date: 24.07.2013
  */
-public class NumberUtil {
-    public static final double E = StrictMath.E;
-    public static final double PI = StrictMath.PI;
-    public static final double HALF_PI = 0.5D * PI;
-    public static final double DOUBLE_PI = 2.0D * PI;
-
+public final class NumberUtil {
     private NumberUtil() {
         throw new UnsupportedOperationException();
     }
 
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static Byte toByte(@Nullable Object value) {
         if (value == null) {
@@ -58,6 +54,7 @@ public class NumberUtil {
         return toByte(Double.parseDouble(StringUtil.trim(value.toString())));
     }
 
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static Byte toByte(@Nullable String value) {
         return value == null ? null : toByte(Double.parseDouble(StringUtil.trim(value)));
@@ -103,6 +100,7 @@ public class NumberUtil {
         throw new IllegalArgumentException("Can't convert double " + value + " to byte.");
     }
 
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static Integer toInt(@Nullable Object value) {
         if (value == null) {
@@ -140,6 +138,7 @@ public class NumberUtil {
         return toInt(Double.parseDouble(StringUtil.trim(value.toString())));
     }
 
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static Integer toInt(@Nullable String value) {
         return value == null ? null : toInt(Double.parseDouble(StringUtil.trim(value)));
@@ -169,6 +168,7 @@ public class NumberUtil {
         throw new IllegalArgumentException("Can't convert double " + value + " to int.");
     }
 
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static Long toLong(@Nullable Object value) {
         if (value == null) {
@@ -206,6 +206,7 @@ public class NumberUtil {
         return toLong(Double.parseDouble(StringUtil.trim(value.toString())));
     }
 
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static Long toLong(@Nullable String value) {
         return value == null ? null : toLong(Double.parseDouble(StringUtil.trim(value)));
@@ -227,156 +228,130 @@ public class NumberUtil {
         throw new IllegalArgumentException("Can't convert double " + value + " to long.");
     }
 
+    @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
     public static boolean equals(@Nullable Byte numberA, @Nullable Byte numberB) {
         return numberA == null ? numberB == null : numberA.equals(numberB);
     }
 
+    @Contract(value = "null, null, null -> true; null, !null, _ -> false; !null, null, _ -> false; null, _, !null -> false; !null, _, null -> false; _, null, !null -> false; _, !null, null -> false", pure = true)
     public static boolean equals(@Nullable Byte numberA, @Nullable Byte numberB, @Nullable Byte numberC) {
         return numberA == null ? numberB == null && numberC == null : numberA.equals(numberB) && numberA.equals(numberC);
     }
 
+    @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
     public static boolean equals(@Nullable Short numberA, @Nullable Short numberB) {
         return numberA == null ? numberB == null : numberA.equals(numberB);
     }
 
+    @Contract(value = "null, null, null -> true; null, !null, _ -> false; !null, null, _ -> false; null, _, !null -> false; !null, _, null -> false; _, null, !null -> false; _, !null, null -> false", pure = true)
     public static boolean equals(@Nullable Short numberA, @Nullable Short numberB, @Nullable Short numberC) {
         return numberA == null ? numberB == null && numberC == null : numberA.equals(numberB) && numberA.equals(numberC);
     }
 
+    @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
     public static boolean equals(@Nullable Integer numberA, @Nullable Integer numberB) {
         return numberA == null ? numberB == null : numberA.equals(numberB);
     }
 
+    @Contract(value = "null, null, null -> true; null, !null, _ -> false; !null, null, _ -> false; null, _, !null -> false; !null, _, null -> false; _, null, !null -> false; _, !null, null -> false", pure = true)
     public static boolean equals(@Nullable Integer numberA, @Nullable Integer numberB, @Nullable Integer numberC) {
         return numberA == null ? numberB == null && numberC == null : numberA.equals(numberB) && numberA.equals(numberC);
     }
 
+    @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
     public static boolean equals(@Nullable Long numberA, @Nullable Long numberB) {
         return numberA == null ? numberB == null : numberA.equals(numberB);
     }
 
+    @Contract(value = "null, null, null -> true; null, !null, _ -> false; !null, null, _ -> false; null, _, !null -> false; !null, _, null -> false; _, null, !null -> false; _, !null, null -> false", pure = true)
     public static boolean equals(@Nullable Long numberA, @Nullable Long numberB, @Nullable Long numberC) {
         return numberA == null ? numberB == null && numberC == null : numberA.equals(numberB) && numberA.equals(numberC);
     }
 
+    @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
     public static boolean equals(@Nullable Float numberA, @Nullable Float numberB) {
         return numberA == null ? numberB == null : numberA.equals(numberB);
     }
 
+    @Contract(value = "null, null, null -> true; null, !null, _ -> false; !null, null, _ -> false; null, _, !null -> false; !null, _, null -> false; _, null, !null -> false; _, !null, null -> false", pure = true)
     public static boolean equals(@Nullable Float numberA, @Nullable Float numberB, @Nullable Float numberC) {
         return numberA == null ? numberB == null && numberC == null : numberA.equals(numberB) && numberA.equals(numberC);
     }
 
+    @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
     public static boolean equals(@Nullable Double numberA, @Nullable Double numberB) {
         return numberA == null ? numberB == null : numberA.equals(numberB);
     }
 
+    @Contract(value = "null, null, null -> true; null, !null, _ -> false; !null, null, _ -> false; null, _, !null -> false; !null, _, null -> false; _, null, !null -> false; _, !null, null -> false", pure = true)
     public static boolean equals(@Nullable Double numberA, @Nullable Double numberB, @Nullable Double numberC) {
         return numberA == null ? numberB == null && numberC == null : numberA.equals(numberB) && numberA.equals(numberC);
     }
 
-    @SuppressWarnings("AssignmentToMethodParameter")
-    public static long findGreatestCommonDivisor(long numberA, long numberB) {
-        @SuppressWarnings("TooBroadScope") long temp;
-
-        while (numberA != 0 && numberB != 0) {
-            numberA %= numberB;
-            temp = numberA;
-            numberA = numberB;
-            numberB = temp;
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Contract("null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false")
+    public static boolean nearlyEquals(@Nullable Float numberA, @Nullable Float numberB, float epsilon) {
+        if (numberA == null) {
+            return numberB == null;
         }
 
-        return numberA + numberB;
-    }
-
-    public static long findLeastCommonMultiple(long numberA, long numberB) {
-        return numberA / findGreatestCommonDivisor(numberA, numberB) * numberB;
-    }
-
-    public static long findLeastCommonMultiple(@Nonnull long[] numbers) {
-        int numberCount = numbers.length;
-
-        if (numberCount == 0) {
-            throw new IllegalArgumentException("Can't find LCM for zero numbers.");
+        if (numberA.equals(numberB)) {
+            return true;
         }
 
-        if (numberCount == 1) {
-            return numbers[0];
+        if (Float.isInfinite(numberA) || Float.isNaN(numberA)
+                || Float.isInfinite(numberB) || Float.isNaN(numberB)) {
+            return false;
         }
 
-        long leastCommonMultiple = findLeastCommonMultiple(numbers[0], numbers[1]);
+        return abs(numberA - numberB) < epsilon;
+    }
 
-        for (int numberIndex = 2; numberIndex < numberCount; ++numberIndex) {
-            leastCommonMultiple = findLeastCommonMultiple(leastCommonMultiple, numbers[numberIndex]);
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Contract("null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false")
+    public static boolean nearlyEquals(@Nullable Double numberA, @Nullable Double numberB, double epsilon) {
+        if (numberA == null) {
+            return numberB == null;
         }
 
-        return leastCommonMultiple;
+        if (numberA.equals(numberB)) {
+            return true;
+        }
+
+        if (Double.isInfinite(numberA) || Double.isNaN(numberA)
+                || Double.isInfinite(numberB) || Double.isNaN(numberB)) {
+            return false;
+        }
+
+        return abs(numberA - numberB) < epsilon;
     }
 
-    public static int avg(int numberA, int numberB) {
-        return numberA / 2 + numberB / 2 + (numberA % 2 + numberB % 2) / 2;
-    }
-
-    public static int avg(int numberA, int numberB, int numberC) {
-        return numberA / 3 + numberB / 3 + numberC / 3 + (numberA % 3 + numberB % 3 + numberC % 3) / 3;
-    }
-
-    public static long avg(long numberA, long numberB) {
-        return numberA / 2L + numberB / 2L + (numberA % 2L + numberB % 2L) / 2L;
-    }
-
-    public static long avg(long numberA, long numberB, long numberC) {
-        return numberA / 3L + numberB / 3L + numberC / 3L + (numberA % 3L + numberB % 3L + numberC % 3L) / 3L;
-    }
-
-    public static float avg(float numberA, float numberB) {
-        return numberA * 0.5F + numberB * 0.5F;
-    }
-
-    public static float avg(float numberA, float numberB, float numberC) {
-        return numberA / 3.0F + numberB / 3.0F + numberC / 3.0F;
-    }
-
-    public static double avg(double numberA, double numberB) {
-        return numberA * 0.5D + numberB * 0.5D;
-    }
-
-    public static double avg(double numberA, double numberB, double numberC) {
-        return numberA / 3.0D + numberB / 3.0D + numberC / 3.0D;
-    }
-
-    public static double sqr(double value) {
-        return value * value;
-    }
-
-    public static double sumSqr(double numberA, double numberB) {
-        return numberA * numberA + numberB * numberB;
-    }
-
-    public static double sumSqr(double numberA, double numberB, double numberC) {
-        return numberA * numberA + numberB * numberB + numberC * numberC;
-    }
-
+    @Contract(pure = true)
     public static byte nullToZero(@Nullable Byte value) {
         return value == null ? (byte) 0 : value;
     }
 
+    @Contract(pure = true)
     public static short nullToZero(@Nullable Short value) {
         return value == null ? (short) 0 : value;
     }
 
+    @Contract(pure = true)
     public static int nullToZero(@Nullable Integer value) {
         return value == null ? 0 : value;
     }
 
+    @Contract(pure = true)
     public static long nullToZero(@Nullable Long value) {
         return value == null ? 0L : value;
     }
 
+    @Contract(pure = true)
     public static float nullToZero(@Nullable Float value) {
         return value == null ? 0.0F : value;
     }
 
+    @Contract(pure = true)
     public static double nullToZero(@Nullable Double value) {
         return value == null ? 0.0D : value;
     }

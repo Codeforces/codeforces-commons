@@ -1,8 +1,9 @@
 package com.codeforces.commons.math;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
+import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Random;
@@ -10,13 +11,14 @@ import java.util.Random;
 /**
  * @author Mike Mirzayanov
  */
-public class RandomUtil {
+public final class RandomUtil {
     private static final Random random = new SecureRandom(generateSeed());
 
     private RandomUtil() {
         throw new UnsupportedOperationException();
     }
 
+    @Nonnull
     private static byte[] generateSeed() {
         return ByteBuffer.allocate(5 * Long.SIZE / Byte.SIZE)
                 .putLong(System.nanoTime())
@@ -44,7 +46,7 @@ public class RandomUtil {
      */
     public static String getRandomToken(int length) {
         if (length < 0 || length % 2 != 0) {
-            throw new IllegalArgumentException("Argument 'length' is negative, zero or not divisible by 2.");
+            throw new IllegalArgumentException("Argument 'length' is negative or not divisible by 2.");
         }
 
         return Hex.encodeHexString(getRandomBytes(length / 2));

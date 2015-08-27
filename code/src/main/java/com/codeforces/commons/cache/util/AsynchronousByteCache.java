@@ -34,10 +34,11 @@ class AsynchronousByteCache extends ByteCache {
         public Thread newThread(@Nonnull Runnable r) {
             Thread thread = new Thread(r);
             thread.setDaemon(true);
-            thread.setName(cache.getClass().getSimpleName()
-                    + '#' + AsynchronousByteCache.class.getSimpleName() + '-' + getIndex()
-                    + "#ValidationThread-" + threadIndex.incrementAndGet()
-            );
+            thread.setName(String.format(
+                    "%s#%s-%d#ValidationThread-%d",
+                    cache.getClass().getSimpleName(), AsynchronousByteCache.class.getSimpleName(), getIndex(),
+                    threadIndex.incrementAndGet()
+            ));
             return thread;
         }
     });
@@ -50,10 +51,11 @@ class AsynchronousByteCache extends ByteCache {
         public Thread newThread(@Nonnull Runnable r) {
             Thread thread = new Thread(r);
             thread.setDaemon(true);
-            thread.setName(cache.getClass().getSimpleName()
-                    + '#' + AsynchronousByteCache.class.getSimpleName() + '-' + getIndex()
-                    + "#ExecutionThread-" + threadIndex.incrementAndGet()
-            );
+            thread.setName(String.format(
+                    "%s#%s-%d#ExecutionThread-%d",
+                    cache.getClass().getSimpleName(), AsynchronousByteCache.class.getSimpleName(), getIndex(),
+                    threadIndex.incrementAndGet()
+            ));
             return thread;
         }
     });

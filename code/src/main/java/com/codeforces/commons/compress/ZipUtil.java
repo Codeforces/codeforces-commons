@@ -31,7 +31,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.zip.*;
 
-import static java.lang.StrictMath.max;
+import static com.codeforces.commons.math.Math.max;
 
 /**
  * @author Mike Mirzayanov
@@ -120,7 +120,7 @@ public final class ZipUtil {
      * @param source      directory to compress, will not be added itself;
      *                    source directory child files will be placed in the root of archive
      * @param destination ZIP-archive
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occurred
      */
     public static void zipExceptSvn(File source, File destination) throws IOException {
         zipExceptSvn(source, destination, DEFAULT_COMPRESSION_LEVEL);
@@ -133,7 +133,7 @@ public final class ZipUtil {
      *                    source directory child files will be placed in the root of archive
      * @param destination ZIP-archive
      * @param skipFilter  skipped files filter or {@code null} to accept all files
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occurred
      */
     public static void zip(File source, File destination, @Nullable FileFilter skipFilter) throws IOException {
         zip(source, destination, DEFAULT_COMPRESSION_LEVEL, skipFilter);
@@ -146,7 +146,7 @@ public final class ZipUtil {
      *                    source directory child files will be placed in the root of archive
      * @param destination ZIP-archive
      * @param level       compression level (0-9)
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occured
      */
     public static void zipExceptSvn(File source, File destination, int level) throws IOException {
         zip(source, destination, level, new NameFileFilter(".svn", IOCase.SYSTEM));
@@ -160,7 +160,7 @@ public final class ZipUtil {
      * @param destination ZIP-archive
      * @param level       compression level (0-9)
      * @param skipFilter  skipped files filter or {@code null} to accept all files
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occured
      */
     public static void zip(File source, File destination, int level, @Nullable FileFilter skipFilter)
             throws IOException {
@@ -185,7 +185,7 @@ public final class ZipUtil {
      * @param source directory to compress, will not be added itself;
      *               source directory child files will be placed in the root of archive
      * @return ZIP-archive bytes
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occured
      */
     public static byte[] zipExceptSvn(File source) throws IOException {
         return zipExceptSvn(source, DEFAULT_COMPRESSION_LEVEL);
@@ -198,7 +198,7 @@ public final class ZipUtil {
      *                   source directory child files will be placed in the root of archive
      * @param skipFilter skipped files filter or {@code null} to accept all files
      * @return ZIP-archive bytes
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occured
      */
     public static byte[] zip(File source, @Nullable FileFilter skipFilter) throws IOException {
         return zip(source, DEFAULT_COMPRESSION_LEVEL, skipFilter);
@@ -211,7 +211,7 @@ public final class ZipUtil {
      *               source directory child files will be placed in the root of archive
      * @param level  compression level (0-9)
      * @return ZIP-archive bytes
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occured
      */
     public static byte[] zipExceptSvn(File source, int level) throws IOException {
         return zip(source, level, new NameFileFilter(".svn", IOCase.SYSTEM));
@@ -225,7 +225,7 @@ public final class ZipUtil {
      * @param level      compression level (0-9)
      * @param skipFilter skipped files filter or {@code null} to accept all files
      * @return ZIP-archive bytes
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occured
      */
     public static byte[] zip(File source, int level, @Nullable FileFilter skipFilter) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -309,7 +309,7 @@ public final class ZipUtil {
      * @param bytes      original ZIP-archive bytes
      * @param skipFilter skipped files filter or {@code null} to accept all files
      * @return repacked ZIP-archive bytes
-     * @throws java.io.IOException if any I/O-exception occured
+     * @throws IOException if any I/O-exception occured
      */
     public static byte[] rezip(byte[] bytes, @Nullable FileFilter skipFilter) throws IOException {
         File tempDir = null;
@@ -335,6 +335,7 @@ public final class ZipUtil {
         rezip(file, file, skipFilter);
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     private static ArrayList<File> deepListFilesInDirectory(
             @Nonnull File directory, @Nullable final FileFilter skipFilter, boolean ignoreHiddenFiles)
             throws IOException {
@@ -370,6 +371,7 @@ public final class ZipUtil {
         return filesToAdd;
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     private static void addDirectory(
             String prefix, File source, ZipOutputStream zipOutputStream,
             @Nullable final FileFilter skipFilter, boolean ignoreHiddenFiles)
@@ -477,7 +479,7 @@ public final class ZipUtil {
      * @param zipFile      ZIP-file containing entry
      * @param zipEntryPath path to the entry of specified ZIP-file
      * @return the uncompressed size of the entry data, or -1 if not known
-     * @throws java.io.IOException if any I/O-exception occurred
+     * @throws IOException if any I/O-exception occurred
      */
     public static long getZipEntrySize(File zipFile, String zipEntryPath) throws IOException {
         try {
@@ -644,22 +646,20 @@ public final class ZipUtil {
      * {@code {@link #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)}}
      * using {@code configuration} values for different string patterns.
      *
-     * @param zipFileBytes                   bytes of ZIP-archive to format
-     * @param maxLength                      maximal allowed length of result
-     * @param maxEntryLineCount              maximal allowed number of content lines to display for a single ZIP-archive entry
-     * @param maxEntryLineLength             maximal allowed length of ZIP-archive entry content line
-     * @param entryListHeaderPattern         pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
-     * @param entryListItemPattern           pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
-     * @param entryListItemSeparatorPattern  pattern of entry list separator
-     * @param entryListCloserPattern         pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
-     * @param entryContentHeaderPattern      pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
-     * @param entryContentLinePattern        pattern of entry content line; parameters: {@code entryLine}
-     * @param entryContentLineSeparatorPattern
-     *                                       pattern of entry content separator
-     * @param entryContentCloserPattern      pattern of entry content closer; parameters: {@code entryName}
-     * @param binaryEntryContentPlaceholderPattern
-     *                                       pattern of binary entry content placeholder; parameters: {@code entrySize}
-     * @param emptyZipFilePlaceholderPattern pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
+     * @param zipFileBytes                         bytes of ZIP-archive to format
+     * @param maxLength                            maximal allowed length of result
+     * @param maxEntryLineCount                    maximal allowed number of content lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength                   maximal allowed length of ZIP-archive entry content line
+     * @param entryListHeaderPattern               pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
+     * @param entryListItemPattern                 pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
+     * @param entryListItemSeparatorPattern        pattern of entry list separator
+     * @param entryListCloserPattern               pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
+     * @param entryContentHeaderPattern            pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
+     * @param entryContentLinePattern              pattern of entry content line; parameters: {@code entryLine}
+     * @param entryContentLineSeparatorPattern     pattern of entry content separator
+     * @param entryContentCloserPattern            pattern of entry content closer; parameters: {@code entryName}
+     * @param binaryEntryContentPlaceholderPattern pattern of binary entry content placeholder; parameters: {@code entrySize}
+     * @param emptyZipFilePlaceholderPattern       pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
      * @return formatted view of ZIP-archive
      * @throws IOException if {@code zipFileBytes} is not a correct bytes of ZIP-archive or any other I/O-error has been occured
      * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
@@ -759,22 +759,20 @@ public final class ZipUtil {
      * Formats content of the ZIP-archive for view and returns result as UTF-8 bytes. The {@code truncated} flag
      * indicates that the length of returned view was restricted by {@code maxLength} parameter.
      *
-     * @param zipFile                        ZIP-archive to format
-     * @param maxLength                      maximal allowed length of result
-     * @param maxEntryLineCount              maximal allowed number of content lines to display for a single ZIP-archive entry
-     * @param maxEntryLineLength             maximal allowed length of ZIP-archive entry content line
-     * @param entryListHeaderPattern         pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
-     * @param entryListItemPattern           pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
-     * @param entryListItemSeparatorPattern  pattern of entry list separator
-     * @param entryListCloserPattern         pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
-     * @param entryContentHeaderPattern      pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
-     * @param entryContentLinePattern        pattern of entry content line; parameters: {@code entryLine}
-     * @param entryContentLineSeparatorPattern
-     *                                       pattern of entry content separator
-     * @param entryContentCloserPattern      pattern of entry content closer; parameters: {@code entryName}
-     * @param binaryEntryContentPlaceholderPattern
-     *                                       pattern of binary entry content placeholder; parameters: {@code entrySize}
-     * @param emptyZipFilePlaceholderPattern pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
+     * @param zipFile                              ZIP-archive to format
+     * @param maxLength                            maximal allowed length of result
+     * @param maxEntryLineCount                    maximal allowed number of content lines to display for a single ZIP-archive entry
+     * @param maxEntryLineLength                   maximal allowed length of ZIP-archive entry content line
+     * @param entryListHeaderPattern               pattern of entry list header; parameters: {@code fileName}, {@code filePath}, {@code entryCount}
+     * @param entryListItemPattern                 pattern of entry list item; parameters: {@code entryName}, {@code entrySize}, {@code entryIndex} (1-based)
+     * @param entryListItemSeparatorPattern        pattern of entry list separator
+     * @param entryListCloserPattern               pattern of entry list closer; parameters: {@code fileName}, {@code filePath}
+     * @param entryContentHeaderPattern            pattern of entry content header; parameters: {@code entryName}, {@code entrySize}
+     * @param entryContentLinePattern              pattern of entry content line; parameters: {@code entryLine}
+     * @param entryContentLineSeparatorPattern     pattern of entry content separator
+     * @param entryContentCloserPattern            pattern of entry content closer; parameters: {@code entryName}
+     * @param binaryEntryContentPlaceholderPattern pattern of binary entry content placeholder; parameters: {@code entrySize}
+     * @param emptyZipFilePlaceholderPattern       pattern of empty (no entries) ZIP-file placeholder; parameters: {@code fileName}, {@code filePath}
      * @return formatted view of ZIP-archive
      * @throws IOException if {@code zipFile} is not a correct ZIP-archive or any other I/O-error has been occured
      * @see String#format(String, Object...)

@@ -11,7 +11,8 @@ import com.codeforces.commons.reflection.ReflectionUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +29,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
-import static java.lang.StrictMath.min;
+import static com.codeforces.commons.math.Math.max;
+import static com.codeforces.commons.math.Math.min;
 
 /**
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
@@ -54,6 +56,7 @@ public final class StringUtil {
         return Character.isWhitespace(c) || c == NON_BREAKING_SPACE || c == ZERO_WIDTH_SPACE;
     }
 
+    @Contract(pure = true)
     public static boolean isCyrillic(char c) {
         return c >= 'а' && c <= 'я' || c >= 'А' && c <= 'Я';
     }
@@ -67,6 +70,7 @@ public final class StringUtil {
      * @see #getCyrillicFactor(String)
      * @see #isCyrillic(char)
      */
+    @Contract("null -> false")
     public static boolean isCyrillic(@Nullable String s) {
         if (s == null) {
             return false;
@@ -120,6 +124,7 @@ public final class StringUtil {
      * @param s String.
      * @return {@code true} iff {@code s} is {@code null} or empty.
      */
+    @Contract(value = "null -> true", pure = true)
     public static boolean isEmpty(@Nullable String s) {
         return s == null || s.isEmpty();
     }
@@ -128,6 +133,7 @@ public final class StringUtil {
      * @param s String.
      * @return {@code true} iff {@code s} is not {@code null} and not empty.
      */
+    @Contract(value = "null -> false", pure = true)
     public static boolean isNotEmpty(@Nullable String s) {
         return s != null && !s.isEmpty();
     }
@@ -137,6 +143,7 @@ public final class StringUtil {
      * @return {@code true} iff {@code s} is {@code null}, empty or contains only whitespaces.
      * @see #isWhitespace(char)
      */
+    @Contract("null -> true")
     public static boolean isBlank(@Nullable String s) {
         if (s == null || s.isEmpty()) {
             return true;
@@ -154,9 +161,10 @@ public final class StringUtil {
     /**
      * @param s String.
      * @return {@code true} iff {@code s} is not {@code null}, not empty
-     *         and contains at least one character that is not whitespace.
+     * and contains at least one character that is not whitespace.
      * @see #isWhitespace(char)
      */
+    @Contract("null -> false")
     public static boolean isNotBlank(@Nullable String s) {
         if (s == null || s.isEmpty()) {
             return false;
@@ -177,8 +185,9 @@ public final class StringUtil {
      * @param stringA first string
      * @param stringB second string
      * @return {@code true} iff both strings A and B are {@code null}
-     *         or the string B represents a {@code String} equivalent to the string A
+     * or the string B represents a {@code String} equivalent to the string A
      */
+    @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
     public static boolean equals(@Nullable String stringA, @Nullable String stringB) {
         return stringA == null ? stringB == null : stringA.equals(stringB);
     }
@@ -189,7 +198,7 @@ public final class StringUtil {
      * @param stringA first string
      * @param stringB second string
      * @return {@code true} iff both strings A and B are {@link #isEmpty(String) empty}
-     *         or the string B represents a {@code String} equal to the string A
+     * or the string B represents a {@code String} equal to the string A
      */
     public static boolean equalsOrEmpty(@Nullable String stringA, @Nullable String stringB) {
         return isEmpty(stringA) ? isEmpty(stringB) : stringA.equals(stringB);
@@ -201,7 +210,7 @@ public final class StringUtil {
      * @param stringA first string
      * @param stringB second string
      * @return {@code true} iff both strings A and B are {@link #isBlank(String) blank}
-     *         or the string B represents a {@code String} equal to the string A
+     * or the string B represents a {@code String} equal to the string A
      */
     public static boolean equalsOrBlank(@Nullable String stringA, @Nullable String stringB) {
         return isBlank(stringA) ? isBlank(stringB) : stringA.equals(stringB);
@@ -213,8 +222,9 @@ public final class StringUtil {
      * @param stringA first string
      * @param stringB second string
      * @return {@code true} iff both strings A and B are {@code null}
-     *         or the string B represents a {@code String} equal to the string A
+     * or the string B represents a {@code String} equal to the string A
      */
+    @Contract("null, null -> true; null, !null -> false; !null, null -> false")
     public static boolean equalsIgnoreCase(@Nullable String stringA, @Nullable String stringB) {
         return stringA == null ? stringB == null : stringA.equalsIgnoreCase(stringB);
     }
@@ -225,7 +235,7 @@ public final class StringUtil {
      * @param stringA first string
      * @param stringB second string
      * @return {@code true} iff both strings A and B are {@link #isEmpty(String) empty}
-     *         or the string B represents a {@code String} equal to the string A
+     * or the string B represents a {@code String} equal to the string A
      */
     public static boolean equalsOrEmptyIgnoreCase(@Nullable String stringA, @Nullable String stringB) {
         return isEmpty(stringA) ? isEmpty(stringB) : stringA.equalsIgnoreCase(stringB);
@@ -237,31 +247,36 @@ public final class StringUtil {
      * @param stringA first string
      * @param stringB second string
      * @return {@code true} iff both strings A and B are {@link #isBlank(String) blank}
-     *         or the string B represents a {@code String} equal to the string A
+     * or the string B represents a {@code String} equal to the string A
      */
     public static boolean equalsOrBlankIgnoreCase(@Nullable String stringA, @Nullable String stringB) {
         return isBlank(stringA) ? isBlank(stringB) : stringA.equalsIgnoreCase(stringB);
     }
 
+    @Contract(pure = true)
     public static int length(@Nullable String s) {
         return s == null ? 0 : s.length();
     }
 
+    @Contract(pure = true)
     @Nonnull
     public static String nullToEmpty(@Nullable String s) {
         return s == null ? "" : s;
     }
 
+    @Contract(value = "null -> null", pure = true)
     @Nullable
     public static String emptyToNull(@Nullable String s) {
         return s == null || s.isEmpty() ? null : s;
     }
 
+    @Contract(value = "!null, _ -> ! null; _, !null -> ! null", pure = true)
     @Nullable
     public static String nullToDefault(@Nullable String s, @Nullable String defaultValue) {
         return s == null ? defaultValue : s;
     }
 
+    @Contract("null -> null")
     @Nullable
     public static String trim(@Nullable String s) {
         if (s == null) {
@@ -283,6 +298,7 @@ public final class StringUtil {
         return beginIndex == 0 && endIndex == lastIndex ? s : s.substring(beginIndex, endIndex + 1);
     }
 
+    @Contract("null -> null")
     @Nullable
     public static String trimToNull(@Nullable String s) {
         return s == null ? null : (s = trim(s)).isEmpty() ? null : s;
@@ -293,6 +309,7 @@ public final class StringUtil {
         return s == null ? "" : trim(s);
     }
 
+    @Contract("null -> null")
     @Nullable
     public static String trimRight(@Nullable String s) {
         if (s == null) {
@@ -309,6 +326,7 @@ public final class StringUtil {
         return endIndex == lastIndex ? s : s.substring(0, endIndex + 1);
     }
 
+    @Contract("null -> null")
     @Nullable
     public static String trimRightToNull(@Nullable String s) {
         return s == null ? null : (s = trimRight(s)).isEmpty() ? null : s;
@@ -319,6 +337,7 @@ public final class StringUtil {
         return s == null ? "" : trimRight(s);
     }
 
+    @Contract("null -> null")
     @Nullable
     public static String trimLeft(@Nullable String s) {
         if (s == null) {
@@ -335,6 +354,7 @@ public final class StringUtil {
         return beginIndex == 0 ? s : s.substring(beginIndex, lastIndex + 1);
     }
 
+    @Contract("null -> null")
     @Nullable
     public static String trimLeftToNull(@Nullable String s) {
         return s == null ? null : (s = trimLeft(s)).isEmpty() ? null : s;
@@ -396,6 +416,34 @@ public final class StringUtil {
             System.arraycopy(parts, 0, tempParts, 0, count);
             return tempParts;
         }
+    }
+
+    @Contract(value = "null, _, _ -> null; !null, _, _ -> !null", pure = true)
+    public static String replace(@Nullable String s, @Nullable String target, @Nullable String replacement) {
+        if (isEmpty(s) || isEmpty(target) || replacement == null) {
+            return s;
+        }
+
+        int targetIndex = s.indexOf(target);
+        if (targetIndex == -1) {
+            return s;
+        }
+
+        int i = 0;
+        int targetLength = target.length();
+        StringBuilder result = new StringBuilder(s.length() + (max(replacement.length() - targetLength, 0) << 4));
+
+        do {
+            if (targetIndex > i) {
+                result.append(s.substring(i, targetIndex));
+            }
+
+            result.append(replacement);
+            i = targetIndex + targetLength;
+            targetIndex = s.indexOf(target, i);
+        } while (targetIndex != -1);
+
+        return result.append(s.substring(i)).toString();
     }
 
     @SuppressWarnings({"OverloadedVarargsMethod", "AccessingNonPublicFieldOfAnotherObject"})
@@ -478,6 +526,7 @@ public final class StringUtil {
     }
 
     @SuppressWarnings("unchecked")
+    @Nullable
     public static <T> ToStringConverter<? super T> getToStringConverter(
             @Nonnull Class<T> valueClass, boolean checkSuperclasses) {
         Lock readLock = toStringConverterByClassMapLock.readLock();
@@ -545,7 +594,7 @@ public final class StringUtil {
         return fieldName + '=' + stringValue;
     }
 
-    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
+    @SuppressWarnings({"AccessingNonPublicFieldOfAnotherObject", "OverlyComplexMethod"})
     private static boolean shouldSkipField(String stringValue, ToStringOptions options, Mutable<Boolean> quoted) {
         if (options.skipNulls && stringValue == null) {
             return true;
@@ -579,6 +628,7 @@ public final class StringUtil {
     }
 
     @SuppressWarnings({"OverlyComplexMethod", "unchecked"})
+    @Contract("null, _ -> null")
     @Nullable
     private static String valueToString(@Nullable Object value, @Nullable Mutable<Boolean> quoted) {
         if (value == null) {
@@ -598,10 +648,10 @@ public final class StringUtil {
             return mapToString((Map) value);
         } else if (value instanceof Map.Entry) {
             Map.Entry entry = (Map.Entry) value;
-            return valueToString(entry.getKey(), null) + '=' + valueToString(entry.getValue(), null);
+            return valueToString(entry.getKey(), null) + ": " + valueToString(entry.getValue(), null);
         } else if (value instanceof SimplePair) {
             SimplePair pair = (SimplePair) value;
-            return valueToString(pair.getFirst(), null) + '=' + valueToString(pair.getSecond(), null);
+            return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
         } else if (valueClass == Character.class) {
             Holders.setQuietly(quoted, true);
             return "'" + value + '\'';
@@ -624,6 +674,7 @@ public final class StringUtil {
         }
     }
 
+    @Nonnull
     private static String arrayToString(Object array) {
         StringBuilder builder = new StringBuilder("[");
         int length = Array.getLength(array);
@@ -639,6 +690,7 @@ public final class StringUtil {
         return builder.append(']').toString();
     }
 
+    @Nonnull
     private static String collectionToString(Collection collection) {
         StringBuilder builder = new StringBuilder("[");
         Iterator iterator = collection.iterator();
@@ -654,6 +706,7 @@ public final class StringUtil {
         return builder.append(']').toString();
     }
 
+    @Nonnull
     private static String mapToString(Map map) {
         StringBuilder builder = new StringBuilder("{");
         Iterator iterator = map.entrySet().iterator();
@@ -673,11 +726,13 @@ public final class StringUtil {
      * @param s String.
      * @return {@code s} without spaces or {@code null} if {@code s} is {@code null}
      */
+    @Contract("null -> null")
     @Nullable
     public static String stripSpaces(@Nullable String s) {
         return removeCharOccurrences(s, ' ');
     }
 
+    @Contract("null, _ -> null")
     @Nullable
     public static String removeCharOccurrences(@Nullable String s, char charToRemove) {
         if (s == null) {
@@ -750,6 +805,7 @@ public final class StringUtil {
      * @param numbers collection of integers
      * @return formatted list of integers or empty string if collection is empty
      */
+    @Nonnull
     public static String formatIntegers(@Nonnull Collection<Integer> numbers) {
         return formatIntegers(numbers, ",", "-");
     }
@@ -763,6 +819,7 @@ public final class StringUtil {
      * @param intervalSeparator interval delimiter
      * @return formatted list of integers or empty string empty string if collection is empty
      */
+    @Nonnull
     public static String formatIntegers(
             @Nonnull Collection<Integer> numbers, @Nonnull String itemSeparator, @Nonnull String intervalSeparator) {
         if (numbers.isEmpty()) {
@@ -821,6 +878,7 @@ public final class StringUtil {
         return html;
     }
 
+    @Nonnull
     public static String formatComments(String comment) {
         String[] tokens = FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN.split(comment);
         StringBuilder sb = new StringBuilder();
@@ -841,6 +899,7 @@ public final class StringUtil {
      * @return Text with windows line breaks.
      */
     @SuppressWarnings({"HardcodedLineSeparator"})
+    @Nonnull
     public static String toWindowsLineBreaks(String s) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < s.length(); ++i) {
@@ -936,8 +995,8 @@ public final class StringUtil {
      * @param s         Given string.
      * @param maxLength Maximal length.
      * @return Makes string to contain no more than maxLength characters.
-     *         Removes middle part and inserts "..." instead of it if needed.
-     *         Returns {@code null} iff {@code s} is {@code null}.
+     * Removes middle part and inserts "..." instead of it if needed.
+     * Returns {@code null} iff {@code s} is {@code null}.
      */
     public static String shrinkTo(String s, int maxLength) {
         if (maxLength < 8) {
@@ -953,6 +1012,7 @@ public final class StringUtil {
         }
     }
 
+    @Nullable
     public static List<String> shrinkLinesTo(List<String> lines, int maxLineLength, int maxLineCount) {
         if (maxLineCount < 3) {
             throw new IllegalArgumentException("Argument 'maxLineCount' is expected to be at least 3.");
@@ -987,6 +1047,7 @@ public final class StringUtil {
         return result;
     }
 
+    @Nullable
     public static String[] shrinkLinesTo(String[] lines, int maxLineLength, int maxLineCount) {
         if (maxLineCount < 3) {
             throw new IllegalArgumentException("Argument 'maxLineCount' is expected to be at least 3.");
@@ -1050,6 +1111,7 @@ public final class StringUtil {
         return result.toString();
     }
 
+    @Contract("null -> false")
     public static boolean containsRussianLetters(@Nullable String s) {
         if (s == null) {
             return false;
@@ -1073,6 +1135,7 @@ public final class StringUtil {
         }
     }
 
+    @Nonnull
     public static String sha1Hex(byte[] input) {
         try {
             return Hex.encodeHexString(MessageDigest.getInstance("SHA1").digest(input));
@@ -1109,6 +1172,7 @@ public final class StringUtil {
         }
     }
 
+    @Nonnull
     public static String hmacSha1Hex(byte[] value, byte[] key) {
         return Hex.encodeHexString(hmacSha1(value, key));
     }
@@ -1149,7 +1213,7 @@ public final class StringUtil {
      * @param stringA the first string to be compared
      * @param stringB the second string to be compared
      * @return a negative integer, zero, or a positive integer as the first argument
-     *         is less than, equal to, or greater than the second
+     * is less than, equal to, or greater than the second
      */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
     public static int compareStringsSmart(@Nonnull String stringA, @Nonnull String stringB) {
@@ -1270,6 +1334,7 @@ public final class StringUtil {
         return result;
     }
 
+    @Contract("null -> null")
     @Nullable
     public static String toString(@Nullable Object object) {
         return object == null ? null : object.toString();
@@ -1283,6 +1348,7 @@ public final class StringUtil {
      * @return escaped string
      */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "SwitchStatementWithTooManyBranches"})
+    @Contract("null -> null")
     public static String escapeMySqlString(String s) {
         if (s == null) {
             return null;
@@ -1333,6 +1399,8 @@ public final class StringUtil {
         return result.toString();
     }
 
+    @SuppressWarnings({"IfStatementWithIdenticalBranches", "OverlyComplexMethod"})
+    @Contract("null -> null")
     public static byte[] removeBoms(byte[] bytes) {
         int byteCount;
 
@@ -1376,6 +1444,7 @@ public final class StringUtil {
         return processedBytes;
     }
 
+    @SuppressWarnings("InterfaceNeverImplemented")
     public interface ToStringConverter<T> {
         @Nonnull
         String convert(@Nullable T value);

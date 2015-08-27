@@ -7,14 +7,12 @@ import javax.annotation.Nullable;
 import java.nio.charset.Charset;
 
 /**
- * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 14.02.11
- */
-
-/**
  * All methods of this class throws {@code {@link IllegalArgumentException}} if either section or key
  * is {@code null}, empty or contains illegal characters.
  * Valid characters are: 'a'..'z', 'A'..'Z', '0'..'9', ',', '-', '+', '#', '_', '~'.
+ *
+ * @author Maxim Shipko (sladethe@gmail.com)
+ *         Date: 14.02.2011
  */
 public abstract class ByteCache extends Cache<String, byte[]> {
     private static final Charset STRING_ENCODING = Charset.forName("UTF-8");

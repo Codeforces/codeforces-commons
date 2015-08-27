@@ -3,7 +3,7 @@ package com.codeforces.commons.cache;
 import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.time.TimeUtil;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.xerial.snappy.Snappy;
 import redis.clients.jedis.Jedis;
@@ -93,7 +93,7 @@ public class RedisByteCache extends ByteCache {
             byte[] valueBytes = new Item(value, System.currentTimeMillis() + lifetimeMillis).toByteArray();
             jedis.set(keyBytes, valueBytes);
         } catch (IOException e) {
-            logger.error("Can't put " + section + "/" + key + " to the Redis.", e);
+            logger.error("Can't put " + section + '/' + key + " to the Redis.", e);
         } finally {
             releaseJedis(jedis);
         }
@@ -123,16 +123,15 @@ public class RedisByteCache extends ByteCache {
             byte[] valueBytes = jedis.get(keyBytes);
 
             if (valueBytes != null) {
-                Item item;
                 try {
-                    item = Item.fromByteArray(valueBytes);
+                    Item item = Item.fromByteArray(valueBytes);
                     long deadlineTime = item.deadlineTime;
 
                     if (System.currentTimeMillis() <= deadlineTime) {
                         return item.bytes;
                     }
                 } catch (IOException e) {
-                    logger.error("Can't get " + section + "/" + key + " to the Redis.", e);
+                    logger.error("Can't get " + section + '/' + key + " to the Redis.", e);
                 }
             }
 
