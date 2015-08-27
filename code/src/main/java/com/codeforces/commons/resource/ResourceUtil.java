@@ -5,7 +5,7 @@ import com.codeforces.commons.io.IoUtil;
 import com.google.common.io.Resources;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
