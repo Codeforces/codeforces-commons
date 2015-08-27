@@ -2,7 +2,10 @@ package com.codeforces.commons.resource;
 
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
+import com.google.common.io.Resources;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -10,7 +13,6 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -24,6 +26,7 @@ public class ResourceUtil {
     private static final Logger logger = Logger.getLogger(ResourceUtil.class);
 
     private static final ConcurrentMap<File, ReadWriteLock> cacheLockByDirectory = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<CacheEntryKey, Boolean> cacheEntryVerified = new ConcurrentHashMap<>();
 
     @Nonnull
     public static byte[] getResource(@Nonnull Class clazz, @Nonnull String resourceName) {
@@ -157,13 +160,10 @@ public class ResourceUtil {
             }
 
             try {
-                Files.createSymbolicLink(
-                        FileSystems.getDefault().getPath(targetFile.getAbsolutePath()),
-                        FileSystems.getDefault().getPath(cacheFile.getAbsolutePath())
-                );
+                FileUtil.createSymbolicLinkOrCopy(cacheFile, targetFile);
             } catch (IOException e) {
                 throw new IOException(String.format(
-                        "Can't create symbolic link to resource '%s' in the directory '%s'.", resource, targetDirectory
+                        "Can't create symbolic link or copy to resource '%s' in the directory '%s'.", resource, targetDirectory
                 ), e);
             }
         }
@@ -176,18 +176,36 @@ public class ResourceUtil {
             return false;
         }
 
+        Class actualResourceClassLoaderClass = resourceLoaderClass == null ? ResourceUtil.class : resourceLoaderClass;
+
+        CacheEntryKey cacheEntryKey = new CacheEntryKey(resource, overrideResourceBytes, resourceLoaderClass);
+        Boolean verified = cacheEntryVerified.get(cacheEntryKey);
+        if (verified != null && verified) {
+            long size = Resources.asByteSource(
+                    actualResourceClassLoaderClass.getResource(resource)
+            ).size();
+
+            if (cacheFile.length() == size) {
+                return true;
+            }
+        }
+
         InputStream resourceInputStream = null;
         InputStream cacheInputStream = null;
 
         try {
             if (overrideResourceBytes == null) {
-                resourceInputStream = (resourceLoaderClass == null ? FileUtil.class : resourceLoaderClass)
+                resourceInputStream = actualResourceClassLoaderClass
                         .getResourceAsStream(resource);
             } else {
                 resourceInputStream = new ByteArrayInputStream(overrideResourceBytes);
             }
             cacheInputStream = new BufferedInputStream(new FileInputStream(cacheFile));
-            return IOUtils.contentEquals(resourceInputStream, cacheInputStream);
+            boolean result = IOUtils.contentEquals(resourceInputStream, cacheInputStream);
+            if (result) {
+                cacheEntryVerified.putIfAbsent(cacheEntryKey, true);
+            }
+            return result;
         } catch (IOException e) {
             throw new IOException(String.format(
                     "Can't compare resource '%s' and cache file '%s'.", resource, cacheFile
@@ -241,6 +259,9 @@ public class ResourceUtil {
             if (overrideResourceBytes == null) {
                 resourceInputStream = (resourceLoaderClass == null ? FileUtil.class : resourceLoaderClass)
                         .getResourceAsStream(resource);
+                if (resourceInputStream == null) {
+                    throw new IOException("Can't find resource '" + resource + "'.");
+                }
                 cacheOutputStream = new BufferedOutputStream(new FileOutputStream(targetFile));
                 IoUtil.copy(resourceInputStream, cacheOutputStream);
             } else {
@@ -250,6 +271,9 @@ public class ResourceUtil {
             throw new IOException(String.format("Can't save resource '%s' to the file '%s'.", resource, targetFile), e);
         } finally {
             IoUtil.closeQuietly(resourceInputStream, cacheOutputStream);
+            if (resource != null) {
+                cacheEntryVerified.putIfAbsent(new CacheEntryKey(resource, overrideResourceBytes, resourceLoaderClass), true);
+            }
         }
     }
 
@@ -271,6 +295,41 @@ public class ResourceUtil {
         }
 
         return resource;
+    }
+
+    private static final class CacheEntryKey {
+        @Nonnull
+        private final String sha1;
+
+        public CacheEntryKey(@Nonnull String resource,
+                             @Nullable byte[] overrideResourceBytes, @Nullable Class resourceLoaderClass) {
+            String overrideResourceBytesSha1 = overrideResourceBytes == null
+                    ? StringUtils.EMPTY
+                    : DigestUtils.sha1Hex(overrideResourceBytes);
+            String resourceLoaderClassName = resourceLoaderClass == null
+                    ? StringUtils.EMPTY
+                    : resourceLoaderClass.getCanonicalName();
+
+            sha1 = DigestUtils.sha1Hex(resource
+                    + (char)(1) + overrideResourceBytesSha1
+                    + (char)(2) + resourceLoaderClassName);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            CacheEntryKey that = (CacheEntryKey) o;
+
+            return sha1.equals(that.sha1);
+
+        }
+
+        @Override
+        public int hashCode() {
+            return sha1.hashCode();
+        }
     }
 
     private static final class SeparatorHolder {

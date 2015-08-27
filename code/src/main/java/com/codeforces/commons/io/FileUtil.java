@@ -13,10 +13,7 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -887,6 +884,33 @@ public class FileUtil {
         }
 
         return new FirstBytes(lines.truncated, output.toByteArray());
+    }
+
+    public static void createSymbolicLinkOrCopy(@Nonnull File source, @Nonnull File target) throws IOException {
+        if (!source.exists()) {
+            throw new IOException("Source '" + source + "' doesn't exist.");
+        }
+
+        UnsafeFileUtil.deleteTotally(target);
+
+        File targetDirectory = target.getParentFile();
+        if (targetDirectory != null) {
+            //noinspection ResultOfMethodCallIgnored
+            targetDirectory.mkdirs();
+        }
+
+        try {
+            Files.createSymbolicLink(
+                    FileSystems.getDefault().getPath(target.getAbsolutePath()),
+                    FileSystems.getDefault().getPath(source.getAbsolutePath())
+            );
+        } catch (UnsupportedOperationException ignored) {
+            if (source.isFile()) {
+                UnsafeFileUtil.copyFile(source, target);
+            } else {
+                UnsafeFileUtil.copyDirectory(source, target);
+            }
+        }
     }
 
     /**
