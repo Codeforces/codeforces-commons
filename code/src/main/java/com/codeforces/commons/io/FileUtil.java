@@ -891,13 +891,8 @@ public class FileUtil {
             throw new IOException("Source '" + source + "' doesn't exist.");
         }
 
-        UnsafeFileUtil.deleteTotally(target);
-
-        File targetDirectory = target.getParentFile();
-        if (targetDirectory != null) {
-            //noinspection ResultOfMethodCallIgnored
-            targetDirectory.mkdirs();
-        }
+        deleteTotally(target);
+        ensureParentDirectoryExists(target);
 
         try {
             Files.createSymbolicLink(
