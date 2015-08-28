@@ -336,12 +336,12 @@ public final class Math {
 
     @Contract(pure = true)
     public static double floor(double value) {
-        return StrictMath.floor(value);
+        return FastMath.floor(value);
     }
 
     @Contract(pure = true)
     public static double ceil(double value) {
-        return StrictMath.ceil(value);
+        return FastMath.ceil(value);
     }
 
     @Contract(pure = true)
