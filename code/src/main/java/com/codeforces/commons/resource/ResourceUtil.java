@@ -74,7 +74,7 @@ public class ResourceUtil {
      *
      * @param targetDirectory directory to copy file to, should exist
      * @param resource        full name of the resource
-     * @throws java.io.IOException if can't perform any of I/O-operations
+     * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(@Nonnull File targetDirectory, @Nonnull String resource) throws IOException {
         copyResourceToDir(targetDirectory, null, resource);
@@ -86,7 +86,7 @@ public class ResourceUtil {
      * @param targetDirectory directory to copy file to, should exist
      * @param cacheDirectory  cache directory or {@code null}
      * @param resource        full name of the resource
-     * @throws java.io.IOException if can't perform any of I/O-operations
+     * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
             @Nonnull File targetDirectory, @Nullable File cacheDirectory, @Nonnull String resource)
@@ -101,7 +101,7 @@ public class ResourceUtil {
      * @param cacheDirectory        cache directory or {@code null}
      * @param resource              full name of the resource
      * @param overrideResourceBytes byte array to use instead of content of the resource
-     * @throws java.io.IOException if can't perform any of I/O-operations
+     * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
             @Nonnull File targetDirectory, @Nullable File cacheDirectory,
@@ -119,7 +119,7 @@ public class ResourceUtil {
      * @param resourceLoaderClass   class that will be used to load resource
      *                              or {@code null} to use {@code {@link ResourceUtil}};
      *                              ignored if {@code overrideResourceBytes} is not {@code null}
-     * @throws java.io.IOException if can't perform any of I/O-operations
+     * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
             @Nonnull File targetDirectory, @Nullable File cacheDirectory, @Nonnull String resource,
@@ -195,8 +195,7 @@ public class ResourceUtil {
 
         try {
             if (overrideResourceBytes == null) {
-                resourceInputStream = actualResourceClassLoaderClass
-                        .getResourceAsStream(resource);
+                resourceInputStream = actualResourceClassLoaderClass.getResourceAsStream(resource);
             } else {
                 resourceInputStream = new ByteArrayInputStream(overrideResourceBytes);
             }
@@ -247,7 +246,7 @@ public class ResourceUtil {
      * @param resourceLoaderClass   that will be used to load resource
      *                              or {@code null} to use {@code {@link ResourceUtil}};
      *                              ignored if {@code overrideResourceBytes} is not {@code null}
-     * @throws java.io.IOException if can't perform any of I/O-operations
+     * @throws IOException if can't perform any of I/O-operations
      */
     public static void saveResourceToFile(
             @Nonnull File targetFile, @Nullable String resource,
@@ -301,28 +300,34 @@ public class ResourceUtil {
         @Nonnull
         private final String sha1;
 
-        public CacheEntryKey(@Nonnull String resource,
-                             @Nullable byte[] overrideResourceBytes, @Nullable Class resourceLoaderClass) {
+        private CacheEntryKey(
+                @Nonnull String resource, @Nullable byte[] overrideResourceBytes, @Nullable Class resourceLoaderClass) {
             String overrideResourceBytesSha1 = overrideResourceBytes == null
                     ? StringUtils.EMPTY
                     : DigestUtils.sha1Hex(overrideResourceBytes);
+
             String resourceLoaderClassName = resourceLoaderClass == null
                     ? StringUtils.EMPTY
                     : resourceLoaderClass.getCanonicalName();
 
-            sha1 = DigestUtils.sha1Hex(resource
-                    + (char)(1) + overrideResourceBytesSha1
-                    + (char)(2) + resourceLoaderClassName);
+            sha1 = DigestUtils.sha1Hex(
+                    resource + (char) 1 + overrideResourceBytesSha1 + (char) 2 + resourceLoaderClassName
+            );
         }
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
 
-            CacheEntryKey that = (CacheEntryKey) o;
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
-            return sha1.equals(that.sha1);
+            CacheEntryKey cacheEntryKey = (CacheEntryKey) o;
+
+            return sha1.equals(cacheEntryKey.sha1);
 
         }
 
