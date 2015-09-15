@@ -162,6 +162,11 @@ public class Vector2D extends DoublePair {
         return new Vector2D(this);
     }
 
+    @Contract(value = "-> !null", pure = true)
+    public Vector2D copyNegate() {
+        return new Vector2D(-getX(), -getY());
+    }
+
     public boolean nearlyEquals(@Nonnull Vector2D vector, double epsilon) {
         return vector != null
                 && NumberUtil.nearlyEquals(getX(), vector.getX(), epsilon)

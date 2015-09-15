@@ -1,6 +1,7 @@
 package com.codeforces.commons.text;
 
 import org.apache.commons.validator.routines.UrlValidator;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,6 +53,7 @@ public class UrlUtil {
         return parameterNames;
     }
 
+    @SuppressWarnings("IfStatementWithIdenticalBranches")
     public static String removeParameterFromUrl(@Nonnull String url, @Nullable String parameterName) {
         if (!isValidUri(url) || StringUtil.isBlank(parameterName)) {
             return url;
@@ -243,6 +245,8 @@ public class UrlUtil {
         return urlValidator.isValid(url);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Contract("null -> false")
     public static boolean isValidUri(@Nullable String uri) {
         if (uri == null) {
             return false;

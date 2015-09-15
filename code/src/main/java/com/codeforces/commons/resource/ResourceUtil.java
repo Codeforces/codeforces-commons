@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +27,7 @@ public class ResourceUtil {
     private static final Logger logger = Logger.getLogger(ResourceUtil.class);
 
     private static final ConcurrentMap<File, ReadWriteLock> cacheLockByDirectory = new ConcurrentHashMap<>();
-    private static final ConcurrentMap<CacheEntryKey, Boolean> cacheEntryVerified = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<CacheKey, Boolean> validationResultByCacheKey = new ConcurrentHashMap<>();
 
     @Nonnull
     public static byte[] getResource(@Nonnull Class clazz, @Nonnull String resourceName) {
@@ -53,11 +54,7 @@ public class ResourceUtil {
 
     @Nonnull
     public static String getResourceAsString(@Nonnull Class clazz, @Nonnull String resourceName) {
-        try {
-            return new String(getResource(clazz, resourceName), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new CantReadResourceException("UTF-8 is unsupported.", e);
-        }
+        return new String(getResource(clazz, resourceName), StandardCharsets.UTF_8);
     }
 
     @Nullable
@@ -76,8 +73,9 @@ public class ResourceUtil {
      * @param resource        full name of the resource
      * @throws IOException if can't perform any of I/O-operations
      */
-    public static void copyResourceToDir(@Nonnull File targetDirectory, @Nonnull String resource) throws IOException {
-        copyResourceToDir(targetDirectory, null, resource);
+    public static void copyResourceToDir(
+            @Nonnull File targetDirectory, @Nonnull String resource, boolean useValidationCache) throws IOException {
+        copyResourceToDir(targetDirectory, null, resource, useValidationCache);
     }
 
     /**
@@ -89,9 +87,9 @@ public class ResourceUtil {
      * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
-            @Nonnull File targetDirectory, @Nullable File cacheDirectory, @Nonnull String resource)
-            throws IOException {
-        copyResourceToDir(targetDirectory, cacheDirectory, resource, null);
+            @Nonnull File targetDirectory, @Nullable File cacheDirectory, @Nonnull String resource,
+            boolean useValidationCache) throws IOException {
+        copyResourceToDir(targetDirectory, cacheDirectory, resource, null, useValidationCache);
     }
 
     /**
@@ -104,9 +102,9 @@ public class ResourceUtil {
      * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
-            @Nonnull File targetDirectory, @Nullable File cacheDirectory,
-            @Nonnull String resource, @Nullable byte[] overrideResourceBytes) throws IOException {
-        copyResourceToDir(targetDirectory, cacheDirectory, resource, overrideResourceBytes, null);
+            @Nonnull File targetDirectory, @Nullable File cacheDirectory, @Nonnull String resource,
+            @Nullable byte[] overrideResourceBytes, boolean useValidationCache) throws IOException {
+        copyResourceToDir(targetDirectory, cacheDirectory, resource, overrideResourceBytes, null, useValidationCache);
     }
 
     /**
@@ -123,7 +121,8 @@ public class ResourceUtil {
      */
     public static void copyResourceToDir(
             @Nonnull File targetDirectory, @Nullable File cacheDirectory, @Nonnull String resource,
-            @Nullable byte[] overrideResourceBytes, @Nullable Class resourceLoaderClass) throws IOException {
+            @Nullable byte[] overrideResourceBytes, @Nullable Class resourceLoaderClass, boolean useValidationCache)
+            throws IOException {
         File targetFile = new File(targetDirectory, new File(resource).getName());
 
         if (cacheDirectory == null) {
@@ -137,12 +136,14 @@ public class ResourceUtil {
                 cacheLock = cacheLockByDirectory.get(cacheDirectory);
             }
 
-            @SuppressWarnings("TooBroadScope") boolean valid;
+            boolean valid;
 
             Lock readLock = cacheLock.readLock();
             readLock.lock();
             try {
-                valid = isCacheEntryValid(cacheFile, resource, overrideResourceBytes, resourceLoaderClass);
+                valid = isCacheEntryValid(
+                        cacheFile, resource, overrideResourceBytes, resourceLoaderClass, useValidationCache
+                );
             } finally {
                 readLock.unlock();
             }
@@ -151,7 +152,9 @@ public class ResourceUtil {
                 Lock writeLock = cacheLock.writeLock();
                 writeLock.lock();
                 try {
-                    if (!isCacheEntryValid(cacheFile, resource, overrideResourceBytes, resourceLoaderClass)) {
+                    if (!isCacheEntryValid(
+                            cacheFile, resource, overrideResourceBytes, resourceLoaderClass, useValidationCache
+                    )) {
                         writeCacheEntry(cacheFile, resource, overrideResourceBytes, resourceLoaderClass);
                     }
                 } finally {
@@ -163,30 +166,30 @@ public class ResourceUtil {
                 FileUtil.createSymbolicLinkOrCopy(cacheFile, targetFile);
             } catch (IOException e) {
                 throw new IOException(String.format(
-                        "Can't create symbolic link or copy to resource '%s' in the directory '%s'.", resource, targetDirectory
+                        "Can't create symbolic link or copy resource '%s' into the directory '%s'.",
+                        resource, targetDirectory
                 ), e);
             }
         }
     }
 
     private static boolean isCacheEntryValid(
-            @Nonnull File cacheFile, @Nonnull String resource,
-            @Nullable byte[] overrideResourceBytes, @Nullable Class resourceLoaderClass) throws IOException {
+            @Nonnull File cacheFile, @Nonnull String resource, @Nullable byte[] overrideResourceBytes,
+            @Nullable Class resourceLoaderClass, boolean useValidationCache) throws IOException {
         if (!cacheFile.isFile()) {
             return false;
         }
 
         Class actualResourceClassLoaderClass = resourceLoaderClass == null ? ResourceUtil.class : resourceLoaderClass;
+        CacheKey cacheKey = new CacheKey(resource, overrideResourceBytes, resourceLoaderClass);
 
-        CacheEntryKey cacheEntryKey = new CacheEntryKey(resource, overrideResourceBytes, resourceLoaderClass);
-        Boolean verified = cacheEntryVerified.get(cacheEntryKey);
-        if (verified != null && verified) {
-            long size = Resources.asByteSource(
-                    actualResourceClassLoaderClass.getResource(resource)
-            ).size();
-
-            if (cacheFile.length() == size) {
-                return true;
+        if (useValidationCache) {
+            Boolean valid = validationResultByCacheKey.get(cacheKey);
+            if (valid != null && valid) {
+                long size = Resources.asByteSource(actualResourceClassLoaderClass.getResource(resource)).size();
+                if (cacheFile.length() == size) {
+                    return true;
+                }
             }
         }
 
@@ -194,23 +197,26 @@ public class ResourceUtil {
         InputStream cacheInputStream = null;
 
         try {
-            if (overrideResourceBytes == null) {
-                resourceInputStream = actualResourceClassLoaderClass.getResourceAsStream(resource);
-            } else {
-                resourceInputStream = new ByteArrayInputStream(overrideResourceBytes);
+            resourceInputStream = overrideResourceBytes == null ? new BufferedInputStream(
+                    actualResourceClassLoaderClass.getResourceAsStream(resource), IoUtil.BUFFER_SIZE
+            ) : new ByteArrayInputStream(overrideResourceBytes);
+
+            cacheInputStream = new BufferedInputStream(new FileInputStream(cacheFile), IoUtil.BUFFER_SIZE);
+
+            boolean valid = IOUtils.contentEquals(resourceInputStream, cacheInputStream);
+            if (valid) {
+                validationResultByCacheKey.putIfAbsent(cacheKey, true);
             }
-            cacheInputStream = new BufferedInputStream(new FileInputStream(cacheFile));
-            boolean result = IOUtils.contentEquals(resourceInputStream, cacheInputStream);
-            if (result) {
-                cacheEntryVerified.putIfAbsent(cacheEntryKey, true);
-            }
-            return result;
+
+            resourceInputStream.close();
+            cacheInputStream.close();
+
+            return valid;
         } catch (IOException e) {
+            IoUtil.closeQuietly(resourceInputStream, cacheInputStream);
             throw new IOException(String.format(
                     "Can't compare resource '%s' and cache file '%s'.", resource, cacheFile
             ), e);
-        } finally {
-            IoUtil.closeQuietly(resourceInputStream, cacheInputStream);
         }
     }
 
@@ -258,20 +264,26 @@ public class ResourceUtil {
             if (overrideResourceBytes == null) {
                 resourceInputStream = (resourceLoaderClass == null ? FileUtil.class : resourceLoaderClass)
                         .getResourceAsStream(resource);
+
                 if (resourceInputStream == null) {
                     throw new IOException("Can't find resource '" + resource + "'.");
                 }
+
                 cacheOutputStream = new BufferedOutputStream(new FileOutputStream(targetFile));
                 IoUtil.copy(resourceInputStream, cacheOutputStream);
+                resourceInputStream.close();
+                cacheOutputStream.close();
             } else {
                 FileUtil.writeFile(targetFile, overrideResourceBytes);
             }
         } catch (IOException e) {
+            IoUtil.closeQuietly(resourceInputStream, cacheOutputStream);
             throw new IOException(String.format("Can't save resource '%s' to the file '%s'.", resource, targetFile), e);
         } finally {
-            IoUtil.closeQuietly(resourceInputStream, cacheOutputStream);
             if (resource != null) {
-                cacheEntryVerified.putIfAbsent(new CacheEntryKey(resource, overrideResourceBytes, resourceLoaderClass), true);
+                validationResultByCacheKey.putIfAbsent(new CacheKey(
+                        resource, overrideResourceBytes, resourceLoaderClass
+                ), true);
             }
         }
     }
@@ -296,11 +308,11 @@ public class ResourceUtil {
         return resource;
     }
 
-    private static final class CacheEntryKey {
+    private static final class CacheKey {
         @Nonnull
         private final String sha1;
 
-        private CacheEntryKey(
+        private CacheKey(
                 @Nonnull String resource, @Nullable byte[] overrideResourceBytes, @Nullable Class resourceLoaderClass) {
             String overrideResourceBytesSha1 = overrideResourceBytes == null
                     ? StringUtils.EMPTY
@@ -325,9 +337,9 @@ public class ResourceUtil {
                 return false;
             }
 
-            CacheEntryKey cacheEntryKey = (CacheEntryKey) o;
+            CacheKey cacheKey = (CacheKey) o;
 
-            return sha1.equals(cacheEntryKey.sha1);
+            return sha1.equals(cacheKey.sha1);
 
         }
 

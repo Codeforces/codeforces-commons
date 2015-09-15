@@ -900,10 +900,12 @@ public class FileUtil {
                     FileSystems.getDefault().getPath(source.getAbsolutePath())
             );
         } catch (UnsupportedOperationException ignored) {
-            if (source.isFile()) {
+            if (isFile(source)) {
                 UnsafeFileUtil.copyFile(source, target);
-            } else {
+            } else if (isDirectory(source)) {
                 UnsafeFileUtil.copyDirectory(source, target);
+            } else {
+                throw new IOException("Unexpected source '" + source + "'.");
             }
         }
     }
