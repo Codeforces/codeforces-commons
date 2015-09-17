@@ -1,5 +1,8 @@
 package com.codeforces.commons.collection;
 
+import org.jetbrains.annotations.Contract;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -11,18 +14,22 @@ public class CollectionUtil {
         throw new UnsupportedOperationException();
     }
 
+    @Contract("null -> true")
     public static boolean isEmpty(@Nullable Collection collection) {
         return collection == null || collection.isEmpty();
     }
 
+    @Contract("null, null -> true; null, !null -> false; !null, null -> false")
     public static boolean equals(@Nullable Collection collectionA, @Nullable Collection collectionB) {
         return collectionA == null ? collectionB == null : collectionA.equals(collectionB);
     }
 
+    @Contract("null, null -> true")
     public static boolean equalsOrEmpty(@Nullable Collection collectionA, @Nullable Collection collectionB) {
         return isEmpty(collectionA) ? isEmpty(collectionB) : collectionA.equals(collectionB);
     }
 
+    @Nonnull
     public static String toString(@Nullable Collection<?> collection) {
         StringBuilder result = new StringBuilder();
 
@@ -42,6 +49,7 @@ public class CollectionUtil {
         return result.toString();
     }
 
+    @Nonnull
     public static String toString(@Nullable Map<?, ?> map) {
         StringBuilder result = new StringBuilder();
 
@@ -169,6 +177,14 @@ public class CollectionUtil {
         }
 
         return newMap;
+    }
+
+    public static <E> boolean addAll(Collection<E> collection, E[] array) {
+        boolean modified = false;
+        for (int i = 0, length = array.length; i < length; ++i) {
+            modified |= collection.add(array[i]);
+        }
+        return modified;
     }
 
     public interface Converter<T1, T2> {
