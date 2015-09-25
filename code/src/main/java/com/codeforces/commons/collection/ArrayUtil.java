@@ -99,6 +99,10 @@ public class ArrayUtil {
     }
 
     public static int getDimensionCount(@Nonnull Object arrayObject) {
+        if (arrayObject instanceof Class) {
+            return getDimensionCount((Class) arrayObject);
+        }
+
         return getDimensionCount(arrayObject.getClass());
     }
 
@@ -111,6 +115,10 @@ public class ArrayUtil {
     }
 
     public static Class getComponentType(@Nonnull Object arrayObject) {
+        if (arrayObject instanceof Class) {
+            return getComponentType((Class) arrayObject);
+        }
+
         return getComponentType(arrayObject.getClass());
     }
 }
