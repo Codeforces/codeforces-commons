@@ -169,32 +169,34 @@ public class ReflectionUtil {
 
         if (fieldsByName == null) {
             fieldsByName = new LinkedHashMap<>();
-            Class tempClass = clazz;
 
-            while (tempClass != null) {
-                for (Field field : tempClass.getDeclaredFields()) {
-                    if (field.isEnumConstant() || Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
-                        continue;
-                    }
+            Class superclass = clazz.getSuperclass();
+            if (superclass != null) {
+                fieldsByName.putAll(getFieldsByNameMap(superclass));
+            }
 
-                    Name nameAnnotation = field.getAnnotation(Name.class);
-                    String fieldName = nameAnnotation == null ? field.getName() : nameAnnotation.value();
-                    List<Field> fields = fieldsByName.get(fieldName);
-
-                    if (fields == null) {
-                        fields = new ArrayList<>(1);
-                    } else {
-                        List<Field> tempFields = fields;
-                        fields = new ArrayList<>(tempFields.size() + 1);
-                        fields.addAll(tempFields);
-                    }
-
-                    field.setAccessible(true);
-                    fields.add(field);
-                    fieldsByName.put(fieldName, Collections.unmodifiableList(fields));
+            for (Field field : clazz.getDeclaredFields()) {
+                if (field.isEnumConstant() || Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
+                    continue;
                 }
 
-                tempClass = tempClass.getSuperclass();
+                field.setAccessible(true);
+
+                Name nameAnnotation = field.getAnnotation(Name.class);
+                String fieldName = nameAnnotation == null ? field.getName() : nameAnnotation.value();
+                List<Field> fields = fieldsByName.get(fieldName);
+
+                if (fields == null) {
+                    fields = new ArrayList<>(1);
+                    fields.add(field);
+                } else {
+                    List<Field> tempFields = fields;
+                    fields = new ArrayList<>(tempFields.size() + 1);
+                    fields.add(field);
+                    fields.addAll(tempFields);
+                }
+
+                fieldsByName.put(fieldName, Collections.unmodifiableList(fields));
             }
 
             fieldsByNameByClass.putIfAbsent(clazz, Collections.unmodifiableMap(fieldsByName));
