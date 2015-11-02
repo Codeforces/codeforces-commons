@@ -5,6 +5,7 @@ import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,9 +35,10 @@ public class PropertiesUtil {
                                      String defaultValue, String... resourceNames) throws CantReadResourceException {
         for (String resourceName : resourceNames) {
             Properties properties;
+
             try {
                 properties = ensurePropertiesByResourceName(resourceName);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 String message = String.format("Can't read properties from resource '%s'.", resourceName);
                 if (throwOnFileReadError) {
                     logger.error(message, e);
@@ -82,13 +84,18 @@ public class PropertiesUtil {
         return getListProperty(false, propertyName, defaultValue, resourceNames);
     }
 
+    @Nonnull
     private static Properties ensurePropertiesByResourceName(String resourceName) throws IOException {
         Properties properties = propertiesByResourceName.get(resourceName);
 
         if (properties == null) {
             properties = new Properties();
             try (InputStream inputStream = PropertiesUtil.class.getResourceAsStream(resourceName)) {
-                properties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                if (inputStream != null) {
+                    properties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                } else {
+                    logger.warn(String.format("Can't find resource file '%s'.", resourceName));
+                }
             }
             propertiesByResourceName.putIfAbsent(resourceName, properties);
             properties = propertiesByResourceName.get(resourceName);
