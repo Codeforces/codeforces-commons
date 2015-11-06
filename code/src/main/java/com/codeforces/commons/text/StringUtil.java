@@ -8,6 +8,7 @@ import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.pair.SimplePair;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.reflection.ReflectionUtil;
+import com.google.common.base.Preconditions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -276,7 +277,7 @@ public final class StringUtil {
         return s == null ? defaultValue : s;
     }
 
-    @Contract("null -> null")
+    @Contract(value = "null -> null; !null -> !null", pure = true)
     @Nullable
     public static String trim(@Nullable String s) {
         if (s == null) {
@@ -298,18 +299,19 @@ public final class StringUtil {
         return beginIndex == 0 && endIndex == lastIndex ? s : s.substring(beginIndex, endIndex + 1);
     }
 
-    @Contract("null -> null")
+    @Contract(value = "null -> null", pure = true)
     @Nullable
     public static String trimToNull(@Nullable String s) {
         return s == null ? null : (s = trim(s)).isEmpty() ? null : s;
     }
 
+    @Contract(pure = true)
     @Nonnull
     public static String trimToEmpty(@Nullable String s) {
         return s == null ? "" : trim(s);
     }
 
-    @Contract("null -> null")
+    @Contract(value = "null -> null; !null -> !null", pure = true)
     @Nullable
     public static String trimRight(@Nullable String s) {
         if (s == null) {
@@ -326,18 +328,19 @@ public final class StringUtil {
         return endIndex == lastIndex ? s : s.substring(0, endIndex + 1);
     }
 
-    @Contract("null -> null")
+    @Contract(value = "null -> null", pure = true)
     @Nullable
     public static String trimRightToNull(@Nullable String s) {
         return s == null ? null : (s = trimRight(s)).isEmpty() ? null : s;
     }
 
+    @Contract(pure = true)
     @Nonnull
     public static String trimRightToEmpty(@Nullable String s) {
         return s == null ? "" : trimRight(s);
     }
 
-    @Contract("null -> null")
+    @Contract(value = "null -> null; !null -> !null", pure = true)
     @Nullable
     public static String trimLeft(@Nullable String s) {
         if (s == null) {
@@ -354,12 +357,13 @@ public final class StringUtil {
         return beginIndex == 0 ? s : s.substring(beginIndex, lastIndex + 1);
     }
 
-    @Contract("null -> null")
+    @Contract(value = "null -> null", pure = true)
     @Nullable
     public static String trimLeftToNull(@Nullable String s) {
         return s == null ? null : (s = trimLeft(s)).isEmpty() ? null : s;
     }
 
+    @Contract(pure = true)
     @Nonnull
     public static String trimLeftToEmpty(@Nullable String s) {
         return s == null ? "" : trimLeft(s);
@@ -419,6 +423,7 @@ public final class StringUtil {
     }
 
     @Contract(value = "null, _, _ -> null; !null, _, _ -> !null", pure = true)
+    @Nullable
     public static String replace(@Nullable String s, @Nullable String target, @Nullable String replacement) {
         if (isEmpty(s) || isEmpty(target) || replacement == null) {
             return s;
@@ -595,7 +600,8 @@ public final class StringUtil {
     }
 
     @SuppressWarnings({"AccessingNonPublicFieldOfAnotherObject", "OverlyComplexMethod"})
-    private static boolean shouldSkipField(String stringValue, ToStringOptions options, Mutable<Boolean> quoted) {
+    private static boolean shouldSkipField(
+            @Nullable String stringValue, ToStringOptions options, Mutable<Boolean> quoted) {
         if (options.skipNulls && stringValue == null) {
             return true;
         }
@@ -614,7 +620,7 @@ public final class StringUtil {
 
         if (options.skipBlankStrings) {
             if (quoted != null && quoted.get() != null && quoted.get()) {
-                if (isBlank(stringValue.substring(1, stringValue.length() - 1))) {
+                if (isBlank(stringValue) || isBlank(stringValue.substring(1, stringValue.length() - 1))) {
                     return true;
                 }
             } else {
@@ -858,6 +864,9 @@ public final class StringUtil {
             result.append(itemSeparator);
         }
 
+        Preconditions.checkNotNull(previousNumber);
+        Preconditions.checkNotNull(intervalStart);
+
         if (previousNumber > intervalStart) {
             result.append(intervalStart).append(intervalSeparator).append(previousNumber);
         } else {
@@ -998,7 +1007,9 @@ public final class StringUtil {
      * Removes middle part and inserts "..." instead of it if needed.
      * Returns {@code null} iff {@code s} is {@code null}.
      */
-    public static String shrinkTo(String s, int maxLength) {
+    @Contract(pure = true)
+    @Nullable
+    public static String shrinkTo(@Nullable String s, int maxLength) {
         if (maxLength < 8) {
             throw new IllegalArgumentException("Argument maxLength is expected to be at least 8.");
         }
@@ -1348,8 +1359,9 @@ public final class StringUtil {
      * @return escaped string
      */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "SwitchStatementWithTooManyBranches"})
-    @Contract("null -> null")
-    public static String escapeMySqlString(String s) {
+    @Contract(value = "null -> null; !null -> !null", pure = true)
+    @Nullable
+    public static String escapeMySqlString(@Nullable String s) {
         if (s == null) {
             return null;
         }
@@ -1400,8 +1412,9 @@ public final class StringUtil {
     }
 
     @SuppressWarnings({"IfStatementWithIdenticalBranches", "OverlyComplexMethod"})
-    @Contract("null -> null")
-    public static byte[] removeBoms(byte[] bytes) {
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static byte[] removeBoms(@Nullable byte[] bytes) {
         int byteCount;
 
         if (bytes == null || (byteCount = bytes.length) == 0) {
