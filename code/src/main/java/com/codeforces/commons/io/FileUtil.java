@@ -7,6 +7,7 @@ import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -157,7 +158,8 @@ public class FileUtil {
      * @return created directory
      * @throws IOException if directory does not exist and can't be created
      */
-    public static File ensureParentDirectoryExists(File file) throws IOException {
+    @Nullable
+    public static File ensureParentDirectoryExists(@Nonnull File file) throws IOException {
         final File directory = file.getParentFile();
         if (directory == null) {
             return null;
@@ -673,7 +675,9 @@ public class FileUtil {
         return file;
     }
 
-    public static File hideFileQuietly(File file) {
+    @Contract(value = "null -> null; !null -> !null", pure = false)
+    @Nullable
+    public static File hideFileQuietly(@Nullable File file) {
         try {
             if (file != null && file.exists()) {
                 hideFile(file);
@@ -736,16 +740,16 @@ public class FileUtil {
 
         if (fileA.isDirectory() && fileB.isDirectory()) {
             File[] childrenA = fileA.listFiles();
-            int childACount = childrenA.length;
+            int childACount = ArrayUtils.getLength(childrenA);
 
-            if (childACount != fileB.listFiles().length) {
+            if (childACount != ArrayUtils.getLength(fileB.listFiles())) {
                 return false;
             }
 
             boolean equals = true;
 
             for (int childIndex = 0; childIndex < childACount; ++childIndex) {
-                File childA = childrenA[childIndex];
+                @SuppressWarnings("ConstantConditions") File childA = childrenA[childIndex];
                 File childB = fileB instanceof TFile
                         ? new TFile(fileB, childA.getName())
                         : new File(fileB, childA.getName());
@@ -827,6 +831,7 @@ public class FileUtil {
         }
     }
 
+    @SuppressWarnings({"AccessingNonPublicFieldOfAnotherObject", "AccessOfSystemProperties"})
     public static FirstBytes concatenate(FirstBytes first, FirstBytes second) {
         if (ArrayUtils.isEmpty(first.bytes)) {
             return second;
@@ -853,6 +858,7 @@ public class FileUtil {
         return new FirstBytes(first.isTruncated() || second.isTruncated(), result);
     }
 
+    @SuppressWarnings({"AccessingNonPublicFieldOfAnotherObject", "ForLoopWithMissingComponent", "AssignmentToForLoopParameter"})
     public static FirstBytes removeLinesStartingWith(FirstBytes lines, byte[] prefix) {
         if (ArrayUtils.isEmpty(lines.bytes)) {
             return lines;

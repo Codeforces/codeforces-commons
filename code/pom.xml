@@ -94,12 +94,12 @@
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-driver-zip</artifactId>
-            <version>7.7.8</version>
+            <version>7.7.9</version>
         </dependency>
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-file</artifactId>
-            <version>7.7.8</version>
+            <version>7.7.9</version>
         </dependency>
         <dependency>
             <groupId>fi.iki.elonen</groupId>

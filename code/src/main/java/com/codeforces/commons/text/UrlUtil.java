@@ -232,10 +232,12 @@ public class UrlUtil {
         return urlPostfix == null ? urlPrefix : urlPrefix + urlPostfix;
     }
 
+    @Contract("null -> false")
     public static boolean isValidUrl(@Nullable String url) {
         return isValidUrl(url, ALLOWED_SCHEMES);
     }
 
+    @Contract("null, _ -> false")
     public static boolean isValidUrl(@Nullable String url, String[] allowedSchemes) {
         if (StringUtil.isBlank(url)) {
             return false;
@@ -260,6 +262,7 @@ public class UrlUtil {
         }
     }
 
+    @Contract("null -> null")
     @Nullable
     public static String extractFileName(@Nullable String url) {
         if (!isValidUrl(url)) {
@@ -274,6 +277,8 @@ public class UrlUtil {
         }
     }
 
+    @Contract(value = "null, _ -> null; _, null -> null", pure = true)
+    @Nullable
     private static String removeParameterFromQuery(@Nullable String query, @Nullable String parameterName) {
         if (StringUtil.isBlank(query) || StringUtil.isBlank(parameterName)) {
             return query;

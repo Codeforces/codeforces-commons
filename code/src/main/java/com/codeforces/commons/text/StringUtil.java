@@ -1058,6 +1058,7 @@ public final class StringUtil {
         return result;
     }
 
+    @Contract("!null, _, _ -> !null")
     @Nullable
     public static String[] shrinkLinesTo(String[] lines, int maxLineLength, int maxLineCount) {
         if (maxLineCount < 3) {

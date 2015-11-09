@@ -7,6 +7,7 @@ import org.apache.commons.math3.util.MathArrays;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.codeforces.commons.math.Math.*;
 
@@ -34,7 +35,8 @@ public class Vector2D extends DoublePair {
     }
 
     public double getX() {
-        return getFirst();
+        Double x = getFirst();
+        return x == null ? 0.0D : x;
     }
 
     public void setX(double x) {
@@ -42,7 +44,8 @@ public class Vector2D extends DoublePair {
     }
 
     public double getY() {
-        return getSecond();
+        Double y = getSecond();
+        return y == null ? 0.0D : y;
     }
 
     public void setY(double y) {
@@ -167,13 +170,15 @@ public class Vector2D extends DoublePair {
         return new Vector2D(-getX(), -getY());
     }
 
-    public boolean nearlyEquals(@Nonnull Vector2D vector, double epsilon) {
+    @Contract("null, _ -> false")
+    public boolean nearlyEquals(@Nullable Vector2D vector, double epsilon) {
         return vector != null
                 && NumberUtil.nearlyEquals(getX(), vector.getX(), epsilon)
                 && NumberUtil.nearlyEquals(getY(), vector.getY(), epsilon);
     }
 
-    public boolean nearlyEquals(@Nonnull Vector2D vector) {
+    @Contract("null -> false")
+    public boolean nearlyEquals(@Nullable Vector2D vector) {
         return nearlyEquals(vector, DEFAULT_EPSILON);
     }
 

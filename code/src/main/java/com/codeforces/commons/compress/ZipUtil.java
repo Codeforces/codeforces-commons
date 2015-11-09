@@ -780,11 +780,12 @@ public final class ZipUtil {
     @SuppressWarnings("OverlyLongMethod")
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
             File zipFile, int maxLength, int maxEntryLineCount, int maxEntryLineLength,
-            String entryListHeaderPattern, String entryListItemPattern,
-            String entryListItemSeparatorPattern, String entryListCloserPattern,
-            String entryContentHeaderPattern, String entryContentLinePattern,
-            String entryContentLineSeparatorPattern, String entryContentCloserPattern,
-            String binaryEntryContentPlaceholderPattern, String emptyZipFilePlaceholderPattern) throws IOException {
+            @Nullable String entryListHeaderPattern, @Nullable String entryListItemPattern,
+            @Nullable String entryListItemSeparatorPattern, @Nullable String entryListCloserPattern,
+            @Nullable String entryContentHeaderPattern, @Nullable String entryContentLinePattern,
+            @Nullable String entryContentLineSeparatorPattern, @Nullable String entryContentCloserPattern,
+            @Nullable String binaryEntryContentPlaceholderPattern, @Nullable String emptyZipFilePlaceholderPattern)
+            throws IOException {
         entryListHeaderPattern = StringUtil.nullToDefault(entryListHeaderPattern, "ZIP-file entries {\n");
         entryListItemPattern = StringUtil.nullToDefault(entryListItemPattern, "    %3$03d. %1$s (%2$d B)");
         entryListItemSeparatorPattern = StringUtil.nullToDefault(entryListItemSeparatorPattern, "\n");

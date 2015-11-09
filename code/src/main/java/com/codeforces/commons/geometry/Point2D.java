@@ -6,6 +6,7 @@ import com.codeforces.commons.text.StringUtil;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.codeforces.commons.math.Math.hypot;
 import static com.codeforces.commons.math.Math.sumSqr;
@@ -26,7 +27,8 @@ public class Point2D extends DoublePair {
     }
 
     public double getX() {
-        return getFirst();
+        Double x = getFirst();
+        return x == null ? 0.0D : x;
     }
 
     public void setX(double x) {
@@ -34,7 +36,8 @@ public class Point2D extends DoublePair {
     }
 
     public double getY() {
-        return getSecond();
+        Double y = getSecond();
+        return y == null ? 0.0D : y;
     }
 
     public void setY(double y) {
@@ -86,13 +89,15 @@ public class Point2D extends DoublePair {
         return new Point2D(this);
     }
 
-    public boolean nearlyEquals(@Nonnull Point2D point, double epsilon) {
+    @Contract("null, _ -> false")
+    public boolean nearlyEquals(@Nullable Point2D point, double epsilon) {
         return point != null
                 && NumberUtil.nearlyEquals(getX(), point.getX(), epsilon)
                 && NumberUtil.nearlyEquals(getY(), point.getY(), epsilon);
     }
 
-    public boolean nearlyEquals(@Nonnull Point2D point) {
+    @Contract("null -> false")
+    public boolean nearlyEquals(@Nullable Point2D point) {
         return nearlyEquals(point, DEFAULT_EPSILON);
     }
 

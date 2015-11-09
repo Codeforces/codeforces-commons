@@ -295,6 +295,10 @@ public final class NumberUtil {
             return numberB == null;
         }
 
+        if (numberB == null) {
+            return false;
+        }
+
         if (numberA.equals(numberB)) {
             return true;
         }
@@ -312,6 +316,10 @@ public final class NumberUtil {
     public static boolean nearlyEquals(@Nullable Double numberA, @Nullable Double numberB, double epsilon) {
         if (numberA == null) {
             return numberB == null;
+        }
+
+        if (numberB == null) {
+            return false;
         }
 
         if (numberA.equals(numberB)) {
