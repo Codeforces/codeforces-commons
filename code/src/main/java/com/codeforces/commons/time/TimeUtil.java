@@ -1,6 +1,7 @@
 package com.codeforces.commons.time;
 
 import com.codeforces.commons.math.NumberUtil;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,6 +51,7 @@ public class TimeUtil {
     public static final long NANOSECONDS_PER_DAY = NANOSECONDS_PER_HOUR * HOURS_PER_DAY;
     public static final long NANOSECONDS_PER_WEEK = NANOSECONDS_PER_DAY * DAYS_PER_WEEK;
 
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static Date toDate(@Nullable Date date) {
         return date == null ? null : new Date(date.getTime());
