@@ -1,1 +1,0 @@
-mvn -Dfile.encoding=UTF-8 clean install clean --batch-mode %*
