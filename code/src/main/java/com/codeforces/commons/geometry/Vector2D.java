@@ -30,6 +30,14 @@ public class Vector2D extends DoublePair {
         super(point2.getX() - point1.getX(), point2.getY() - point1.getY());
     }
 
+    public Vector2D(@Nonnull Point2D point1, double x2, double y2) {
+        super(x2 - point1.getX(), y2 - point1.getY());
+    }
+
+    public Vector2D(double x1, double y1, @Nonnull Point2D point2) {
+        super(point2.getX() - x1, point2.getY() - y1);
+    }
+
     public Vector2D(@Nonnull Vector2D vector) {
         super(vector.getX(), vector.getY());
     }
@@ -91,6 +99,28 @@ public class Vector2D extends DoublePair {
 
         setX(x * cos - y * sin);
         setY(x * sin + y * cos);
+
+        return this;
+    }
+
+    @SuppressWarnings("SuspiciousNameCombination")
+    public Vector2D rotateHalfPi() {
+        double x = getX();
+        double y = getY();
+
+        setX(-y);
+        setY(x);
+
+        return this;
+    }
+
+    @SuppressWarnings("SuspiciousNameCombination")
+    public Vector2D rotateMinusHalfPi() {
+        double x = getX();
+        double y = getY();
+
+        setX(y);
+        setY(-x);
 
         return this;
     }
