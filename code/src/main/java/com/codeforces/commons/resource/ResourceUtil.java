@@ -69,8 +69,10 @@ public class ResourceUtil {
     /**
      * Copies resource to the target directory.
      *
-     * @param targetDirectory directory to copy file to, should exist
-     * @param resource        full name of the resource
+     * @param targetDirectory    directory to copy file to, should exist
+     * @param resource           full name of the resource
+     * @param useValidationCache {@code true} iff the specified resource should be validated only once
+     *                           per application run
      * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
@@ -81,9 +83,11 @@ public class ResourceUtil {
     /**
      * Copies resource to the target directory or creates a symbolic link to the corresponding cache entry.
      *
-     * @param targetDirectory directory to copy file to, should exist
-     * @param cacheDirectory  cache directory or {@code null}
-     * @param resource        full name of the resource
+     * @param targetDirectory    directory to copy file to, should exist
+     * @param cacheDirectory     cache directory or {@code null}
+     * @param resource           full name of the resource
+     * @param useValidationCache {@code true} iff the specified resource should be validated only once
+     *                           per application run
      * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
@@ -99,6 +103,8 @@ public class ResourceUtil {
      * @param cacheDirectory        cache directory or {@code null}
      * @param resource              full name of the resource
      * @param overrideResourceBytes byte array to use instead of content of the resource
+     * @param useValidationCache    {@code true} iff the specified resource should be validated only once
+     *                              per application run
      * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
@@ -117,6 +123,8 @@ public class ResourceUtil {
      * @param resourceLoaderClass   class that will be used to load resource
      *                              or {@code null} to use {@code {@link ResourceUtil}};
      *                              ignored if {@code overrideResourceBytes} is not {@code null}
+     * @param useValidationCache    {@code true} iff the specified resource should be validated only once
+     *                              per application run
      * @throws IOException if can't perform any of I/O-operations
      */
     public static void copyResourceToDir(
@@ -340,7 +348,6 @@ public class ResourceUtil {
             CacheKey cacheKey = (CacheKey) o;
 
             return sha1.equals(cacheKey.sha1);
-
         }
 
         @Override
