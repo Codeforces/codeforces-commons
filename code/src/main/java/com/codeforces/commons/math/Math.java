@@ -325,12 +325,12 @@ public final class Math {
     }
 
     @Contract(pure = true)
-    public static float round(float value) {
+    public static int round(float value) {
         return java.lang.Math.round(value);
     }
 
     @Contract(pure = true)
-    public static double round(double value) {
+    public static long round(double value) {
         return java.lang.Math.round(value);
     }
 
