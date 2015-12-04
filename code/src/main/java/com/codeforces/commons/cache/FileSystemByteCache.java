@@ -3,9 +3,12 @@ package com.codeforces.commons.cache;
 import com.codeforces.commons.compress.ZipUtil;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.text.StringUtil;
+import com.google.common.base.Preconditions;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
@@ -34,15 +37,28 @@ public class FileSystemByteCache extends ByteCache {
     private final File directory;
     private final File tempDirectory;
     private final boolean useCompression;
+    private final long minFreeSpace;
 
-    public FileSystemByteCache(File directory, boolean useCompression) {
+    public FileSystemByteCache(@Nonnull File directory, boolean useCompression) {
         this(directory, useCompression, true);
     }
 
-    public FileSystemByteCache(File directory, boolean useCompression, boolean validateOnCreate) {
+    public FileSystemByteCache(@Nonnull File directory, boolean useCompression, boolean validateOnCreate) {
+        this(directory, useCompression, validateOnCreate, 0);
+    }
+
+    public FileSystemByteCache(
+            @Nonnull File directory, boolean useCompression, boolean validateOnCreate, @Nonnegative long minFreeSpace) {
+        Preconditions.checkNotNull(directory, "Argument 'directory' is null.");
+        Preconditions.checkArgument(minFreeSpace >= 0, String.format(
+                "Argument 'minFreeSpace' must be a nonnegative long integer, but got %d.", minFreeSpace
+        ));
+
         this.directory = directory;
         this.tempDirectory = new File(directory, TEMP_DIR_NAME);
         this.useCompression = useCompression;
+        this.minFreeSpace = minFreeSpace;
+
         if (validateOnCreate && !validate()) {
             throw new IllegalArgumentException("Can't validate cache.");
         }
@@ -85,6 +101,7 @@ public class FileSystemByteCache extends ByteCache {
         internalPut(section, key, value, lifetimeMillis, false);
     }
 
+    @Contract("_, _, null, _, _ -> fail")
     private void internalPut(String section, String key, byte[] value, long lifetimeMillis, boolean overwrite) {
         if (value == null) {
             throw new IllegalArgumentException(String.format(
@@ -99,6 +116,10 @@ public class FileSystemByteCache extends ByteCache {
         }
 
         if (!overwrite && contains(section, key)) {
+            return;
+        }
+
+        if (minFreeSpace > 0 && directory.getFreeSpace() - value.length < minFreeSpace) {
             return;
         }
 
@@ -242,7 +263,12 @@ public class FileSystemByteCache extends ByteCache {
     @Override
     public void clear() {
         try {
-            for (File file : directory.listFiles()) {
+            File[] files = directory.listFiles();
+            if (files == null) {
+                return;
+            }
+
+            for (File file : files) {
                 if (TEMP_DIR_NAME.equalsIgnoreCase(file.getName())) {
                     FileUtil.cleanDirectory(file);
                 } else {
@@ -265,7 +291,9 @@ public class FileSystemByteCache extends ByteCache {
 
     @Override
     public String toString() {
-        return StringUtil.toString(this, false, "directory", "useCompression");
+        return minFreeSpace > 0
+                ? StringUtil.toString(this, false, "directory", "useCompression", "minFreeSpace")
+                : StringUtil.toString(this, false, "directory", "useCompression");
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")

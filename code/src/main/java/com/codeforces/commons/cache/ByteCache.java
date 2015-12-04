@@ -1,10 +1,12 @@
 package com.codeforces.commons.cache;
 
 import com.codeforces.commons.text.StringUtil;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * All methods of this class throws {@code {@link IllegalArgumentException}} if either section or key
@@ -14,8 +16,9 @@ import java.nio.charset.Charset;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 14.02.2011
  */
+@SuppressWarnings("ConstantConditions")
 public abstract class ByteCache extends Cache<String, byte[]> {
-    private static final Charset STRING_ENCODING = Charset.forName("UTF-8");
+    private static final Charset STRING_ENCODING = StandardCharsets.UTF_8;
 
     protected ByteCache() {
     }
@@ -161,6 +164,7 @@ public abstract class ByteCache extends Cache<String, byte[]> {
         return bytes == null ? null : new String(bytes, STRING_ENCODING);
     }
 
+    @Contract(pure = true)
     private static boolean isValidChar(char c) {
         return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
                 || c == '0' || c >= '1' && c <= '9'
@@ -170,8 +174,8 @@ public abstract class ByteCache extends Cache<String, byte[]> {
     }
 
     protected static void ensureCacheSectionName(@Nonnull String section) {
-        if (StringUtil.isEmpty(section)) {
-            throw new IllegalArgumentException("Argument 'section' can't be 'null' or empty.");
+        if (StringUtil.isBlank(section)) {
+            throw new IllegalArgumentException("Argument 'section' can't be blank.");
         }
 
         for (char c : section.toCharArray()) {
@@ -185,8 +189,8 @@ public abstract class ByteCache extends Cache<String, byte[]> {
     }
 
     protected static void ensureCacheKeyName(@Nonnull String key) {
-        if (StringUtil.isEmpty(key)) {
-            throw new IllegalArgumentException("Argument 'key' can't be 'null' or empty.");
+        if (StringUtil.isBlank(key)) {
+            throw new IllegalArgumentException("Argument 'key' can't be blank.");
         }
 
         for (char c : key.toCharArray()) {
