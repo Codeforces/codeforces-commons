@@ -3,6 +3,7 @@ package com.codeforces.commons.cache.util;
 import com.codeforces.commons.cache.ByteCache;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matchers;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -107,10 +108,20 @@ class LoggingByteCache extends ByteCache {
         @Override
         protected void configure() {
             bindInterceptor(
-                    Matchers.only(LoggingByteCache.class), Matchers.annotatedWith(LogPerformance.class),
+                    Matchers.only(LoggingByteCache.class),
+                    new AbstractMatcher<Method>() {
+                        @Override
+                        public boolean matches(Method method) {
+                            return !method.isSynthetic();
+                        }
+                    }.and(Matchers.annotatedWith(LogPerformance.class)),
                     new MethodInterceptor() {
                         @Override
                         public Object invoke(MethodInvocation invocation) throws Throwable {
+                            if (!logger.isInfoEnabled()) {
+                                return invocation.proceed();
+                            }
+
                             LoggingByteCache loggingByteCache = (LoggingByteCache) invocation.getThis();
                             String internalCacheAsString = String.valueOf(loggingByteCache.cache);
 
@@ -183,6 +194,7 @@ class LoggingByteCache extends ByteCache {
                             }
                         }
 
+                        @Nonnull
                         private String toSimpleString(Object o) {
                             if (o == null) {
                                 return "null";
