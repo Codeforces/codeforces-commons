@@ -602,6 +602,7 @@ public class FileUtil {
      * @param file File to check.
      * @return {@code true} iff specified file is not {@code null} and is file.
      */
+    @Contract("null -> false")
     public static boolean isFile(@Nullable File file) {
         return file != null && file.isFile();
     }
@@ -612,6 +613,7 @@ public class FileUtil {
      * @param file File to check.
      * @return {@code true} iff specified file is not {@code null} and is directory.
      */
+    @Contract("null -> false")
     public static boolean isDirectory(@Nullable File file) {
         return file != null && file.isDirectory();
     }
@@ -622,6 +624,7 @@ public class FileUtil {
      * @param file File to check.
      * @return {@code true} iff specified file is not {@code null} and exists.
      */
+    @Contract("null -> false")
     public static boolean exists(@Nullable File file) {
         return file != null && file.exists();
     }

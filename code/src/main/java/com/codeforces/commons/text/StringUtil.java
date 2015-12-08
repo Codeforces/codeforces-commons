@@ -1007,7 +1007,7 @@ public final class StringUtil {
      * Removes middle part and inserts "..." instead of it if needed.
      * Returns {@code null} iff {@code s} is {@code null}.
      */
-    @Contract(pure = true)
+    @Contract(value = "!null, _ -> !null", pure = true)
     @Nullable
     public static String shrinkTo(@Nullable String s, int maxLength) {
         if (maxLength < 8) {
