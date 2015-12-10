@@ -84,6 +84,7 @@ public class ThreadUtil {
         }
     }
 
+    @Nullable
     public static <T> T execute(Operation<T> operation, int attemptCount, ExecutionStrategy strategy) throws Throwable {
         ensureArguments(operation, attemptCount, strategy);
 
@@ -173,6 +174,7 @@ public class ThreadUtil {
     }
 
     public interface Operation<T> {
+        @Nullable
         T run() throws Throwable;
     }
 
@@ -187,13 +189,15 @@ public class ThreadUtil {
     public static class ExecutionStrategy {
         private final long delayTimeMillis;
         private final Type type;
+
+        @Nullable
         private final UnsuccessHandler unsuccessHandler;
 
         public ExecutionStrategy(long delayTimeMillis, Type type) {
             this(delayTimeMillis, type, null);
         }
 
-        public ExecutionStrategy(long delayTimeMillis, Type type, UnsuccessHandler unsuccessHandler) {
+        public ExecutionStrategy(long delayTimeMillis, Type type, @Nullable UnsuccessHandler unsuccessHandler) {
             ensureArguments(delayTimeMillis, type);
 
             this.delayTimeMillis = delayTimeMillis;
@@ -239,6 +243,7 @@ public class ThreadUtil {
         /**
          * @return Returns action to be executed after each unsuccessful attempt to execute operation.
          */
+        @Nullable
         public UnsuccessHandler getUnsuccessHandler() {
             return unsuccessHandler;
         }
