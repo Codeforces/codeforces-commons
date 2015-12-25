@@ -73,7 +73,7 @@ public class IoUtil {
         }
     }
 
-    public static String toString(InputStream inputStream, String charsetName) throws IOException {
+    public static String toString(InputStream inputStream, @Nullable String charsetName) throws IOException {
         try {
             String s = IOUtils.toString(inputStream, charsetName);
             inputStream.close();
@@ -84,7 +84,7 @@ public class IoUtil {
         }
     }
 
-    public static String toString(InputStream inputStream, Charset charset) throws IOException {
+    public static String toString(InputStream inputStream, @Nullable Charset charset) throws IOException {
         try {
             String s = IOUtils.toString(inputStream, charset);
             inputStream.close();

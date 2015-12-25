@@ -5,6 +5,7 @@ import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Contract;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
@@ -44,10 +45,10 @@ public final class XmlUtil {
      * @param xmlFile XML to be scanned.
      * @param xPath   XPath expression.
      * @param clazz   {@link Boolean}, {@link String}, {@link Integer}, {@link Double},
-     *                {@link org.w3c.dom.NodeList} and {@link org.w3c.dom.Node} classes are supported now.
+     *                {@link NodeList} and {@link Node} classes are supported now.
      * @param <T>     Return type.
      * @return Return value.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static <T> T extractFromXml(@Nonnull final File xmlFile, final String xPath, final Class<T> clazz)
             throws IOException {
@@ -72,10 +73,10 @@ public final class XmlUtil {
      * @param xmlInputStream XML to be scanned.
      * @param xPath          XPath expression.
      * @param clazz          {@link Boolean}, {@link String}, {@link Integer}, {@link Double},
-     *                       {@link org.w3c.dom.NodeList} and {@link org.w3c.dom.Node} classes are supported now.
+     *                       {@link NodeList} and {@link Node} classes are supported now.
      * @param <T>            Return type.
      * @return Return value.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static <T> T extractFromXml(final InputStream xmlInputStream, final String xPath, final Class<T> clazz)
             throws IOException {
@@ -93,7 +94,7 @@ public final class XmlUtil {
      *
      * @param xmlFile  File to write.
      * @param document XML document.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void writeXml(@Nonnull final File xmlFile, @Nonnull final Document document) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -117,7 +118,7 @@ public final class XmlUtil {
      *
      * @param xmlOutputStream Stream to write.
      * @param document        XML document.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void writeXml(final OutputStream xmlOutputStream, @Nonnull final Document document) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -136,7 +137,7 @@ public final class XmlUtil {
      * @param xmlFile Which will read first and updated later.
      * @param xPath   XPath to find specific Node.
      * @param value   Value to be set for found node.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void updateXml(@Nonnull final File xmlFile, final String xPath, final String value) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
@@ -172,7 +173,7 @@ public final class XmlUtil {
      * @param xmlOutputStream Stream to write.
      * @param xPath           XPath to find specific Node.
      * @param value           Value to be set for found node.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void updateXml(
             final InputStream xmlInputStream, final OutputStream xmlOutputStream, final String xPath, final String value)
@@ -191,9 +192,9 @@ public final class XmlUtil {
      * Changes the inner text of an XML-element described by XPath to specific value and updates file.
      *
      * @param xmlFile Which will read first and updated later.
-     * @param xPath   XPath to find specific {@code {@link org.w3c.dom.Element }}.
+     * @param xPath   XPath to find specific {@code {@link Element }}.
      * @param value   New text value.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void updateText(@Nonnull final File xmlFile, final String xPath, @Nullable final String value)
             throws IOException {
@@ -229,9 +230,9 @@ public final class XmlUtil {
      *
      * @param xmlInputStream  Stream to read.
      * @param xmlOutputStream Stream to write.
-     * @param xPath           XPath to find specific {@code {@link org.w3c.dom.Element }}.
+     * @param xPath           XPath to find specific {@code {@link Element }}.
      * @param value           New text value.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void updateText(
             final InputStream xmlInputStream, final OutputStream xmlOutputStream, final String xPath,
@@ -262,7 +263,7 @@ public final class XmlUtil {
      *                           also as {@code newAttributes}.
      * @param obsoleteAttributes Collection of attribute names which should be removed from the element
      *                           or {@code null} if no such action is required.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void ensureXmlElementExists(
             @Nonnull final File xmlFile, @Nonnull final String parentElementXPath, @Nonnull final String elementName,
@@ -314,7 +315,7 @@ public final class XmlUtil {
      *                           also as {@code newAttributes}.
      * @param obsoleteAttributes Collection of attribute names which should be removed from the element
      *                           or {@code null} if no such action is required.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void ensureXmlElementExists(
             @Nonnull final InputStream xmlInputStream, @Nonnull final OutputStream xmlOutputStream,
@@ -341,7 +342,7 @@ public final class XmlUtil {
      *
      * @param xmlFile      From which will be removed elements.
      * @param elementXPath XPath of elements to remove.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     public static void removeElementsIfExists(@Nonnull File xmlFile, @Nonnull String elementXPath)
             throws IOException {
@@ -377,11 +378,13 @@ public final class XmlUtil {
         internalRemoveElementsIfExists(xmlInputStream, xmlOutputStream, elementXPath);
     }
 
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static String formatEnumValueForXml(@Nullable Enum enumValue) {
         return enumValue == null ? null : enumValue.name().toLowerCase().replace('_', '-');
     }
 
+    @Contract("null, _ -> null")
     @Nullable
     public static <T extends Enum<T>> T extractEnumValueFromXml(@Nonnull String enumFormat, Class<T> enumClass) {
         return StringUtil.isBlank(enumFormat)
@@ -536,7 +539,7 @@ public final class XmlUtil {
      *                               also as {@code newAttributes}.
      * @param obsoleteAttributes     Collection of attribute names which should be removed from the element
      *                               or {@code null} if no such action is required.
-     * @throws java.io.IOException In case of I/O error.
+     * @throws IOException In case of I/O error.
      */
     @SuppressWarnings({"OverlyLongMethod", "OverlyComplexMethod"})
     private static void internalEnsureXmlElementExists(
