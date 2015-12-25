@@ -919,6 +919,31 @@ public class FileUtil {
         return new FirstBytes(lines.truncated, output.toByteArray());
     }
 
+    @Contract("null -> false")
+    public static boolean isSymbolicLink(@Nullable File file) {
+        return exists(file) && Files.isSymbolicLink(FileSystems.getDefault().getPath(file.getAbsolutePath()));
+    }
+
+    public static void createSymbolicLink(@Nonnull File source, @Nonnull File target) throws IOException {
+        if (!source.exists()) {
+            throw new IOException("Source '" + source + "' doesn't exist.");
+        }
+
+        deleteTotally(target);
+        ensureParentDirectoryExists(target);
+
+        try {
+            Files.createSymbolicLink(
+                    FileSystems.getDefault().getPath(target.getAbsolutePath()),
+                    FileSystems.getDefault().getPath(source.getAbsolutePath())
+            );
+        } catch (RuntimeException e) {
+            throw new IOException(String.format(
+                    "Can't create the symbolic link '%s' to '%s'.", target, source
+            ), e);
+        }
+    }
+
     public static void createSymbolicLinkOrCopy(@Nonnull File source, @Nonnull File target) throws IOException {
         if (!source.exists()) {
             throw new IOException("Source '" + source + "' doesn't exist.");
