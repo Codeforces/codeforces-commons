@@ -12,6 +12,7 @@ import de.schlichtherle.truezip.file.TVFS;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -584,10 +585,12 @@ public class UnsafeFileUtil {
      * @return System temporary directory. It expected that current process
      * has permissions for read, write and execution in it.
      */
+    @Nonnull
     public static File getTemporaryDirectory() {
         return new File(getTemporaryDirFromResources());
     }
 
+    @Nonnull
     private static File internalCreateTempFile(String prefix) {
         return new File(getTemporaryDirFromResources(), prefix + '-' + RandomUtil.getRandomToken());
     }
@@ -601,8 +604,10 @@ public class UnsafeFileUtil {
 
             if (directoryOrFile.isDirectory()) {
                 File[] inner = directoryOrFile.listFiles();
-                for (File file : inner) {
-                    scanForList(file, files);
+                if (inner != null) {
+                    for (File file : inner) {
+                        scanForList(file, files);
+                    }
                 }
                 return;
             }
@@ -635,13 +640,15 @@ public class UnsafeFileUtil {
 
         File[] files = directory.listFiles();
 
-        for (File file : files) {
-            if (file.isFile()) {
-                result += file.length();
-            }
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    result += file.length();
+                }
 
-            if (file.isDirectory()) {
-                result += getDirectorySize(file);
+                if (file.isDirectory()) {
+                    result += getDirectorySize(file);
+                }
             }
         }
 
@@ -655,6 +662,8 @@ public class UnsafeFileUtil {
         return TempDirHolder.tempDir;
     }
 
+    @Contract("null -> null")
+    @Nullable
     public static String concatenatePaths(String... paths) {
         if (paths == null || paths.length == 0) {
             return null;

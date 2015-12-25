@@ -3,6 +3,8 @@ package com.codeforces.commons.io;
 import com.codeforces.commons.compress.ZipUtil;
 import com.codeforces.commons.io.internal.UnsafeFileUtil;
 import com.codeforces.commons.process.ThreadUtil;
+import com.codeforces.commons.text.StringUtil;
+import com.google.common.base.Preconditions;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import org.apache.commons.io.IOUtils;
@@ -17,11 +19,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author Mike Mirzayanov
  * @author Maxim Shipko (sladethe@gmail.com)
  */
+@SuppressWarnings("unused")
 public class FileUtil {
     public static final long TB_PER_PB = 1024L;
 
@@ -43,18 +47,24 @@ public class FileUtil {
     public static final long BYTES_PER_TB = BYTES_PER_GB * GB_PER_TB;
     public static final long BYTES_PER_PB = BYTES_PER_TB * TB_PER_PB;
 
+    private static final Pattern SIZE_PATTERN = Pattern.compile("0|[1-9][01-9]{0,5}[KMGTP]?");
+
+
     private FileUtil() {
         throw new UnsupportedOperationException();
     }
 
+    @Nullable
     public static <T> T executeIoOperation(ThreadUtil.Operation<T> operation) throws IOException {
         return executeIoOperation(operation, 9);
     }
 
+    @Nullable
     public static <T> T executeIoOperation(ThreadUtil.Operation<T> operation, int attemptCount) throws IOException {
         return executeIoOperation(operation, attemptCount, 50L, ThreadUtil.ExecutionStrategy.Type.SQUARE);
     }
 
+    @Nullable
     public static <T> T executeIoOperation(
             ThreadUtil.Operation<T> operation, int attemptCount, long delayTimeMillis,
             ThreadUtil.ExecutionStrategy.Type strategyType) throws IOException {
@@ -75,6 +85,7 @@ public class FileUtil {
      * @return SHA-1 hashCode in hexadecimal.
      * @throws IOException Can't perform IO.
      */
+    @Nullable
     public static String sha1(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<String>() {
             @Override
@@ -126,6 +137,7 @@ public class FileUtil {
      * @return created file
      * @throws IOException if file does not exist and can't be created
      */
+    @Nullable
     public static File ensureFileExists(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
@@ -142,6 +154,7 @@ public class FileUtil {
      * @return created directory
      * @throws IOException if directory does not exist and can't be created
      */
+    @Nullable
     public static File ensureDirectoryExists(final File directory) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
@@ -300,6 +313,7 @@ public class FileUtil {
      * @throws IOException if can't read file. Possibly, file parameter
      *                     doesn't exists, is directory or not enough permissions.
      */
+    @Nullable
     public static String readFile(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<String>() {
             @Override
@@ -461,6 +475,7 @@ public class FileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
+    @Nullable
     public static byte[] getBytes(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<byte[]>() {
             @Override
@@ -476,6 +491,7 @@ public class FileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
+    @Nullable
     public static byte[] getBytes(String file) throws IOException {
         return getBytes(new File(file));
     }
@@ -488,6 +504,7 @@ public class FileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
+    @Nullable
     public static FirstBytes getFirstBytes(final File file) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
             @Override
@@ -506,6 +523,7 @@ public class FileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
+    @Nullable
     public static FirstBytes getFirstBytes(final File file, final long maxSize) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
             @Override
@@ -522,6 +540,7 @@ public class FileUtil {
      * @return File instance.
      * @throws IOException if can't create directory.
      */
+    @Nullable
     public static File createTemporaryDirectory(final String prefix) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
@@ -539,6 +558,7 @@ public class FileUtil {
      * @return File instance.
      * @throws IOException if can't create directory.
      */
+    @Nullable
     public static File createTemporaryDirectory(final String prefix, final File parentDirectory) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
@@ -634,6 +654,7 @@ public class FileUtil {
      * has permissions for read, write and execution in it.
      * @throws IOException error.
      */
+    @Nullable
     public static File getTemporaryDirectory() throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
@@ -649,6 +670,7 @@ public class FileUtil {
      * hidden directories and doesn't return hidden files.
      * @throws IOException error.
      */
+    @Nullable
     public static List<File> list(final File directory) throws IOException {
         return executeIoOperation(new ThreadUtil.Operation<List<File>>() {
             @Override
@@ -659,12 +681,12 @@ public class FileUtil {
     }
 
     public static long getDirectorySize(final File directory) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<Long>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<Long>() {
             @Override
             public Long run() {
                 return UnsafeFileUtil.getDirectorySize(directory);
             }
-        });
+        }));
     }
 
     public static File hideFile(File file) throws IOException {
@@ -916,6 +938,38 @@ public class FileUtil {
             } else {
                 throw new IOException("Unexpected source '" + source + "'.");
             }
+        }
+    }
+
+    public static long parseSize(@Nullable String size) {
+        size = StringUtil.trimToNull(size);
+        if (size == null) {
+            return 0L;
+        }
+
+        size = size.toUpperCase();
+
+        if (!SIZE_PATTERN.matcher(size).matches()) {
+            throw new IllegalArgumentException(String.format(
+                    "'%s' does not match the pattern '%s'.", size, SIZE_PATTERN
+            ));
+        }
+
+        int lastCharIndex = size.length() - 1;
+
+        switch (size.charAt(lastCharIndex)) {
+            case 'K':
+                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_KB;
+            case 'M':
+                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_MB;
+            case 'G':
+                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_GB;
+            case 'T':
+                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_TB;
+            case 'P':
+                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_PB;
+            default:
+                return Long.parseLong(size);
         }
     }
 
