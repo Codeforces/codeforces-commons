@@ -428,6 +428,7 @@ public final class ZipUtil {
         }
     }
 
+    @Nonnull
     public static byte[] getZipEntryBytes(File zipFile, String zipEntryPath) throws IOException {
         ByteArrayOutputStream zipEntryOutputStream = new ByteArrayOutputStream();
         writeZipEntryBytes(zipFile, zipEntryPath, zipEntryOutputStream);

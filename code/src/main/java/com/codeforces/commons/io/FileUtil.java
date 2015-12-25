@@ -85,14 +85,14 @@ public class FileUtil {
      * @return SHA-1 hashCode in hexadecimal.
      * @throws IOException Can't perform IO.
      */
-    @Nullable
+    @Nonnull
     public static String sha1(final File file) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<String>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<String>() {
             @Override
             public String run() throws IOException {
                 return UnsafeFileUtil.sha1Hex(file);
             }
-        });
+        }));
     }
 
     /**
@@ -137,14 +137,14 @@ public class FileUtil {
      * @return created file
      * @throws IOException if file does not exist and can't be created
      */
-    @Nullable
+    @Nonnull
     public static File ensureFileExists(final File file) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<File>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
             public File run() throws IOException {
                 return UnsafeFileUtil.ensureFileExists(file);
             }
-        });
+        }));
     }
 
     /**
@@ -154,14 +154,14 @@ public class FileUtil {
      * @return created directory
      * @throws IOException if directory does not exist and can't be created
      */
-    @Nullable
+    @Nonnull
     public static File ensureDirectoryExists(final File directory) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<File>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
             public File run() throws IOException {
                 return UnsafeFileUtil.ensureDirectoryExists(directory);
             }
-        });
+        }));
     }
 
     /**
@@ -313,14 +313,14 @@ public class FileUtil {
      * @throws IOException if can't read file. Possibly, file parameter
      *                     doesn't exists, is directory or not enough permissions.
      */
-    @Nullable
+    @Nonnull
     public static String readFile(final File file) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<String>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<String>() {
             @Override
             public String run() throws IOException {
                 return UnsafeFileUtil.readFile(file);
             }
-        });
+        }));
     }
 
     /**
@@ -475,14 +475,14 @@ public class FileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
-    @Nullable
+    @Nonnull
     public static byte[] getBytes(final File file) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<byte[]>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<byte[]>() {
             @Override
             public byte[] run() throws IOException {
                 return UnsafeFileUtil.getBytes(file);
             }
-        });
+        }));
     }
 
     /**
@@ -491,7 +491,7 @@ public class FileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
-    @Nullable
+    @Nonnull
     public static byte[] getBytes(String file) throws IOException {
         return getBytes(new File(file));
     }
@@ -504,14 +504,15 @@ public class FileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
-    @Nullable
+    @Nonnull
     public static FirstBytes getFirstBytes(final File file) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
+            @Nonnull
             @Override
             public FirstBytes run() throws IOException {
                 return UnsafeFileUtil.getFirstBytes(file);
             }
-        });
+        }));
     }
 
     /**
@@ -523,14 +524,14 @@ public class FileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
-    @Nullable
+    @Nonnull
     public static FirstBytes getFirstBytes(final File file, final long maxSize) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
             @Override
             public FirstBytes run() throws IOException {
                 return UnsafeFileUtil.getFirstBytes(file, maxSize);
             }
-        });
+        }));
     }
 
     /**
@@ -540,14 +541,14 @@ public class FileUtil {
      * @return File instance.
      * @throws IOException if can't create directory.
      */
-    @Nullable
+    @Nonnull
     public static File createTemporaryDirectory(final String prefix) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<File>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
             public File run() throws IOException {
                 return UnsafeFileUtil.createTemporaryDirectory(prefix);
             }
-        });
+        }));
     }
 
     /**
@@ -558,14 +559,14 @@ public class FileUtil {
      * @return File instance.
      * @throws IOException if can't create directory.
      */
-    @Nullable
+    @Nonnull
     public static File createTemporaryDirectory(final String prefix, final File parentDirectory) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<File>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
             public File run() throws IOException {
                 return UnsafeFileUtil.createTemporaryDirectory(prefix, parentDirectory);
             }
-        });
+        }));
     }
 
     /**
@@ -654,14 +655,14 @@ public class FileUtil {
      * has permissions for read, write and execution in it.
      * @throws IOException error.
      */
-    @Nullable
+    @Nonnull
     public static File getTemporaryDirectory() throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<File>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
             @Override
             public File run() {
                 return UnsafeFileUtil.getTemporaryDirectory();
             }
-        });
+        }));
     }
 
     /**
@@ -670,14 +671,14 @@ public class FileUtil {
      * hidden directories and doesn't return hidden files.
      * @throws IOException error.
      */
-    @Nullable
+    @Nonnull
     public static List<File> list(final File directory) throws IOException {
-        return executeIoOperation(new ThreadUtil.Operation<List<File>>() {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<List<File>>() {
             @Override
             public List<File> run() {
                 return UnsafeFileUtil.list(directory);
             }
-        });
+        }));
     }
 
     public static long getDirectorySize(final File directory) throws IOException {
@@ -723,6 +724,7 @@ public class FileUtil {
      * {@link File#equals(Object) equals} or have the same content
      * @throws IOException in case of any I/O-exception
      */
+    @Contract("null, null -> true; null, !null -> false; !null, null -> false")
     public static boolean equalsOrSameContent(@Nullable File fileA, @Nullable File fileB) throws IOException {
         if (fileA == null && fileB == null) {
             return true;

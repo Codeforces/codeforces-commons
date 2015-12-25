@@ -194,7 +194,8 @@ public class UnsafeFileUtil {
      * @throws IOException if directory does not exist and can't be created
      */
     @SuppressWarnings({"DuplicateCondition", "DuplicateBooleanBranch"})
-    public static File ensureDirectoryExists(File directory) throws IOException {
+    @Nonnull
+    public static File ensureDirectoryExists(@Nonnull File directory) throws IOException {
         if (directory.isDirectory() || directory.mkdirs() || directory.isDirectory()) {
             return directory;
         }
@@ -243,6 +244,7 @@ public class UnsafeFileUtil {
      * @throws IOException if can't read file. Possibly, file parameter
      *                     doesn't exist, is directory or not enough permissions.
      */
+    @Nonnull
     public static String readFile(File file) throws IOException {
         return IoUtil.toString(new FileReader(file));
     }
@@ -419,6 +421,7 @@ public class UnsafeFileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
+    @Nonnull
     public static byte[] getBytes(File file) throws IOException {
         if (file instanceof TFile) {
             TFile trueZipFile = (TFile) file;
@@ -457,6 +460,7 @@ public class UnsafeFileUtil {
         throw new FileNotFoundException("'" + file + "' is not file.");
     }
 
+    @Nonnull
     private static byte[] forceGetBytesFromExistingRegularFile(@Nonnull File file) throws IOException {
         long size = file.length();
         FileInputStream stream = new FileInputStream(file);
@@ -476,6 +480,7 @@ public class UnsafeFileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
+    @Nonnull
     public static FileUtil.FirstBytes getFirstBytes(File file) throws IOException {
         return getFirstBytes(file, 511);
     }
@@ -489,6 +494,7 @@ public class UnsafeFileUtil {
      * @throws IOException           if can't read file.
      * @throws FileNotFoundException if can't find file.
      */
+    @Nonnull
     public static FileUtil.FirstBytes getFirstBytes(File file, long maxSize) throws IOException {
         if (file.isFile()) {
             boolean truncated = false;
@@ -533,6 +539,7 @@ public class UnsafeFileUtil {
      * @return File instance.
      * @throws IOException if can't create directory.
      */
+    @Nonnull
     public static File createTemporaryDirectory(String prefix, File parentDirectory) throws IOException {
         File temporaryDirectory = new File(parentDirectory, prefix + '-' + RandomUtil.getRandomToken());
         ensureDirectoryExists(temporaryDirectory);
@@ -621,6 +628,7 @@ public class UnsafeFileUtil {
      * @return List of nested files (scans nested directories recursively). Doesn't scan
      * hidden directories and doesn't return hidden files.
      */
+    @Nonnull
     public static List<File> list(File directory) {
         if (directory.isDirectory()) {
             List<File> result = new ArrayList<>();

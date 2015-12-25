@@ -8,6 +8,7 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.tools.zip.ZipFile;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
@@ -62,6 +63,7 @@ public class IoUtil {
         return outputStream.toByteArray();
     }
 
+    @Nonnull
     public static String toString(InputStream inputStream) throws IOException {
         try {
             String s = IOUtils.toString(inputStream);
@@ -73,6 +75,7 @@ public class IoUtil {
         }
     }
 
+    @Nonnull
     public static String toString(InputStream inputStream, @Nullable String charsetName) throws IOException {
         try {
             String s = IOUtils.toString(inputStream, charsetName);
@@ -84,6 +87,7 @@ public class IoUtil {
         }
     }
 
+    @Nonnull
     public static String toString(InputStream inputStream, @Nullable Charset charset) throws IOException {
         try {
             String s = IOUtils.toString(inputStream, charset);
@@ -95,6 +99,7 @@ public class IoUtil {
         }
     }
 
+    @Nonnull
     public static String toString(Reader reader) throws IOException {
         try {
             String s = IOUtils.toString(reader);
