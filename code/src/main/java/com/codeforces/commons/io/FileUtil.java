@@ -7,6 +7,7 @@ import com.codeforces.commons.text.StringUtil;
 import com.google.common.base.Preconditions;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Contract;
@@ -589,7 +590,8 @@ public class FileUtil {
      * @param file Any file.
      * @return String Name part (simple name without extension).
      */
-    public static String getName(File file) {
+    @Contract("null -> fail")
+    public static String getName(@Nonnull File file) {
         return UnsafeFileUtil.getName(file);
     }
 
@@ -672,11 +674,22 @@ public class FileUtil {
      * @throws IOException error.
      */
     @Nonnull
-    public static List<File> list(final File directory) throws IOException {
+    public static List<File> list(@Nonnull final File directory) throws IOException {
         return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<List<File>>() {
             @Override
             public List<File> run() {
                 return UnsafeFileUtil.list(directory);
+            }
+        }));
+    }
+
+    @Nonnull
+    public static List<String> listRelativePaths(@Nonnull final File directory, @Nullable final FileFilter filter,
+                                                 final boolean recursive) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<List<String>>() {
+            @Override
+            public List<String> run() {
+                return UnsafeFileUtil.listRelativePaths(directory, filter, recursive);
             }
         }));
     }
@@ -713,6 +726,88 @@ public class FileUtil {
         }
 
         return file;
+    }
+
+    @Contract("null -> fail")
+    @Nonnull
+    public static File getCriticalBackupFile(@Nonnull File file) {
+        return new File(UnsafeFileUtil.getPrefixPath(file) + getName(file) + ".bak");
+    }
+
+    @Contract("null -> fail")
+    @Nullable
+    private static byte[] getSubscribedFileBytes(@Nonnull File subscribedFile) throws IOException {
+        if (subscribedFile.isFile()) {
+            int digestLength = 32;
+            byte[] subscribedBytes = getBytes(subscribedFile);
+            int subscribedByteCount = subscribedBytes.length;
+
+            if (subscribedByteCount >= digestLength) {
+                byte[] bytes = new byte[subscribedByteCount - digestLength];
+                byte[] digest = new byte[digestLength];
+
+                System.arraycopy(subscribedBytes, 0, bytes, 0, subscribedByteCount - digestLength);
+                System.arraycopy(subscribedBytes, subscribedByteCount - digestLength, digest, 0, digestLength);
+
+                if (Arrays.equals(DigestUtils.sha256(bytes), digest)) {
+                    return bytes;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Contract("null, _ -> fail; _, null -> fail")
+    @Nonnull
+    public static byte[] getCriticalFileBytes(@Nonnull File file, @Nonnull File backupFile) throws IOException {
+        byte[] subscribedFileBytes = getSubscribedFileBytes(file);
+        if (subscribedFileBytes != null) {
+            deleteTotally(backupFile);
+            return subscribedFileBytes;
+        }
+
+        subscribedFileBytes = getSubscribedFileBytes(backupFile);
+        if (subscribedFileBytes != null) {
+            copyFile(backupFile, file);
+            deleteTotally(backupFile);
+            return subscribedFileBytes;
+        }
+
+        throw new IOException("Can't read neither critical file '" + file + "', nor backup file '" + backupFile + "'.");
+    }
+
+    @Contract("null -> fail")
+    @Nonnull
+    public static byte[] getCriticalFileBytes(@Nonnull File file) throws IOException {
+        return getCriticalFileBytes(file, getCriticalBackupFile(file));
+    }
+
+    @Contract("null, _ -> fail; _, null -> fail")
+    private static void writeSubscribedFile(@Nonnull File subscribedFile, @Nonnull byte[] bytes) throws IOException {
+        byte[] digest = DigestUtils.sha256(bytes);
+        byte[] subscribedBytes = new byte[bytes.length + digest.length];
+
+        System.arraycopy(bytes, 0, subscribedBytes, 0, bytes.length);
+        System.arraycopy(digest, 0, subscribedBytes, bytes.length, digest.length);
+
+        writeFile(subscribedFile, subscribedBytes);
+    }
+
+    @Contract("null, _, _ -> fail; _, null, _ -> fail; _, _, null -> fail")
+    public static void writeCriticalFile(
+            @Nonnull File file, @Nonnull File backupFile, @Nonnull byte[] bytes) throws IOException {
+        if (isFile(file)) {
+            copyFile(file, backupFile);
+        }
+
+        writeSubscribedFile(file, bytes);
+        deleteTotally(backupFile);
+    }
+
+    @Contract("null, _ -> fail; _, null -> fail")
+    public static void writeCriticalFile(@Nonnull File file, @Nonnull byte[] bytes) throws IOException {
+        writeCriticalFile(file, getCriticalBackupFile(file), bytes);
     }
 
     /**

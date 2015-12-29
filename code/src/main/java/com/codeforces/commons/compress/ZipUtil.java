@@ -19,6 +19,7 @@ import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.NameFileFilter;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,6 +38,7 @@ import static com.codeforces.commons.math.Math.max;
  * @author Mike Mirzayanov
  */
 public final class ZipUtil {
+    @SuppressWarnings("unused")
     public static final int MINIMAL_COMPRESSION_LEVEL = 0;
     public static final int DEFAULT_COMPRESSION_LEVEL = 5;
     public static final int MAXIMAL_COMPRESSION_LEVEL = 9;
@@ -459,11 +461,9 @@ public final class ZipUtil {
         }
     }
 
-    public static void deleteZipEntry(File zipFile, String zipEntryPath) throws IOException {
-        TFile trueZipFile = new TFile(new File(zipFile, zipEntryPath));
-        //noinspection ResultOfMethodCallIgnored
-        trueZipFile.rm_r();
-        synchronizeQuietly(trueZipFile);
+    @Contract("null, _ -> fail; _, null -> fail")
+    public static void deleteZipEntry(@Nonnull File zipFile, @Nonnull String zipEntryPath) throws IOException {
+        synchronizeQuietly(new TFile(new File(zipFile, zipEntryPath)).rm_r());
     }
 
     public static boolean isZipEntryExists(File zipFile, String zipEntryPath) throws IOException {
@@ -526,6 +526,7 @@ public final class ZipUtil {
      * @param file file to check
      * @return {@code true} iff file is correct non-empty ZIP-archive
      */
+    @Contract("null -> false")
     public static boolean isCorrectZipFile(@Nullable File file) {
         return isCorrectZipFile(file, true);
     }
@@ -537,8 +538,9 @@ public final class ZipUtil {
      * @param checkNotEmpty flag which indicates whether we should treat empty archive as correct or not
      * @return {@code true} iff file is correct ZIP-archive
      */
+    @Contract("null, _ -> false")
     public static boolean isCorrectZipFile(@Nullable File file, boolean checkNotEmpty) {
-        if (file == null) {
+        if (file == null || !(file instanceof TFile) && !file.isFile()) {
             return false;
         }
 
@@ -555,6 +557,7 @@ public final class ZipUtil {
         }
     }
 
+    @Nonnull
     public static String normalizeZipEntryPath(@Nonnull String zipEntryPath) {
         return zipEntryPath.replace(File.separatorChar, '/');
     }

@@ -550,7 +550,9 @@ public class UnsafeFileUtil {
      * @param file Any file.
      * @return String Name and extension of file (extension in lowercase). For example, "main.cpp".
      */
-    public static String getNameAndExt(File file) {
+    @Contract("null -> fail")
+    @Nonnull
+    public static String getNameAndExt(@Nonnull File file) {
         String path = file.getPath();
         int lastSep = Math.max(path.lastIndexOf(DOS_FILE_SEPARATOR), path.lastIndexOf(UNIX_FILE_SEPARATOR));
         if (lastSep == -1) {
@@ -562,9 +564,25 @@ public class UnsafeFileUtil {
 
     /**
      * @param file Any file.
+     * @return String Path to file. All path except {@code {@link #getNameAndExt(File) getNameAndExt(file)}} part.
+     */
+    @Nonnull
+    public static String getPrefixPath(@Nonnull File file) {
+        String path = file.getPath();
+        int lastSep = Math.max(path.lastIndexOf(DOS_FILE_SEPARATOR), path.lastIndexOf(UNIX_FILE_SEPARATOR));
+        if (lastSep == -1) {
+            return "";
+        } else {
+            return path.substring(0, lastSep + 1);
+        }
+    }
+
+    /**
+     * @param file Any file.
      * @return String Name part (simple name without extension).
      */
-    public static String getName(File file) {
+    @Contract("null -> fail")
+    public static String getName(@Nonnull File file) {
         String nameAndExt = getNameAndExt(file);
         int dotIndex = nameAndExt.lastIndexOf('.');
         if (dotIndex == -1) {
@@ -619,7 +637,7 @@ public class UnsafeFileUtil {
                 return;
             }
 
-            throw new IllegalStateException(directoryOrFile + " doesn't exist");
+            throw new IllegalStateException(directoryOrFile + " doesn't exist.");
         }
     }
 
@@ -629,19 +647,50 @@ public class UnsafeFileUtil {
      * hidden directories and doesn't return hidden files.
      */
     @Nonnull
-    public static List<File> list(File directory) {
+    public static List<File> list(@Nonnull File directory) {
         if (directory.isDirectory()) {
             List<File> result = new ArrayList<>();
             scanForList(directory, result);
             return result;
         } else {
-            throw new IllegalStateException(directory + " is expected to be directory");
+            throw new IllegalStateException(directory + " is expected to be directory.");
+        }
+    }
+
+    private static void scanForList(@Nonnull File directory, @Nonnull List<String> relativePaths,
+                                    @Nullable FileFilter filter, boolean recursive, @Nonnull String prefix) {
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        for (File file : files) {
+            String relativePath = prefix.isEmpty() ? file.getName() : prefix + '/' + file.getName();
+            if (filter == null || filter.accept(file)) {
+                relativePaths.add(relativePath);
+            }
+
+            if (recursive && file.isDirectory()) {
+                scanForList(file, relativePaths, filter, true, relativePath);
+            }
+        }
+    }
+
+    @Nonnull
+    public static List<String> listRelativePaths(
+            @Nonnull File directory, @Nullable FileFilter filter, boolean recursive) {
+        if (directory.isDirectory()) {
+            List<String> result = new ArrayList<>();
+            scanForList(directory, result, filter, recursive, "");
+            return result;
+        } else {
+            throw new IllegalStateException(directory + " is expected to be directory.");
         }
     }
 
     public static long getDirectorySize(File directory) {
         if (!directory.isDirectory()) {
-            throw new IllegalArgumentException("Abstract path " + directory + " is not a directory");
+            throw new IllegalArgumentException("Abstract path " + directory + " is not a directory.");
         }
 
         long result = 0;
