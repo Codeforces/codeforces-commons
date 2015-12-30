@@ -74,10 +74,6 @@ public final class ZipUtil {
     }
 
     public static byte[] compress(byte[] bytes, int level) {
-        if (bytes.length == 0) {
-            return bytes;
-        }
-
         Deflater compressor = new Deflater();
         compressor.setLevel(level);
         compressor.setInput(bytes);
