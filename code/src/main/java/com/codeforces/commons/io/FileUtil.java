@@ -5,7 +5,6 @@ import com.codeforces.commons.io.internal.UnsafeFileUtil;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
-import com.codeforces.commons.time.TimeUtil;
 import com.google.common.base.Preconditions;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
@@ -18,11 +17,12 @@ import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -1156,65 +1156,6 @@ public class FileUtil {
         public boolean accept(File dir, String name) {
             File file = new File(dir, name);
             return !file.isHidden() && !".svn".equalsIgnoreCase(file.getName());
-        }
-    }
-
-    private static /* volatile */ long test;
-
-    public static void main(String[] args) {
-        final long finishTime = System.currentTimeMillis() + TimeUtil.MILLIS_PER_SECOND;
-
-        List<Thread> writeThreads = new ArrayList<>();
-        List<Thread> readThreads = new ArrayList<>();
-
-        for (int i = 1; i <= 10; ++i) {
-            Thread writeThread = new Thread(new Runnable() {
-                @SuppressWarnings({"AssignmentToStaticFieldFromInstanceMethod", "UnsecureRandomNumberGeneration"})
-                @Override
-                public void run() {
-                    Random random = new Random();
-
-                    while (System.currentTimeMillis() < finishTime) {
-                        int value32 = random.nextInt();
-                        long value64 = ByteBuffer.allocate(8).putInt(value32).putInt(value32).getLong(0);
-                        test = value64;
-
-                        ByteBuffer bytes = ByteBuffer.allocate(8).putLong(value64);
-                        Preconditions.checkState(bytes.getInt(0) == bytes.getInt(4), String.format(
-                                "Unexpected state (value32=%d, value64=%d).", value32, value64
-                        ));
-                    }
-                }
-            });
-            writeThread.start();
-            writeThreads.add(writeThread);
-        }
-
-        for (int i = 1; i <= 10; ++i) {
-            Thread readThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (System.currentTimeMillis() < finishTime) {
-                        long value64 = test;
-
-                        ByteBuffer bytes = ByteBuffer.allocate(8).putLong(value64);
-                        if (bytes.getInt(0) != bytes.getInt(4)) {
-                            System.out.printf("%d != %d%n", bytes.getInt(0), bytes.getInt(4));
-                            break;
-                        }
-                    }
-                }
-            });
-            readThread.start();
-            readThreads.add(readThread);
-        }
-
-        for (Thread writeThread : writeThreads) {
-            ThreadUtil.join(writeThread);
-        }
-
-        for (Thread readThread : readThreads) {
-            ThreadUtil.join(readThread);
         }
     }
 }
