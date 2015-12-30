@@ -2,6 +2,7 @@ package com.codeforces.commons.io;
 
 import com.codeforces.commons.compress.ZipUtil;
 import com.codeforces.commons.io.internal.UnsafeFileUtil;
+import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
 import com.google.common.base.Preconditions;
@@ -12,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Contract;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
@@ -20,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -48,7 +51,7 @@ public class FileUtil {
     public static final long BYTES_PER_TB = BYTES_PER_GB * GB_PER_TB;
     public static final long BYTES_PER_PB = BYTES_PER_TB * TB_PER_PB;
 
-    private static final Pattern SIZE_PATTERN = Pattern.compile("0|[1-9][01-9]{0,5}[KMGTP]?");
+    private static final Pattern SIZE_PATTERN = Pattern.compile("(0|[1-9][01-9]{0,5})(\\.[01-9]{1,5})? ?[KMGTP]?B?");
 
 
     private FileUtil() {
@@ -1063,6 +1066,44 @@ public class FileUtil {
         }
     }
 
+    @Nonnull
+    public static String formatSize(@Nonnegative long size) {
+        if (size < 0) {
+            throw new IllegalArgumentException("Argument 'size' must be a positive integer or zero.");
+        }
+
+        if (size >= BYTES_PER_PB) {
+            return formatSize(size, BYTES_PER_PB, "PB");
+        }
+
+        if (size >= BYTES_PER_TB) {
+            return formatSize(size, BYTES_PER_TB, "TB");
+        }
+
+        if (size >= BYTES_PER_GB) {
+            return formatSize(size, BYTES_PER_GB, "GB");
+        }
+
+        if (size >= BYTES_PER_MB) {
+            return formatSize(size, BYTES_PER_MB, "MB");
+        }
+
+        if (size >= BYTES_PER_KB) {
+            return formatSize(size, BYTES_PER_KB, "kB");
+        }
+
+        return size + " B";
+    }
+
+    @Nonnull
+    private static String formatSize(@Nonnegative long size, @Nonnegative long unit, @Nonnull String unitName) {
+        if (size % unit == 0) {
+            return size / unit + " " + unitName;
+        }
+
+        return String.format(Locale.US, "%.1f %s", (double) size / (double) unit, unitName);
+    }
+
     public static long parseSize(@Nullable String size) {
         size = StringUtil.trimToNull(size);
         if (size == null) {
@@ -1078,21 +1119,33 @@ public class FileUtil {
         }
 
         int lastCharIndex = size.length() - 1;
+        char lastChar = size.charAt(lastCharIndex);
 
-        switch (size.charAt(lastCharIndex)) {
-            case 'K':
-                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_KB;
-            case 'M':
-                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_MB;
-            case 'G':
-                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_GB;
-            case 'T':
-                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_TB;
-            case 'P':
-                return Long.parseLong(size.substring(0, lastCharIndex)) * BYTES_PER_PB;
-            default:
-                return Long.parseLong(size);
+        if (lastChar == 'B') {
+            size = size.substring(0, lastCharIndex);
+
+            lastCharIndex = size.length() - 1;
+            lastChar = size.charAt(lastCharIndex);
         }
+
+        switch (lastChar) {
+            case 'K':
+                return parseSize(size, lastCharIndex, BYTES_PER_KB);
+            case 'M':
+                return parseSize(size, lastCharIndex, BYTES_PER_MB);
+            case 'G':
+                return parseSize(size, lastCharIndex, BYTES_PER_GB);
+            case 'T':
+                return parseSize(size, lastCharIndex, BYTES_PER_TB);
+            case 'P':
+                return parseSize(size, lastCharIndex, BYTES_PER_PB);
+            default:
+                return NumberUtil.toLong(Double.parseDouble(size.trim()));
+        }
+    }
+
+    private static long parseSize(@Nonnull String size, @Nonnegative int lastCharIndex, @Nonnegative long unit) {
+        return NumberUtil.toLong(Double.parseDouble(size.substring(0, lastCharIndex).trim()) * unit);
     }
 
     /**

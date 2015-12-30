@@ -1,14 +1,20 @@
 package com.codeforces.commons.io;
 
+import com.codeforces.commons.text.Patterns;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.apache.commons.lang3.RandomUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+
+import static com.codeforces.commons.math.Math.abs;
 
 /**
  * @author Mike Mirzayanov
@@ -164,24 +170,105 @@ public class FileUtilTest extends TestCase {
         String lineSep = System.getProperty("line.separator");
 
         FileUtil.FirstBytes text = new FileUtil.FirstBytes(true,
-                 ("line1" + lineSep
-                + "line2" + lineSep
-                + "line3" + lineSep
-                + "line21" + lineSep
-                + "line11" + lineSep
-                + "line31" + lineSep
-                + "line10").getBytes()
+                ("line1" + lineSep
+                        + "line2" + lineSep
+                        + "line3" + lineSep
+                        + "line21" + lineSep
+                        + "line11" + lineSep
+                        + "line31" + lineSep
+                        + "line10").getBytes()
         );
 
         FileUtil.FirstBytes found = FileUtil.removeLinesStartingWith(text, "line1".getBytes());
         FileUtil.FirstBytes expected = new FileUtil.FirstBytes(true,
-                 ("line2" + lineSep
-                + "line3" + lineSep
-                + "line21" + lineSep
-                + "line31" + lineSep).getBytes()
+                ("line2" + lineSep
+                        + "line3" + lineSep
+                        + "line21" + lineSep
+                        + "line31" + lineSep).getBytes()
         );
 
         assertEquals(expected, found);
+    }
+
+    public void testParseSize() throws Exception {
+        Map<String, Long> sizeByString = new HashMap<>();
+        sizeByString.put("0", 0L);
+        sizeByString.put("0.1b", 0L);
+        sizeByString.put("0 GB", 0L);
+        sizeByString.put("0.0kb", 0L);
+        sizeByString.put("1B", 1L);
+        sizeByString.put("1 B", 1L);
+        sizeByString.put("1 b", 1L);
+        sizeByString.put("1kB", FileUtil.BYTES_PER_KB);
+        sizeByString.put("1 kb", FileUtil.BYTES_PER_KB);
+        sizeByString.put("1KB", FileUtil.BYTES_PER_KB);
+        sizeByString.put("1 K", FileUtil.BYTES_PER_KB);
+        sizeByString.put("1mB", FileUtil.BYTES_PER_MB);
+        sizeByString.put("1 Mb", FileUtil.BYTES_PER_MB);
+        sizeByString.put("1MB", FileUtil.BYTES_PER_MB);
+        sizeByString.put("1 M", FileUtil.BYTES_PER_MB);
+        sizeByString.put("1.5 G", FileUtil.BYTES_PER_GB * 3L / 2L);
+        sizeByString.put("1000 P", FileUtil.BYTES_PER_PB * 1000L);
+        sizeByString.put("1000p", FileUtil.BYTES_PER_PB * 1000L);
+
+        for (Map.Entry<String, Long> stringAndSize : sizeByString.entrySet()) {
+            assertEquals(
+                    "Can't parse size '" + stringAndSize.getKey() + "'.",
+                    (long) stringAndSize.getValue(),
+                    FileUtil.parseSize(stringAndSize.getKey())
+            );
+        }
+    }
+
+    public void testFormatAndParseSize() throws Exception {
+        for (int i = 0; i < 10_000; ++i) {
+            long size = abs(random.nextLong());
+            String formattedSize = FileUtil.formatSize(size);
+            double delta = size / 10.0D;
+
+            assertEquals("Can't parse size '" + formattedSize + "'.", size, FileUtil.parseSize(formattedSize), delta);
+        }
+
+        executeTestFormatAndParseSizeForUnit(FileUtil.BYTES_PER_PB);
+        executeTestFormatAndParseSizeForUnit(FileUtil.BYTES_PER_TB);
+        executeTestFormatAndParseSizeForUnit(FileUtil.BYTES_PER_GB);
+        executeTestFormatAndParseSizeForUnit(FileUtil.BYTES_PER_MB);
+        executeTestFormatAndParseSizeForUnit(FileUtil.BYTES_PER_KB);
+        executeTestFormatAndParseSizeForUnit(1L);
+    }
+
+    private void executeTestFormatAndParseSizeForUnit(long unit) throws Exception {
+        long maxValueExclusive = 1024L * unit;
+        double delta = unit / 19.0D;
+
+        for (int i = 0; i < 10_000; ++i) {
+            long size = RandomUtils.nextLong(0L, maxValueExclusive);
+            String formattedSize = FileUtil.formatSize(size);
+
+            if (random.nextBoolean()) {
+                formattedSize = Patterns.WHITESPACE_PATTERN.matcher(formattedSize).replaceAll("");
+            }
+
+            if (random.nextBoolean() && (formattedSize.endsWith("B") || formattedSize.endsWith("b"))) {
+                formattedSize = formattedSize.substring(0, formattedSize.length() - 1);
+            }
+
+            if (random.nextBoolean()) {
+                StringBuilder sizeBuilder = new StringBuilder(formattedSize.length());
+
+                for (int charIndex = 0; charIndex < formattedSize.length(); ++charIndex) {
+                    if (random.nextBoolean()) {
+                        sizeBuilder.append(Character.toUpperCase(formattedSize.charAt(charIndex)));
+                    } else {
+                        sizeBuilder.append(Character.toLowerCase(formattedSize.charAt(charIndex)));
+                    }
+                }
+
+                formattedSize = sizeBuilder.toString();
+            }
+
+            assertEquals("Can't parse size '" + formattedSize + "'.", size, FileUtil.parseSize(formattedSize), delta);
+        }
     }
 
     private static void assertSameFiles(File a, File b) throws IOException {
