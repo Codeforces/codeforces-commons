@@ -679,7 +679,8 @@ public final class HttpRequest {
         connection.setDoOutput(doOutput);
         connection.setInstanceFollowRedirects(true);
 
-        connection.setRequestProperty("Connection", "close");
+//        connection.setRequestProperty("Connection", "close");
+        connection.setRequestProperty("Connection", "keep-alive");
 
         if (method == HttpMethod.POST) {
             if (hasBinaryEntity()) {
