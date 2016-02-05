@@ -4,6 +4,7 @@ import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.w3c.dom.*;
@@ -52,19 +53,19 @@ public final class XmlUtil {
      */
     public static <T> T extractFromXml(@Nonnull final File xmlFile, final String xPath, final Class<T> clazz)
             throws IOException {
-        return FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
+        return Preconditions.checkNotNull(FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
             @Nonnull
             @Override
             public T run() throws IOException {
                 try {
                     return internalExtractFromXml(new FileInputStream(xmlFile), xPath, clazz);
                 } catch (FileNotFoundException e) {
-                    throw new IOException(
-                            "Can't find file '" + xmlFile.getCanonicalPath() + "' while evaluating XPath '" + xPath + "'.", e
-                    );
+                    throw new IOException(String.format(
+                            "Can't find file '%s' while evaluating XPath '%s'.", xmlFile.getCanonicalPath(), xPath
+                    ), e);
                 }
             }
-        });
+        }));
     }
 
     /**
@@ -78,15 +79,16 @@ public final class XmlUtil {
      * @return Return value.
      * @throws IOException In case of I/O error.
      */
+    @Nonnull
     public static <T> T extractFromXml(final InputStream xmlInputStream, final String xPath, final Class<T> clazz)
             throws IOException {
-        return FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
+        return Preconditions.checkNotNull(FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
             @Nonnull
             @Override
             public T run() throws IOException {
                 return internalExtractFromXml(xmlInputStream, xPath, clazz);
             }
-        }, 1);
+        }, 1));
     }
 
     /**
@@ -386,7 +388,7 @@ public final class XmlUtil {
 
     @Contract("null, _ -> null")
     @Nullable
-    public static <T extends Enum<T>> T extractEnumValueFromXml(@Nonnull String enumFormat, Class<T> enumClass) {
+    public static <T extends Enum<T>> T extractEnumValueFromXml(@Nullable String enumFormat, Class<T> enumClass) {
         return StringUtil.isBlank(enumFormat)
                 ? null
                 : Enum.valueOf(enumClass, enumFormat.toUpperCase().replace('-', '_'));
