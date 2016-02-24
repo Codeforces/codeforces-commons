@@ -69,7 +69,8 @@ public class HttpClientUtil {
     }
 
     public static void executeGetRequest(
-            HttpClient httpClient, boolean encodeParameters, String url, Object... parameters) throws IOException {
+            @Nullable HttpClient httpClient, boolean encodeParameters, String url, Object... parameters
+    ) throws IOException {
         internalExecuteGetRequest(httpClient, encodeParameters, url, parameters);
     }
 
@@ -118,7 +119,8 @@ public class HttpClientUtil {
     }
 
     public static byte[] executeGetRequestAndReturnResponseBytes(
-            HttpClient httpClient, boolean encodeParameters, String url, Object... parameters) throws IOException {
+            @Nullable HttpClient httpClient, boolean encodeParameters, String url, Object... parameters
+    ) throws IOException {
         HttpResponse httpResponse = internalExecuteGetRequest(httpClient, encodeParameters, url, parameters);
         InputStream inputStream = httpResponse.getEntity().getContent();
 
@@ -167,7 +169,8 @@ public class HttpClientUtil {
     }
 
     public static String executeGetRequestAndReturnResponseAsString(
-            HttpClient httpClient, boolean encodeParameters, String url, Object... parameters) throws IOException {
+            @Nullable HttpClient httpClient, boolean encodeParameters, String url, Object... parameters
+    ) throws IOException {
         HttpResponse httpResponse = internalExecuteGetRequest(httpClient, encodeParameters, url, parameters);
         HttpEntity httpEntity = httpResponse.getEntity();
         InputStream inputStream = httpEntity.getContent();
@@ -219,8 +222,10 @@ public class HttpClientUtil {
         });
     }
 
+    @Nonnull
     public static Response executeGetRequestAndReturnResponse(
-            HttpClient httpClient, boolean encodeParameters, String url, Object... parameters) throws IOException {
+            @Nullable HttpClient httpClient, boolean encodeParameters, String url, Object... parameters
+    ) throws IOException {
         HttpResponse httpResponse = internalExecuteGetRequest(httpClient, encodeParameters, url, parameters);
         HttpEntity httpEntity = httpResponse.getEntity();
 
@@ -244,6 +249,7 @@ public class HttpClientUtil {
         });
     }
 
+    @Nonnull
     public static Response executeGetRequestAndReturnResponse(
             boolean encodeParameters, String url, Object... parameters) throws IOException {
         return executeGetRequestAndReturnResponse(null, encodeParameters, url, parameters);
@@ -260,10 +266,12 @@ public class HttpClientUtil {
         });
     }
 
+    @Nonnull
     public static Response executeGetRequestAndReturnResponse(String url, Object... parameters) throws IOException {
         return executeGetRequestAndReturnResponse(false, url, parameters);
     }
 
+    @Nonnull
     public static Response executeGetRequestAndReturnResponse(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
         return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<Response>() {
@@ -275,8 +283,8 @@ public class HttpClientUtil {
     }
 
     private static HttpResponse internalExecuteGetRequest(
-            @Nullable HttpClient httpClient, boolean encodeParameters,
-            String url, Object... parameters) throws IOException {
+            @Nullable HttpClient httpClient, boolean encodeParameters, String url, Object... parameters
+    ) throws IOException {
         parameters = validateAndPreprocessParameters(encodeParameters, url, parameters);
 
         for (int parameterIndex = 0; parameterIndex < parameters.length; parameterIndex += 2) {
@@ -291,7 +299,8 @@ public class HttpClientUtil {
         return httpClient.execute(request);
     }
 
-    public static void executePostRequest(HttpClient httpClient, String url, Object... parameters) throws IOException {
+    public static void executePostRequest(
+            @Nullable HttpClient httpClient, String url, Object... parameters) throws IOException {
         internalExecutePostRequest(httpClient, url, parameters);
     }
 
@@ -324,7 +333,7 @@ public class HttpClientUtil {
 
     @Nullable
     public static byte[] executePostRequestAndReturnResponseBytes(
-            HttpClient httpClient, String url, Object... parameters) throws IOException {
+            @Nullable HttpClient httpClient, String url, Object... parameters) throws IOException {
         HttpResponse httpResponse = internalExecutePostRequest(httpClient, url, parameters);
         HttpEntity httpEntity = httpResponse.getEntity();
         if (httpEntity == null) {
@@ -340,6 +349,7 @@ public class HttpClientUtil {
             long executionTimeoutMillis, final HttpClient httpClient,
             final String url, final Object... parameters) throws IOException {
         return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<byte[]>() {
+            @Nullable
             @Override
             public byte[] call() throws Exception {
                 return executePostRequestAndReturnResponseBytes(httpClient, url, parameters);
@@ -356,6 +366,7 @@ public class HttpClientUtil {
     public static byte[] executePostRequestAndReturnResponseBytes(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
         return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<byte[]>() {
+            @Nullable
             @Override
             public byte[] call() throws Exception {
                 return executePostRequestAndReturnResponseBytes(url, parameters);
@@ -365,7 +376,7 @@ public class HttpClientUtil {
 
     @Nullable
     public static String executePostRequestAndReturnResponseAsString(
-            HttpClient httpClient, String url, Object... parameters) throws IOException {
+            @Nullable HttpClient httpClient, String url, Object... parameters) throws IOException {
         HttpResponse httpResponse = internalExecutePostRequest(httpClient, url, parameters);
         HttpEntity httpEntity = httpResponse.getEntity();
         if (httpEntity == null) {
@@ -383,6 +394,7 @@ public class HttpClientUtil {
             long executionTimeoutMillis, final HttpClient httpClient,
             final String url, final Object... parameters) throws IOException {
         return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<String>() {
+            @Nullable
             @Override
             public String call() throws Exception {
                 return executePostRequestAndReturnResponseAsString(httpClient, url, parameters);
@@ -400,6 +412,7 @@ public class HttpClientUtil {
     public static String executePostRequestAndReturnResponseAsString(
             long executionTimeoutMillis, final String url, final Object... parameters) throws IOException {
         return internalExecuteLimitedTimeRequest(executionTimeoutMillis, url, new Callable<String>() {
+            @Nullable
             @Override
             public String call() throws Exception {
                 return executePostRequestAndReturnResponseAsString(url, parameters);
@@ -408,7 +421,7 @@ public class HttpClientUtil {
     }
 
     public static Response executePostRequestAndReturnResponse(
-            HttpClient httpClient, String url, Object... parameters) throws IOException {
+            @Nullable HttpClient httpClient, String url, Object... parameters) throws IOException {
         HttpResponse httpResponse = internalExecutePostRequest(httpClient, url, parameters);
         HttpEntity httpEntity = httpResponse.getEntity();
 
@@ -625,6 +638,7 @@ public class HttpClientUtil {
                 .build();
     }
 
+    @Nonnull
     private static HttpClientConnectionManagerBuilder getBasicConnectionManagerBuilder() {
         return new HttpClientConnectionManagerBuilder() {
             @Override
@@ -637,6 +651,7 @@ public class HttpClientUtil {
         };
     }
 
+    @Nonnull
     private static HttpClientConnectionManagerBuilder getPoolingConnectionManagerBuilder(
             final int maxPoolSizePerHost, final int maxPoolSize) {
         return new HttpClientConnectionManagerBuilder() {
@@ -799,6 +814,7 @@ public class HttpClientUtil {
         @Nullable
         private static final HttpHost HTTP_PROXY = getHttpProxy();
 
+        @Nonnull
         private static HttpRequestExecutor getHttpRequestExecutor() {
             return new HttpRequestExecutor() {
                 @Override

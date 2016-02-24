@@ -14,6 +14,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -227,6 +228,7 @@ public final class HttpRequest {
     }
 
     @SuppressWarnings("InstanceVariableUsedBeforeInitialized")
+    @Contract(pure = true)
     public boolean hasBinaryEntity() {
         return binaryEntity != null;
     }
@@ -407,7 +409,7 @@ public final class HttpRequest {
 
     public HttpRequest setRetryPolicy(int maxRetryCount, @Nonnull HttpResponseChecker responseChecker) {
         Preconditions.checkArgument(maxRetryCount > 0, "Argument 'maxRetryCount' is zero or negative.");
-        Preconditions.checkArgument(responseChecker != null, "Argument 'responseChecker' is null.");
+        Preconditions.checkNotNull(responseChecker, "Argument 'responseChecker' is null.");
         this.maxRetryCount = maxRetryCount;
         this.responseChecker = responseChecker;
         return this;
@@ -416,8 +418,8 @@ public final class HttpRequest {
     public HttpRequest setRetryPolicy(int maxRetryCount, @Nonnull HttpResponseChecker responseChecker,
                                       @Nonnull ThreadUtil.ExecutionStrategy retryStrategy) {
         Preconditions.checkArgument(maxRetryCount > 0, "Argument 'maxRetryCount' is zero or negative.");
-        Preconditions.checkArgument(responseChecker != null, "Argument 'responseChecker' is null.");
-        Preconditions.checkArgument(retryStrategy != null, "Argument 'retryStrategy' is null.");
+        Preconditions.checkNotNull(responseChecker, "Argument 'responseChecker' is null.");
+        Preconditions.checkNotNull(retryStrategy, "Argument 'retryStrategy' is null.");
         this.maxRetryCount = maxRetryCount;
         this.responseChecker = responseChecker;
         this.retryStrategy = retryStrategy;
@@ -438,10 +440,12 @@ public final class HttpRequest {
         return internalExecute(false).getCode();
     }
 
+    @Nonnull
     public HttpResponse executeAndReturnResponse() {
         return internalExecute(true);
     }
 
+    @Nonnull
     private HttpResponse internalExecute(boolean readBytes) {
         String internalUrl = appendGetParametersToUrl(this.url);
 
@@ -465,6 +469,7 @@ public final class HttpRequest {
         return internalGetHttpResponse(readBytes, internalUrl, startTimeMillis);
     }
 
+    @Nonnull
     private HttpResponse internalGetHttpResponse(boolean readBytes, String internalUrl, long startTimeMillis) {
         HttpURLConnection connection;
         try {
@@ -490,6 +495,7 @@ public final class HttpRequest {
 
             if (hasBinaryEntity()) {
                 try {
+                    //noinspection ConstantConditions We check that binaryEntity is not null in hasBinaryEntity() call.
                     writeEntity(connection, binaryEntity);
                 } catch (IOException e) {
                     String message = "Can't write binary entity to '" + internalUrl + "'.";
@@ -515,6 +521,7 @@ public final class HttpRequest {
         }
     }
 
+    @Nullable
     private byte[] getBytes(HttpURLConnection connection, boolean readBytes, final long startTimeMillis)
             throws IOException {
         byte[] bytes;
@@ -728,6 +735,7 @@ public final class HttpRequest {
                 // No operations.
             }
 
+            @Nullable
             @Override
             public X509Certificate[] getAcceptedIssuers() {
                 return null;
@@ -799,7 +807,7 @@ public final class HttpRequest {
         writeEntity(connection, result.toString().getBytes(Charsets.UTF_8));
     }
 
-    private void writeEntity(HttpURLConnection connection, byte[] entity) throws IOException {
+    private void writeEntity(@Nonnull HttpURLConnection connection, @Nonnull byte[] entity) throws IOException {
         OutputStream outputStream = new BufferedOutputStream(
                 gzip ? new GZIPOutputStream(connection.getOutputStream()) : connection.getOutputStream(),
                 IoUtil.BUFFER_SIZE

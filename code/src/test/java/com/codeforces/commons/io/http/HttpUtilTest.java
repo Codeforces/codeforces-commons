@@ -10,7 +10,7 @@ import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
 import fi.iki.elonen.NanoHTTPD;
 import junit.framework.TestCase;
-import org.apache.commons.io.Charsets;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -19,10 +19,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.junit.Ignore;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -92,9 +94,11 @@ public class HttpUtilTest extends TestCase {
                 @Override
                 public void run() {
                     try {
-                        byte[] bytes = IoUtil.toByteArray(HttpClientUtil.executeGetRequestAndReturnResponse(
-                                100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
-                        ).getInputStream());
+                        @SuppressWarnings("ConstantConditions") byte[] bytes = IoUtil.toByteArray(
+                                HttpClientUtil.executeGetRequestAndReturnResponse(
+                                        100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
+                                ).getInputStream()
+                        );
 
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
@@ -142,7 +146,7 @@ public class HttpUtilTest extends TestCase {
                                 100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
                         ).getBytes();
 
-                        assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
+                        assertEquals(LARGE_RESPONSE_SIZE, ArrayUtils.getLength(bytes));
 
                         if (VERBOSE) {
                             println("HttpUtilTest.testManyConcurrentGets: done " + count.incrementAndGet());
@@ -179,9 +183,11 @@ public class HttpUtilTest extends TestCase {
                 @Override
                 public void run() {
                     try {
-                        byte[] bytes = IoUtil.toByteArray(HttpClientUtil.executePostRequestAndReturnResponse(
-                                100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
-                        ).getInputStream());
+                        @SuppressWarnings("ConstantConditions") byte[] bytes = IoUtil.toByteArray(
+                                HttpClientUtil.executePostRequestAndReturnResponse(
+                                        100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
+                                ).getInputStream()
+                        );
 
                         assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
@@ -229,7 +235,7 @@ public class HttpUtilTest extends TestCase {
                                 100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
                         ).getBytes();
 
-                        assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
+                        assertEquals(LARGE_RESPONSE_SIZE, ArrayUtils.getLength(bytes));
 
                         if (VERBOSE) {
                             println("HttpUtilTest.testManyConcurrentPosts: done " + count.incrementAndGet());
@@ -312,7 +318,7 @@ public class HttpUtilTest extends TestCase {
 
                         assertEquals(
                                 getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
-                                DEFAULT_RESPONSE_SIZE, response.getBytes().length
+                                DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
                         );
 
                         if (VERBOSE) {
@@ -358,7 +364,7 @@ public class HttpUtilTest extends TestCase {
 
                         assertEquals(
                                 getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
-                                DEFAULT_RESPONSE_SIZE, response.getBytes().length
+                                DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
                         );
 
                         if (VERBOSE) {
@@ -405,7 +411,7 @@ public class HttpUtilTest extends TestCase {
             httpClient = HttpClientUtil.newHttpClient(20000, 20000);
             request = new HttpPost(BASE_TESTING_URL);
 
-            byte[] bytes = POST_DATA.getBytes(Charsets.UTF_8);
+            byte[] bytes = POST_DATA.getBytes(StandardCharsets.UTF_8);
             HttpEntity entity = new InputStreamEntity(new ByteArrayInputStream(bytes), bytes.length);
             request.setEntity(entity);
 
@@ -428,7 +434,7 @@ public class HttpUtilTest extends TestCase {
 
         HttpResponse response = HttpRequest.create(BASE_TESTING_URL)
                 .setMethod(HttpMethod.POST)
-                .setBinaryEntity(POST_DATA.getBytes(Charsets.UTF_8))
+                .setBinaryEntity(POST_DATA.getBytes(StandardCharsets.UTF_8))
                 .setTimeoutMillis(20000)
                 .executeAndReturnResponse();
 
@@ -436,7 +442,7 @@ public class HttpUtilTest extends TestCase {
 
         assertEquals(
                 getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
-                DEFAULT_RESPONSE_SIZE, response.getBytes().length
+                DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
         );
 
         assertEquals(String.format(
@@ -463,7 +469,7 @@ public class HttpUtilTest extends TestCase {
             InputStream entityInputStream = null;
 
             try {
-                byte[] bytes = POST_DATA.getBytes(Charsets.UTF_8);
+                byte[] bytes = POST_DATA.getBytes(StandardCharsets.UTF_8);
 
                 gzippedOutputStream = new ByteArrayOutputStream();
                 gzipOutputStream = new GZIPOutputStream(gzippedOutputStream);
@@ -498,14 +504,14 @@ public class HttpUtilTest extends TestCase {
 
         HttpResponse response = HttpRequest.create(BASE_TESTING_URL)
                 .setMethod(HttpMethod.POST)
-                .setBinaryEntity(POST_DATA.getBytes(Charsets.UTF_8))
+                .setBinaryEntity(POST_DATA.getBytes(StandardCharsets.UTF_8))
                 .setTimeoutMillis(20000)
                 .setGzip(true)
                 .executeAndReturnResponse();
 
         assertEquals(
                 getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
-                DEFAULT_RESPONSE_SIZE, response.getBytes().length
+                DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
         );
 
         assertEquals(String.format(
@@ -530,7 +536,7 @@ public class HttpUtilTest extends TestCase {
 
         assertEquals(
                 getIllegalResponseLengthMessage(response, LARGE_RESPONSE_SIZE),
-                LARGE_RESPONSE_SIZE, response.getBytes().length
+                LARGE_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
         );
 
         assertEquals(String.format(
@@ -642,7 +648,7 @@ public class HttpUtilTest extends TestCase {
                         byte[] bytes = outputStream.toByteArray();
                         bytes = IoUtil.toByteArray(new GZIPInputStream(new ByteArrayInputStream(bytes)));
 
-                        files.put("postData", new String(bytes, Charsets.UTF_8));
+                        files.put("postData", new String(bytes, StandardCharsets.UTF_8));
                     } catch (IOException e) {
                         return new Response(
                                 Response.Status.INTERNAL_ERROR, MimeUtil.Type.TEXT_PLAIN, ExceptionUtil.toString(e)
@@ -708,6 +714,7 @@ public class HttpUtilTest extends TestCase {
             return null;
         }
 
+        @Nonnull
         private static String getRandomString(int length) {
             return RandomStringUtils.randomAlphanumeric(length);
         }

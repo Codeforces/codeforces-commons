@@ -49,6 +49,7 @@ public class RedisByteCache extends ByteCache {
         return jedis;
     }
 
+    @SuppressWarnings("deprecation")
     private void releaseJedis(Jedis jedis) {
         jedisPool.returnResource(jedis);
     }
