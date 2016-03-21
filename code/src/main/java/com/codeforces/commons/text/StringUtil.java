@@ -194,7 +194,7 @@ public final class StringUtil {
     }
 
     /**
-     * Compares two strings case-sensitive. {@code null} and empty values considered equals.
+     * Compares two strings case-sensitive. {@code null} and empty values considered equal.
      *
      * @param stringA first string
      * @param stringB second string
@@ -206,7 +206,7 @@ public final class StringUtil {
     }
 
     /**
-     * Compares two strings case-sensitive. {@code null}, empty and blank values considered equals.
+     * Compares two strings case-sensitive. {@code null}, empty and blank values considered equal.
      *
      * @param stringA first string
      * @param stringB second string
@@ -231,7 +231,7 @@ public final class StringUtil {
     }
 
     /**
-     * Compares two strings case-insensitive. {@code null} and empty values considered equals.
+     * Compares two strings case-insensitive. {@code null} and empty values considered equal.
      *
      * @param stringA first string
      * @param stringB second string
@@ -243,7 +243,7 @@ public final class StringUtil {
     }
 
     /**
-     * Compares two strings case-insensitive. {@code null}, empty and blank values considered equals.
+     * Compares two strings case-insensitive. {@code null}, empty and blank values considered equal.
      *
      * @param stringA first string
      * @param stringB second string
@@ -252,6 +252,82 @@ public final class StringUtil {
      */
     public static boolean equalsOrBlankIgnoreCase(@Nullable String stringA, @Nullable String stringB) {
         return isBlank(stringA) ? isBlank(stringB) : stringA.equalsIgnoreCase(stringB);
+    }
+
+    /**
+     * Compares two strings case-sensitive and inverts result.
+     *
+     * @param stringA first string
+     * @param stringB second string
+     * @return {@code false} iff both strings A and B are {@code null}
+     * or the string B represents a {@code String} equivalent to the string A
+     */
+    @Contract(value = "null, null -> false; null, !null -> true; !null, null -> true", pure = true)
+    public static boolean notEquals(@Nullable String stringA, @Nullable String stringB) {
+        return stringA == null ? stringB != null : !stringA.equals(stringB);
+    }
+
+    /**
+     * Compares two strings case-sensitive and inverts result. {@code null} and empty values considered equal.
+     *
+     * @param stringA first string
+     * @param stringB second string
+     * @return {@code false} iff both strings A and B are {@link #isEmpty(String) empty}
+     * or the string B represents a {@code String} equal to the string A
+     */
+    public static boolean notEqualsOrEmpty(@Nullable String stringA, @Nullable String stringB) {
+        return isEmpty(stringA) ? isNotEmpty(stringB) : !stringA.equals(stringB);
+    }
+
+    /**
+     * Compares two strings case-sensitive and inverts result.
+     * {@code null}, empty and blank values considered equal.
+     *
+     * @param stringA first string
+     * @param stringB second string
+     * @return {@code false} iff both strings A and B are {@link #isBlank(String) blank}
+     * or the string B represents a {@code String} equal to the string A
+     */
+    public static boolean notEqualsOrBlank(@Nullable String stringA, @Nullable String stringB) {
+        return isBlank(stringA) ? isNotBlank(stringB) : !stringA.equals(stringB);
+    }
+
+    /**
+     * Compares two strings case-insensitive and inverts result.
+     *
+     * @param stringA first string
+     * @param stringB second string
+     * @return {@code false} iff both strings A and B are {@code null}
+     * or the string B represents a {@code String} equal to the string A
+     */
+    @Contract("null, null -> false; null, !null -> true; !null, null -> true")
+    public static boolean notEqualsIgnoreCase(@Nullable String stringA, @Nullable String stringB) {
+        return stringA == null ? stringB != null : !stringA.equalsIgnoreCase(stringB);
+    }
+
+    /**
+     * Compares two strings case-insensitive and inverts result. {@code null} and empty values considered equal.
+     *
+     * @param stringA first string
+     * @param stringB second string
+     * @return {@code false} iff both strings A and B are {@link #isEmpty(String) empty}
+     * or the string B represents a {@code String} equal to the string A
+     */
+    public static boolean notEqualsOrEmptyIgnoreCase(@Nullable String stringA, @Nullable String stringB) {
+        return isEmpty(stringA) ? isNotEmpty(stringB) : !stringA.equalsIgnoreCase(stringB);
+    }
+
+    /**
+     * Compares two strings case-insensitive and inverts result.
+     * {@code null}, empty and blank values considered equal.
+     *
+     * @param stringA first string
+     * @param stringB second string
+     * @return {@code false} iff both strings A and B are {@link #isBlank(String) blank}
+     * or the string B represents a {@code String} equal to the string A
+     */
+    public static boolean notEqualsOrBlankIgnoreCase(@Nullable String stringA, @Nullable String stringB) {
+        return isBlank(stringA) ? isNotBlank(stringB) : !stringA.equalsIgnoreCase(stringB);
     }
 
     @Contract(pure = true)
