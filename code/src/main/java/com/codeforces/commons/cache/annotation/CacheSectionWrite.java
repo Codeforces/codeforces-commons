@@ -1,4 +1,4 @@
-package com.codeforces.commons.cache.annotations;
+package com.codeforces.commons.cache.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -12,5 +12,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Target({METHOD})
 @Retention(RUNTIME)
-public @interface CacheWrite {
+public @interface CacheSectionWrite {
 }

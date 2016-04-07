@@ -1,6 +1,6 @@
 package com.codeforces.commons.cache;
 
-import com.codeforces.commons.cache.annotations.*;
+import com.codeforces.commons.cache.annotation.*;
 import com.codeforces.commons.process.ReadWriteEvent;
 import com.codeforces.commons.process.ThreadUtil;
 import com.google.inject.AbstractModule;
