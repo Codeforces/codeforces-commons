@@ -187,6 +187,12 @@ public class CollectionUtil {
         return modified;
     }
 
+    public static <T> void swap(List<T> list, int indexA, int indexB) {
+        T temp = list.get(indexA);
+        list.set(indexA, list.get(indexB));
+        list.set(indexB, temp);
+    }
+
     public interface Converter<T1, T2> {
         T2 convert(T1 value);
     }
