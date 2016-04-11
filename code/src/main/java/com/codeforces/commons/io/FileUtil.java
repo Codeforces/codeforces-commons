@@ -1031,9 +1031,10 @@ public class FileUtil {
         ensureParentDirectoryExists(target);
 
         try {
+            FileSystem defaultFileSystem = FileSystems.getDefault();
             Files.createSymbolicLink(
-                    FileSystems.getDefault().getPath(target.getAbsolutePath()),
-                    FileSystems.getDefault().getPath(source.getAbsolutePath())
+                    defaultFileSystem.getPath(target.getAbsolutePath()),
+                    defaultFileSystem.getPath(source.getAbsolutePath())
             );
         } catch (RuntimeException e) {
             throw new IOException(String.format(
@@ -1051,11 +1052,12 @@ public class FileUtil {
         ensureParentDirectoryExists(target);
 
         try {
+            FileSystem defaultFileSystem = FileSystems.getDefault();
             Files.createSymbolicLink(
-                    FileSystems.getDefault().getPath(target.getAbsolutePath()),
-                    FileSystems.getDefault().getPath(source.getAbsolutePath())
+                    defaultFileSystem.getPath(target.getAbsolutePath()),
+                    defaultFileSystem.getPath(source.getAbsolutePath())
             );
-        } catch (UnsupportedOperationException ignored) {
+        } catch (UnsupportedOperationException | IOException ignored) {
             if (isFile(source)) {
                 UnsafeFileUtil.copyFile(source, target);
             } else if (isDirectory(source)) {
