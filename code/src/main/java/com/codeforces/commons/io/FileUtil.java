@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
@@ -1031,10 +1032,9 @@ public class FileUtil {
         ensureParentDirectoryExists(target);
 
         try {
-            FileSystem defaultFileSystem = FileSystems.getDefault();
             Files.createSymbolicLink(
-                    defaultFileSystem.getPath(target.getAbsolutePath()),
-                    defaultFileSystem.getPath(source.getAbsolutePath())
+                    FileSystems.getFileSystem(target.toURI()).getPath(target.getAbsolutePath()),
+                    FileSystems.getFileSystem(source.toURI()).getPath(source.getAbsolutePath())
             );
         } catch (RuntimeException e) {
             throw new IOException(String.format(
@@ -1052,12 +1052,11 @@ public class FileUtil {
         ensureParentDirectoryExists(target);
 
         try {
-            FileSystem defaultFileSystem = FileSystems.getDefault();
             Files.createSymbolicLink(
-                    defaultFileSystem.getPath(target.getAbsolutePath()),
-                    defaultFileSystem.getPath(source.getAbsolutePath())
+                    FileSystems.getFileSystem(target.toURI()).getPath(target.getAbsolutePath()),
+                    FileSystems.getFileSystem(source.toURI()).getPath(source.getAbsolutePath())
             );
-        } catch (UnsupportedOperationException | IOException ignored) {
+        } catch (UnsupportedOperationException | IOException | InternalError ignored) {
             if (isFile(source)) {
                 UnsafeFileUtil.copyFile(source, target);
             } else if (isDirectory(source)) {
