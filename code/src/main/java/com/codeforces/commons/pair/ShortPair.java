@@ -50,6 +50,10 @@ public class ShortPair implements Comparable<ShortPair> {
         return comparisonResult == 0 ? Short.compare(second, pair.second) : comparisonResult;
     }
 
+    public boolean equals(short first, short second) {
+        return this.first == first && this.second == second;
+    }
+
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Contract(pure = true)
     @Override

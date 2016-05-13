@@ -50,6 +50,10 @@ public class IntPair implements Comparable<IntPair> {
         return comparisonResult == 0 ? Integer.compare(second, pair.second) : comparisonResult;
     }
 
+    public boolean equals(int first, int second) {
+        return this.first == first && this.second == second;
+    }
+
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Contract(pure = true)
     @Override

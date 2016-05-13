@@ -50,6 +50,10 @@ public class LongPair implements Comparable<LongPair> {
         return comparisonResult == 0 ? Long.compare(second, pair.second) : comparisonResult;
     }
 
+    public boolean equals(long first, long second) {
+        return this.first == first && this.second == second;
+    }
+
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Contract(pure = true)
     @Override

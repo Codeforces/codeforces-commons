@@ -50,6 +50,10 @@ public class BooleanPair implements Comparable<BooleanPair> {
         return comparisonResult == 0 ? Boolean.compare(second, pair.second) : comparisonResult;
     }
 
+    public boolean equals(boolean first, boolean second) {
+        return this.first == first && this.second == second;
+    }
+
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Contract(pure = true)
     @Override

@@ -83,6 +83,11 @@ public class Pair<F extends Comparable<F>, S extends Comparable<S>> implements C
         return 0;
     }
 
+    public boolean equals(@Nullable F first, @Nullable S second) {
+        return (this.first == null ? first == null : this.first.equals(first))
+                && (this.second == null ? second == null : this.second.equals(second));
+    }
+
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Override
     public boolean equals(Object o) {

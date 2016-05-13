@@ -50,6 +50,10 @@ public class BytePair implements Comparable<BytePair> {
         return comparisonResult == 0 ? Byte.compare(second, pair.second) : comparisonResult;
     }
 
+    public boolean equals(byte first, byte second) {
+        return this.first == first && this.second == second;
+    }
+
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Contract(pure = true)
     @Override

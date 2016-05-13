@@ -50,6 +50,10 @@ public class FloatPair implements Comparable<FloatPair> {
         return comparisonResult == 0 ? Float.compare(second, pair.second) : comparisonResult;
     }
 
+    public boolean equals(float first, float second) {
+        return Float.compare(this.first, first) == 0 && Float.compare(this.second, second) == 0;
+    }
+
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Contract(pure = true)
     @Override

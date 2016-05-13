@@ -50,6 +50,10 @@ public class DoublePair implements Comparable<DoublePair> {
         return comparisonResult == 0 ? Double.compare(second, pair.second) : comparisonResult;
     }
 
+    public boolean equals(double first, double second) {
+        return Double.compare(this.first, first) == 0 && Double.compare(this.second, second) == 0;
+    }
+
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Contract(pure = true)
     @Override
