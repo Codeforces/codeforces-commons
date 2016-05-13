@@ -16,16 +16,13 @@ public class AtomicUtilTest extends TestCase {
     private static final int ITERATION_COUNT = 1000;
 
     public void testInvert() throws Exception {
-        final AtomicBoolean value = new AtomicBoolean();
+        AtomicBoolean value = new AtomicBoolean();
         List<Thread> threads = new ArrayList<>(THREAD_COUNT);
 
         for (int threadIndex = 0; threadIndex < THREAD_COUNT; ++threadIndex) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (int iterationIndex = 0; iterationIndex < ITERATION_COUNT; ++iterationIndex) {
-                        AtomicUtil.invert(value);
-                    }
+            Thread thread = new Thread(() -> {
+                for (int iterationIndex = 0; iterationIndex < ITERATION_COUNT; ++iterationIndex) {
+                    AtomicUtil.invert(value);
                 }
             });
             threads.add(thread);
@@ -40,16 +37,13 @@ public class AtomicUtilTest extends TestCase {
     }
 
     public void testIncrement() throws Exception {
-        final AtomicInteger value = new AtomicInteger(3);
+        AtomicInteger value = new AtomicInteger(3);
         List<Thread> threads = new ArrayList<>(THREAD_COUNT);
 
         for (int threadIndex = 0; threadIndex < THREAD_COUNT; ++threadIndex) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (int iterationIndex = 0; iterationIndex < ITERATION_COUNT; ++iterationIndex) {
-                        AtomicUtil.increment(value, 9);
-                    }
+            Thread thread = new Thread(() -> {
+                for (int iterationIndex = 0; iterationIndex < ITERATION_COUNT; ++iterationIndex) {
+                    AtomicUtil.increment(value, 9);
                 }
             });
             threads.add(thread);
@@ -64,16 +58,13 @@ public class AtomicUtilTest extends TestCase {
     }
 
     public void testDecrement() throws Exception {
-        final AtomicInteger value = new AtomicInteger(7);
+        AtomicInteger value = new AtomicInteger(7);
         List<Thread> threads = new ArrayList<>(THREAD_COUNT);
 
         for (int threadIndex = 0; threadIndex < THREAD_COUNT; ++threadIndex) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (int iterationIndex = 0; iterationIndex < ITERATION_COUNT; ++iterationIndex) {
-                        AtomicUtil.decrement(value, 9);
-                    }
+            Thread thread = new Thread(() -> {
+                for (int iterationIndex = 0; iterationIndex < ITERATION_COUNT; ++iterationIndex) {
+                    AtomicUtil.decrement(value, 9);
                 }
             });
             threads.add(thread);

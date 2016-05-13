@@ -82,36 +82,33 @@ public class HttpUtilTest extends TestCase {
 
     @Ignore
     public void _testManyConcurrentGets_HttpClientUtil() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-        final AtomicInteger count = new AtomicInteger();
+        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
 
         long startTimeMillis = System.currentTimeMillis();
 
         for (int i = 0; i < REQUEST_COUNT; ++i) {
-            pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        @SuppressWarnings("ConstantConditions") byte[] bytes = IoUtil.toByteArray(
-                                HttpClientUtil.executeGetRequestAndReturnResponse(
-                                        100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
-                                ).getInputStream()
-                        );
+            pool.submit(() -> {
+                try {
+                    @SuppressWarnings("ConstantConditions") byte[] bytes = IoUtil.toByteArray(
+                            HttpClientUtil.executeGetRequestAndReturnResponse(
+                                    100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
+                            ).getInputStream()
+                    );
 
-                        assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
+                    assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
-                        if (VERBOSE) {
-                            println(String.format(
-                                    "HttpUtilTest.testManyConcurrentGets_HttpClientUtil: done %d",
-                                    count.incrementAndGet()
-                            ));
-                        }
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        exceptions.add(e);
+                    if (VERBOSE) {
+                        println(String.format(
+                                "HttpUtilTest.testManyConcurrentGets_HttpClientUtil: done %d",
+                                count.incrementAndGet()
+                        ));
                     }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    exceptions.add(e);
                 }
             });
         }
@@ -130,31 +127,28 @@ public class HttpUtilTest extends TestCase {
     }
 
     public void testManyConcurrentGets() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-        final AtomicInteger count = new AtomicInteger();
+        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
 
         long startTimeMillis = System.currentTimeMillis();
 
         for (int i = 0; i < REQUEST_COUNT; ++i) {
-            pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        byte[] bytes = HttpUtil.executeGetRequestAndReturnResponse(
-                                100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
-                        ).getBytes();
+            pool.submit(() -> {
+                try {
+                    byte[] bytes = HttpUtil.executeGetRequestAndReturnResponse(
+                            100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
+                    ).getBytes();
 
-                        assertEquals(LARGE_RESPONSE_SIZE, ArrayUtils.getLength(bytes));
+                    assertEquals(LARGE_RESPONSE_SIZE, ArrayUtils.getLength(bytes));
 
-                        if (VERBOSE) {
-                            println("HttpUtilTest.testManyConcurrentGets: done " + count.incrementAndGet());
-                        }
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        exceptions.add(e);
+                    if (VERBOSE) {
+                        println("HttpUtilTest.testManyConcurrentGets: done " + count.incrementAndGet());
                     }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    exceptions.add(e);
                 }
             });
         }
@@ -171,36 +165,33 @@ public class HttpUtilTest extends TestCase {
 
     @Ignore
     public void _testManyConcurrentPosts_HttpClientUtil() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-        final AtomicInteger count = new AtomicInteger();
+        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
 
         long startTimeMillis = System.currentTimeMillis();
 
         for (int i = 0; i < REQUEST_COUNT; ++i) {
-            pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        @SuppressWarnings("ConstantConditions") byte[] bytes = IoUtil.toByteArray(
-                                HttpClientUtil.executePostRequestAndReturnResponse(
-                                        100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
-                                ).getInputStream()
-                        );
+            pool.submit(() -> {
+                try {
+                    @SuppressWarnings("ConstantConditions") byte[] bytes = IoUtil.toByteArray(
+                            HttpClientUtil.executePostRequestAndReturnResponse(
+                                    100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
+                            ).getInputStream()
+                    );
 
-                        assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
+                    assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
-                        if (VERBOSE) {
-                            println(String.format(
-                                    "HttpUtilTest.testManyConcurrentPosts_HttpClientUtil: done %d",
-                                    count.incrementAndGet()
-                            ));
-                        }
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        exceptions.add(e);
+                    if (VERBOSE) {
+                        println(String.format(
+                                "HttpUtilTest.testManyConcurrentPosts_HttpClientUtil: done %d",
+                                count.incrementAndGet()
+                        ));
                     }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    exceptions.add(e);
                 }
             });
         }
@@ -219,31 +210,28 @@ public class HttpUtilTest extends TestCase {
     }
 
     public void testManyConcurrentPosts() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-        final AtomicInteger count = new AtomicInteger();
+        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
 
         long startTimeMillis = System.currentTimeMillis();
 
         for (int i = 0; i < REQUEST_COUNT; ++i) {
-            pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        byte[] bytes = HttpUtil.executePostRequestAndReturnResponse(
-                                100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
-                        ).getBytes();
+            pool.submit(() -> {
+                try {
+                    byte[] bytes = HttpUtil.executePostRequestAndReturnResponse(
+                            100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
+                    ).getBytes();
 
-                        assertEquals(LARGE_RESPONSE_SIZE, ArrayUtils.getLength(bytes));
+                    assertEquals(LARGE_RESPONSE_SIZE, ArrayUtils.getLength(bytes));
 
-                        if (VERBOSE) {
-                            println("HttpUtilTest.testManyConcurrentPosts: done " + count.incrementAndGet());
-                        }
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        exceptions.add(e);
+                    if (VERBOSE) {
+                        println("HttpUtilTest.testManyConcurrentPosts: done " + count.incrementAndGet());
                     }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    exceptions.add(e);
                 }
             });
         }
@@ -259,29 +247,26 @@ public class HttpUtilTest extends TestCase {
     }
 
     public void testManyConcurrentDoGets() throws InterruptedException, IOException {
-        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-        final AtomicInteger count = new AtomicInteger();
+        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
 
         long startTimeMillis = System.currentTimeMillis();
 
         for (int i = 0; i < REQUEST_COUNT; ++i) {
-            pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        byte[] bytes = doGet(BASE_TESTING_URL + "?size=" + LARGE_RESPONSE_SIZE);
+            pool.submit(() -> {
+                try {
+                    byte[] bytes = doGet(BASE_TESTING_URL + "?size=" + LARGE_RESPONSE_SIZE);
 
-                        assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
+                    assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
-                        if (VERBOSE) {
-                            println("HttpUtilTest.testManyConcurrentDoGets: done " + count.incrementAndGet());
-                        }
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        exceptions.add(e);
+                    if (VERBOSE) {
+                        println("HttpUtilTest.testManyConcurrentDoGets: done " + count.incrementAndGet());
                     }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    exceptions.add(e);
                 }
             });
         }
@@ -300,34 +285,31 @@ public class HttpUtilTest extends TestCase {
         int concurrency = 5;
         int requestCount = 5 * concurrency;
 
-        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-        final AtomicInteger count = new AtomicInteger();
+        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(concurrency);
 
         long startTimeMillis = System.currentTimeMillis();
 
         for (int i = 0; i < requestCount; ++i) {
-            pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
-                                1500, BASE_TESTING_URL + "?delay=1000"
-                        );
+            pool.submit(() -> {
+                try {
+                    HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
+                            1500, BASE_TESTING_URL + "?delay=1000"
+                    );
 
-                        assertEquals(
-                                getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
-                                DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
-                        );
+                    assertEquals(
+                            getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
+                            DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
+                    );
 
-                        if (VERBOSE) {
-                            println("HttpUtilTest.testManyNotTimedOutPosts: done " + count.incrementAndGet());
-                        }
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        exceptions.add(e);
+                    if (VERBOSE) {
+                        println("HttpUtilTest.testManyNotTimedOutPosts: done " + count.incrementAndGet());
                     }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    exceptions.add(e);
                 }
             });
         }
@@ -346,33 +328,30 @@ public class HttpUtilTest extends TestCase {
         int concurrency = 5;
         int requestCount = 5 * concurrency;
 
-        final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-        final AtomicInteger count = new AtomicInteger();
+        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger count = new AtomicInteger();
 
         ExecutorService pool = Executors.newFixedThreadPool(concurrency);
 
         long startTimeMillis = System.currentTimeMillis();
 
         for (int i = 0; i < requestCount; ++i) {
-            pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
-                                950, BASE_TESTING_URL + "?delay=1000"
-                        );
+            pool.submit(() -> {
+                try {
+                    HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
+                            950, BASE_TESTING_URL + "?delay=1000"
+                    );
 
-                        assertEquals(
-                                getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
-                                DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
-                        );
+                    assertEquals(
+                            getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
+                            DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes())
+                    );
 
-                        if (VERBOSE) {
-                            println("HttpUtilTest.testManyTimedOutPosts: done " + count.incrementAndGet());
-                        }
-                    } catch (Throwable e) {
-                        exceptions.add(e);
+                    if (VERBOSE) {
+                        println("HttpUtilTest.testManyTimedOutPosts: done " + count.incrementAndGet());
                     }
+                } catch (Throwable e) {
+                    exceptions.add(e);
                 }
             });
         }

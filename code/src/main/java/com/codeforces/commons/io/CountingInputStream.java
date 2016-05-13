@@ -1,5 +1,6 @@
 package com.codeforces.commons.io;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicLong;
@@ -11,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @SuppressWarnings("RefusedBequest")
 public final class CountingInputStream extends InputStream {
+    @SuppressWarnings("Convert2Lambda")
     private static final ReadEvent EMPTY_READ_EVENT = new ReadEvent() {
         @Override
         public void onRead(long readByteCount, long totalReadByteCount) {
@@ -51,7 +53,7 @@ public final class CountingInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] bytes) throws IOException {
+    public int read(@Nonnull byte[] bytes) throws IOException {
         if (lock.isHeldByCurrentThread()) {
             return inputStream.read(bytes);
         } else {
@@ -69,7 +71,7 @@ public final class CountingInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] bytes, int offset, int count) throws IOException {
+    public int read(@Nonnull byte[] bytes, int offset, int count) throws IOException {
         if (lock.isHeldByCurrentThread()) {
             return inputStream.read(bytes, offset, count);
         } else {

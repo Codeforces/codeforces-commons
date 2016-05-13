@@ -66,7 +66,7 @@ public class IoUtil {
     @Nonnull
     public static String toString(InputStream inputStream) throws IOException {
         try {
-            String s = IOUtils.toString(inputStream);
+            String s = IOUtils.toString(inputStream, Charset.defaultCharset());
             inputStream.close();
             return s;
         } catch (IOException e) {

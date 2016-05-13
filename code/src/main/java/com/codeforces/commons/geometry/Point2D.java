@@ -27,8 +27,7 @@ public class Point2D extends DoublePair {
     }
 
     public double getX() {
-        Double x = getFirst();
-        return x == null ? 0.0D : x;
+        return getFirst();
     }
 
     public void setX(double x) {
@@ -36,8 +35,7 @@ public class Point2D extends DoublePair {
     }
 
     public double getY() {
-        Double y = getSecond();
-        return y == null ? 0.0D : y;
+        return getSecond();
     }
 
     public void setY(double y) {

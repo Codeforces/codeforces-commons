@@ -19,7 +19,6 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
@@ -91,13 +90,8 @@ public class FileUtil {
      * @throws IOException Can't perform IO.
      */
     @Nonnull
-    public static String sha1(final File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<String>() {
-            @Override
-            public String run() throws IOException {
-                return UnsafeFileUtil.sha1Hex(file);
-            }
-        }));
+    public static String sha1(File file) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.sha1Hex(file)));
     }
 
     /**
@@ -107,13 +101,10 @@ public class FileUtil {
      * @param destination Destination file.
      * @throws IOException Can't perform copy.
      */
-    public static void copyFile(final File source, final File destination) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.copyFile(source, destination);
-                return null;
-            }
+    public static void copyFile(File source, File destination) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.copyFile(source, destination);
+            return null;
         });
     }
 
@@ -125,13 +116,10 @@ public class FileUtil {
      * @param destination Destination directory.
      * @throws IOException when can't perform copy.
      */
-    public static void copyDirectory(final File source, final File destination) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.copyDirectory(source, destination);
-                return null;
-            }
+    public static void copyDirectory(File source, File destination) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.copyDirectory(source, destination);
+            return null;
         });
     }
 
@@ -143,13 +131,8 @@ public class FileUtil {
      * @throws IOException if file does not exist and can't be created
      */
     @Nonnull
-    public static File ensureFileExists(final File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
-            @Override
-            public File run() throws IOException {
-                return UnsafeFileUtil.ensureFileExists(file);
-            }
-        }));
+    public static File ensureFileExists(File file) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.ensureFileExists(file)));
     }
 
     /**
@@ -160,13 +143,8 @@ public class FileUtil {
      * @throws IOException if directory does not exist and can't be created
      */
     @Nonnull
-    public static File ensureDirectoryExists(final File directory) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
-            @Override
-            public File run() throws IOException {
-                return UnsafeFileUtil.ensureDirectoryExists(directory);
-            }
-        }));
+    public static File ensureDirectoryExists(File directory) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.ensureDirectoryExists(directory)));
     }
 
     /**
@@ -178,17 +156,12 @@ public class FileUtil {
      */
     @Nullable
     public static File ensureParentDirectoryExists(@Nonnull File file) throws IOException {
-        final File directory = file.getParentFile();
+        File directory = file.getParentFile();
         if (directory == null) {
             return null;
         }
 
-        return executeIoOperation(new ThreadUtil.Operation<File>() {
-            @Override
-            public File run() throws IOException {
-                return UnsafeFileUtil.ensureDirectoryExists(directory);
-            }
-        });
+        return executeIoOperation(() -> UnsafeFileUtil.ensureDirectoryExists(directory));
     }
 
     /**
@@ -198,13 +171,10 @@ public class FileUtil {
      * @param file File to be deleted.
      * @throws IOException if can't delete file.
      */
-    public static void deleteTotally(@Nullable final File file) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.deleteTotally(file);
-                return null;
-            }
+    public static void deleteTotally(@Nullable File file) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.deleteTotally(file);
+            return null;
         });
     }
 
@@ -228,15 +198,12 @@ public class FileUtil {
      *
      * @param file File to be deleted.
      */
-    public static void deleteTotallyAsync(@Nullable final File file) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    deleteTotally(file);
-                } catch (IOException ignored) {
-                    // No operations.
-                }
+    public static void deleteTotallyAsync(@Nullable File file) {
+        new Thread(() -> {
+            try {
+                deleteTotally(file);
+            } catch (IOException ignored) {
+                // No operations.
             }
         }).start();
     }
@@ -248,14 +215,11 @@ public class FileUtil {
      * @param deleteFileFilter Filter of files to delete
      * @throws IOException if argument is not a directory or can't clean directory
      */
-    public static void cleanDirectory(final File directory, @Nullable final FileFilter deleteFileFilter)
+    public static void cleanDirectory(File directory, @Nullable FileFilter deleteFileFilter)
             throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.cleanDirectory(directory, deleteFileFilter);
-                return null;
-            }
+        executeIoOperation(() -> {
+            UnsafeFileUtil.cleanDirectory(directory, deleteFileFilter);
+            return null;
         });
     }
 
@@ -265,13 +229,10 @@ public class FileUtil {
      * @param directory Directory to be deleted
      * @throws IOException if argument is not a directory or can't clean directory
      */
-    public static void cleanDirectory(final File directory) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.cleanDirectory(directory, null);
-                return null;
-            }
+    public static void cleanDirectory(File directory) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.cleanDirectory(directory, null);
+            return null;
         });
     }
 
@@ -281,15 +242,12 @@ public class FileUtil {
      * @param directory        Directory to be deleted
      * @param deleteFileFilter Filter of files to delete
      */
-    public static void cleanDirectoryAsync(final File directory, @Nullable final FileFilter deleteFileFilter) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    cleanDirectory(directory, deleteFileFilter);
-                } catch (IOException ignored) {
-                    // No operations.
-                }
+    public static void cleanDirectoryAsync(File directory, @Nullable FileFilter deleteFileFilter) {
+        new Thread(() -> {
+            try {
+                cleanDirectory(directory, deleteFileFilter);
+            } catch (IOException ignored) {
+                // No operations.
             }
         }).start();
     }
@@ -299,15 +257,12 @@ public class FileUtil {
      *
      * @param directory Directory to be deleted
      */
-    public static void cleanDirectoryAsync(final File directory) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    cleanDirectory(directory);
-                } catch (IOException ignored) {
-                    // No operations.
-                }
+    public static void cleanDirectoryAsync(File directory) {
+        new Thread(() -> {
+            try {
+                cleanDirectory(directory);
+            } catch (IOException ignored) {
+                // No operations.
             }
         }).start();
     }
@@ -319,13 +274,8 @@ public class FileUtil {
      *                     doesn't exists, is directory or not enough permissions.
      */
     @Nonnull
-    public static String readFile(final File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<String>() {
-            @Override
-            public String run() throws IOException {
-                return UnsafeFileUtil.readFile(file);
-            }
-        }));
+    public static String readFile(File file) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.readFile(file)));
     }
 
     /**
@@ -348,13 +298,10 @@ public class FileUtil {
      * @param content Content to be write.
      * @throws IOException if can't read file.
      */
-    public static void writeFile(final File file, final String content) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.writeFile(file, content);
-                return null;
-            }
+    public static void writeFile(File file, String content) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.writeFile(file, content);
+            return null;
         });
     }
 
@@ -368,13 +315,10 @@ public class FileUtil {
      * @throws IOException                  if can't read file.
      * @throws UnsupportedEncodingException illegal encoding.
      */
-    public static void writeFile(final File file, final String content, final String encoding) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.writeFile(file, content, encoding);
-                return null;
-            }
+    public static void writeFile(File file, String content, String encoding) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.writeFile(file, content, encoding);
+            return null;
         });
     }
 
@@ -386,13 +330,10 @@ public class FileUtil {
      * @param bytes Bytes to be write.
      * @throws IOException if can't write file.
      */
-    public static void writeFile(final File file, final byte[] bytes) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.writeFile(file, bytes);
-                return null;
-            }
+    public static void writeFile(File file, byte[] bytes) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.writeFile(file, bytes);
+            return null;
         });
     }
 
@@ -404,13 +345,10 @@ public class FileUtil {
      * @param bytes Bytes to write into file.
      * @throws IOException If file exists or can't write file.
      */
-    public static void createFile(final File file, final byte[] bytes) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.createFile(file, bytes);
-                return null;
-            }
+    public static void createFile(File file, byte[] bytes) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.createFile(file, bytes);
+            return null;
         });
     }
 
@@ -421,13 +359,10 @@ public class FileUtil {
      * @param content String to write into file.
      * @throws IOException If file exists or can't write file.
      */
-    public static void createFile(final File file, final String content) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.createFile(file, content);
-                return null;
-            }
+    public static void createFile(File file, String content) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.createFile(file, content);
+            return null;
         });
     }
 
@@ -435,13 +370,10 @@ public class FileUtil {
      * @param file File to remove.
      * @throws IOException If file not found or can't be removed.
      */
-    public static void removeFile(final File file) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.removeFile(file);
-                return null;
-            }
+    public static void removeFile(File file) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.removeFile(file);
+            return null;
         });
     }
 
@@ -453,13 +385,10 @@ public class FileUtil {
      * @param overwrite       overwrite destinationFile if it exists
      * @throws IOException if can't rename.
      */
-    public static void renameFile(final File sourceFile, final File destinationFile, final boolean overwrite) throws IOException {
-        executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Override
-            public Void run() throws IOException {
-                UnsafeFileUtil.renameFile(sourceFile, destinationFile, overwrite);
-                return null;
-            }
+    public static void renameFile(File sourceFile, File destinationFile, boolean overwrite) throws IOException {
+        executeIoOperation(() -> {
+            UnsafeFileUtil.renameFile(sourceFile, destinationFile, overwrite);
+            return null;
         });
     }
 
@@ -481,13 +410,8 @@ public class FileUtil {
      * @throws FileNotFoundException if can't find file.
      */
     @Nonnull
-    public static byte[] getBytes(final File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<byte[]>() {
-            @Override
-            public byte[] run() throws IOException {
-                return UnsafeFileUtil.getBytes(file);
-            }
-        }));
+    public static byte[] getBytes(File file) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.getBytes(file)));
     }
 
     /**
@@ -510,7 +434,7 @@ public class FileUtil {
      * @throws FileNotFoundException if can't find file.
      */
     @Nonnull
-    public static FirstBytes getFirstBytes(final File file) throws IOException {
+    public static FirstBytes getFirstBytes(File file) throws IOException {
         return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
             @Nonnull
             @Override
@@ -530,13 +454,8 @@ public class FileUtil {
      * @throws FileNotFoundException if can't find file.
      */
     @Nonnull
-    public static FirstBytes getFirstBytes(final File file, final long maxSize) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
-            @Override
-            public FirstBytes run() throws IOException {
-                return UnsafeFileUtil.getFirstBytes(file, maxSize);
-            }
-        }));
+    public static FirstBytes getFirstBytes(File file, long maxSize) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.getFirstBytes(file, maxSize)));
     }
 
     /**
@@ -547,13 +466,8 @@ public class FileUtil {
      * @throws IOException if can't create directory.
      */
     @Nonnull
-    public static File createTemporaryDirectory(final String prefix) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
-            @Override
-            public File run() throws IOException {
-                return UnsafeFileUtil.createTemporaryDirectory(prefix);
-            }
-        }));
+    public static File createTemporaryDirectory(String prefix) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.createTemporaryDirectory(prefix)));
     }
 
     /**
@@ -565,13 +479,8 @@ public class FileUtil {
      * @throws IOException if can't create directory.
      */
     @Nonnull
-    public static File createTemporaryDirectory(final String prefix, final File parentDirectory) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
-            @Override
-            public File run() throws IOException {
-                return UnsafeFileUtil.createTemporaryDirectory(prefix, parentDirectory);
-            }
-        }));
+    public static File createTemporaryDirectory(String prefix, File parentDirectory) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.createTemporaryDirectory(prefix, parentDirectory)));
     }
 
     /**
@@ -663,12 +572,7 @@ public class FileUtil {
      */
     @Nonnull
     public static File getTemporaryDirectory() throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<File>() {
-            @Override
-            public File run() {
-                return UnsafeFileUtil.getTemporaryDirectory();
-            }
-        }));
+        return Preconditions.checkNotNull(executeIoOperation(UnsafeFileUtil::getTemporaryDirectory));
     }
 
     /**
@@ -678,33 +582,18 @@ public class FileUtil {
      * @throws IOException error.
      */
     @Nonnull
-    public static List<File> list(@Nonnull final File directory) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<List<File>>() {
-            @Override
-            public List<File> run() {
-                return UnsafeFileUtil.list(directory);
-            }
-        }));
+    public static List<File> list(@Nonnull File directory) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.list(directory)));
     }
 
     @Nonnull
-    public static List<String> listRelativePaths(@Nonnull final File directory, @Nullable final FileFilter filter,
-                                                 final boolean recursive) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<List<String>>() {
-            @Override
-            public List<String> run() {
-                return UnsafeFileUtil.listRelativePaths(directory, filter, recursive);
-            }
-        }));
+    public static List<String> listRelativePaths(@Nonnull File directory, @Nullable FileFilter filter,
+                                                 boolean recursive) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.listRelativePaths(directory, filter, recursive)));
     }
 
-    public static long getDirectorySize(final File directory) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<Long>() {
-            @Override
-            public Long run() {
-                return UnsafeFileUtil.getDirectorySize(directory);
-            }
-        }));
+    public static long getDirectorySize(File directory) throws IOException {
+        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.getDirectorySize(directory)));
     }
 
     public static File hideFile(File file) throws IOException {

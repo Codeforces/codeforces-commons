@@ -5,7 +5,7 @@ import com.codeforces.commons.holder.Mutable;
 import com.codeforces.commons.holder.SimpleMutable;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
-import com.codeforces.commons.pair.SimplePair;
+import com.codeforces.commons.pair.*;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.reflection.ReflectionUtil;
 import com.google.common.base.Preconditions;
@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 
 import static com.codeforces.commons.math.Math.max;
 import static com.codeforces.commons.math.Math.min;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
@@ -709,7 +710,7 @@ public final class StringUtil {
         return false;
     }
 
-    @SuppressWarnings({"OverlyComplexMethod", "unchecked"})
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "unchecked"})
     @Contract("null, _ -> null")
     @Nullable
     private static String valueToString(@Nullable Object value, @Nullable Mutable<Boolean> quoted) {
@@ -731,8 +732,29 @@ public final class StringUtil {
         } else if (value instanceof Map.Entry) {
             Map.Entry entry = (Map.Entry) value;
             return valueToString(entry.getKey(), null) + ": " + valueToString(entry.getValue(), null);
-        } else if (value instanceof SimplePair) {
-            SimplePair pair = (SimplePair) value;
+        } else if (value instanceof Pair) {
+            Pair pair = (Pair) value;
+            return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
+        } else if (value instanceof BooleanPair) {
+            BooleanPair pair = (BooleanPair) value;
+            return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
+        } else if (value instanceof BytePair) {
+            BytePair pair = (BytePair) value;
+            return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
+        } else if (value instanceof ShortPair) {
+            ShortPair pair = (ShortPair) value;
+            return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
+        } else if (value instanceof IntPair) {
+            IntPair pair = (IntPair) value;
+            return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
+        } else if (value instanceof LongPair) {
+            LongPair pair = (LongPair) value;
+            return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
+        } else if (value instanceof FloatPair) {
+            FloatPair pair = (FloatPair) value;
+            return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
+        } else if (value instanceof DoublePair) {
+            DoublePair pair = (DoublePair) value;
             return '(' + valueToString(pair.getFirst(), null) + ", " + valueToString(pair.getSecond(), null) + ')';
         } else if (valueClass == Character.class) {
             Holders.setQuietly(quoted, true);
@@ -1063,8 +1085,8 @@ public final class StringUtil {
         BufferedWriter writer = null;
 
         try {
-            reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8"));
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+            reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), UTF_8));
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), UTF_8));
 
             String line;
             while ((line = reader.readLine()) != null) {
@@ -1099,6 +1121,7 @@ public final class StringUtil {
         }
     }
 
+    @SuppressWarnings("Convert2streamapi")
     @Nullable
     public static List<String> shrinkLinesTo(List<String> lines, int maxLineLength, int maxLineCount) {
         if (maxLineCount < 3) {
@@ -1393,21 +1416,11 @@ public final class StringUtil {
     }
 
     public static void sortStringsSmart(@Nonnull String[] strings) {
-        Arrays.sort(strings, new Comparator<String>() {
-            @Override
-            public int compare(String stringA, String stringB) {
-                return compareStringsSmart(stringA, stringB);
-            }
-        });
+        Arrays.sort(strings, StringUtil::compareStringsSmart);
     }
 
     public static void sortStringsSmart(@Nonnull List<String> strings) {
-        Collections.sort(strings, new Comparator<String>() {
-            @Override
-            public int compare(String stringA, String stringB) {
-                return compareStringsSmart(stringA, stringB);
-            }
-        });
+        Collections.sort(strings, StringUtil::compareStringsSmart);
     }
 
     public static long longHashCode(@Nullable String s) {

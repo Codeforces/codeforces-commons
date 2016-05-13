@@ -1,5 +1,6 @@
 package com.codeforces.commons.io;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -46,7 +47,7 @@ public class LimitedByteArrayOutputStream extends ByteArrayOutputStream {
     }
 
     @Override
-    public synchronized void write(byte[] bytes) throws IOException {
+    public synchronized void write(@Nonnull byte[] bytes) throws IOException {
         if (size() + bytes.length <= maxSize) {
             super.write(bytes);
         } else {

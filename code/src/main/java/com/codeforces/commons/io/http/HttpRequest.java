@@ -11,7 +11,6 @@ import com.codeforces.commons.text.StringUtil;
 import com.codeforces.commons.text.UrlUtil;
 import com.codeforces.commons.time.TimeUtil;
 import com.google.common.base.Preconditions;
-import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
@@ -36,6 +35,8 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipInputStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 27.11.14
@@ -56,12 +57,7 @@ public final class HttpRequest {
     private int timeoutMillis = NumberUtil.toInt(10L * TimeUtil.MILLIS_PER_MINUTE);
     private int maxRetryCount = 1;
 
-    private HttpResponseChecker responseChecker = new HttpResponseChecker() {
-        @Override
-        public boolean check(HttpResponse response) {
-            return !response.hasIoException();
-        }
-    };
+    private HttpResponseChecker responseChecker = response -> !response.hasIoException();
 
     private ThreadUtil.ExecutionStrategy retryStrategy = new ThreadUtil.ExecutionStrategy(
             250L, ThreadUtil.ExecutionStrategy.Type.LINEAR
@@ -522,7 +518,7 @@ public final class HttpRequest {
     }
 
     @Nullable
-    private byte[] getBytes(HttpURLConnection connection, boolean readBytes, final long startTimeMillis)
+    private byte[] getBytes(HttpURLConnection connection, boolean readBytes, long startTimeMillis)
             throws IOException {
         byte[] bytes;
 
@@ -549,12 +545,9 @@ public final class HttpRequest {
                     connectionInputStream = new ZipInputStream(connectionInputStream);
                 }
 
-                connectionInputStream = new CountingInputStream(connectionInputStream, new CountingInputStream.ReadEvent() {
-                    @Override
-                    public void onRead(long readByteCount, long totalReadByteCount) throws IOException {
-                        if (System.currentTimeMillis() - startTimeMillis > timeoutMillis) {
-                            throw new IOException("Can't read response within " + timeoutMillis + " ms.");
-                        }
+                connectionInputStream = new CountingInputStream(connectionInputStream, (readByteCount, totalReadByteCount) -> {
+                    if (System.currentTimeMillis() - startTimeMillis > timeoutMillis) {
+                        throw new IOException("Can't read response within " + timeoutMillis + " ms.");
                     }
                 });
 
@@ -804,7 +797,7 @@ public final class HttpRequest {
             }
         }
 
-        writeEntity(connection, result.toString().getBytes(Charsets.UTF_8));
+        writeEntity(connection, result.toString().getBytes(UTF_8));
     }
 
     private void writeEntity(@Nonnull HttpURLConnection connection, @Nonnull byte[] entity) throws IOException {

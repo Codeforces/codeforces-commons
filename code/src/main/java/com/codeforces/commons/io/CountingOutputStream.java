@@ -1,5 +1,6 @@
 package com.codeforces.commons.io;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicLong;
@@ -11,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @SuppressWarnings("RefusedBequest")
 public class CountingOutputStream extends OutputStream {
+    @SuppressWarnings("Convert2Lambda")
     private static final WriteEvent EMPTY_WRITE_EVENT = new WriteEvent() {
         @Override
         public void onWrite(long writtenByteCount, long totalWrittenByteCount) {
@@ -48,7 +50,7 @@ public class CountingOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(byte[] bytes) throws IOException {
+    public void write(@Nonnull byte[] bytes) throws IOException {
         if (lock.isHeldByCurrentThread()) {
             outputStream.write(bytes);
         } else {
@@ -64,7 +66,7 @@ public class CountingOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(byte[] bytes, int offset, int count) throws IOException {
+    public void write(@Nonnull byte[] bytes, int offset, int count) throws IOException {
         if (lock.isHeldByCurrentThread()) {
             outputStream.write(bytes, offset, count);
         } else {

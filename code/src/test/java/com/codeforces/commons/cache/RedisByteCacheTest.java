@@ -46,15 +46,12 @@ public class RedisByteCacheTest extends TestCase {
     public void testStoringOfValues() throws Exception {
         File tempDir = FileUtil.createTemporaryDirectory("file-system-cache");
         try {
-            final ByteCache cache = new RedisByteCache("127.0.0.1:88");
-            final BlockingQueue<CachePath> cachePaths = getCachePaths();
+            ByteCache cache = new RedisByteCache("127.0.0.1:88");
+            BlockingQueue<CachePath> cachePaths = getCachePaths();
 
-            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testStoringOfValues", new Runnable() {
-                @Override
-                public void run() {
-                    for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
-                        checkStoringOneValue(cache, cachePaths.poll());
-                    }
+            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testStoringOfValues", () -> {
+                for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
+                    checkStoringOneValue(cache, cachePaths.poll());
                 }
             });
         } finally {
@@ -65,54 +62,42 @@ public class RedisByteCacheTest extends TestCase {
     public void testConcurrentStoringOfValues() throws Exception {
         File tempDir = FileUtil.createTemporaryDirectory("file-system-cache");
         try {
-            final ByteCache cache = new RedisByteCache("127.0.0.1:88");
-            final BlockingQueue<CachePath> cachePaths = getCachePaths();
-            final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-            final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
+            ByteCache cache = new RedisByteCache("127.0.0.1:88");
+            BlockingQueue<CachePath> cachePaths = getCachePaths();
+            AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+            AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testConcurrentStoringOfValues", new Runnable() {
-                @Override
-                public void run() {
-                    ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
-                        @Override
-                        public void customize(Thread thread) {
-                            thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                                @Override
-                                public void uncaughtException(Thread t, Throwable e) {
-                                    unexpectedThrowable.set(e);
-                                }
-                            });
-                        }
-                    }));
+            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testConcurrentStoringOfValues", () -> {
+                ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(
+                        thread -> thread.setUncaughtExceptionHandler(
+                                (t, e) -> unexpectedThrowable.set(e)
+                        )
+                ));
 
-                    final AtomicInteger pathIndex = new AtomicInteger();
+                AtomicInteger pathIndex = new AtomicInteger();
 
-                    for (int threadIndex = 0; threadIndex < THREAD_COUNT; ++threadIndex) {
-                        executorService.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                while (assertionError.get() == null
-                                        && pathIndex.getAndIncrement() < TOTAL_KEY_COUNT) {
-                                    try {
-                                        checkStoringOneValue(cache, cachePaths.poll());
-                                    } catch (AssertionError error) {
-                                        assertionError.set(error);
-                                    }
-                                }
+                for (int threadIndex = 0; threadIndex < THREAD_COUNT; ++threadIndex) {
+                    executorService.execute(() -> {
+                        while (assertionError.get() == null
+                                && pathIndex.getAndIncrement() < TOTAL_KEY_COUNT) {
+                            try {
+                                checkStoringOneValue(cache, cachePaths.poll());
+                            } catch (AssertionError error) {
+                                assertionError.set(error);
                             }
-                        });
-                    }
+                        }
+                    });
+                }
 
-                    executorService.shutdown();
-                    try {
-                        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException ignored) {
-                        // No operations.
-                    }
+                executorService.shutdown();
+                try {
+                    executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ignored) {
+                    // No operations.
+                }
 
-                    if (assertionError.get() != null) {
-                        throw assertionError.get();
-                    }
+                if (assertionError.get() != null) {
+                    throw assertionError.get();
                 }
             });
 
@@ -141,63 +126,51 @@ public class RedisByteCacheTest extends TestCase {
     }
 
     private static void internalTestConcurrentStoringOfValuesWithLifetime(
-            final long valueLifetimeMillis, final long valueCheckIntervalMillis) throws IOException {
+            long valueLifetimeMillis, long valueCheckIntervalMillis) throws IOException {
         File tempDir = FileUtil.createTemporaryDirectory("file-system-cache");
         try {
-            final ByteCache cache = new RedisByteCache("127.0.0.1:88");
-            final BlockingQueue<CachePath> cachePaths = getCachePaths();
-            final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-            final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
+            ByteCache cache = new RedisByteCache("127.0.0.1:88");
+            BlockingQueue<CachePath> cachePaths = getCachePaths();
+            AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+            AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testConcurrentStoringOfValuesWithLifetime", new Runnable() {
-                @Override
-                public void run() {
-                    ExecutorService executorService = Executors.newFixedThreadPool(SLEEPING_THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
-                        @Override
-                        public void customize(Thread thread) {
-                            thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                                @Override
-                                public void uncaughtException(Thread t, Throwable e) {
-                                    unexpectedThrowable.set(e);
-                                }
-                            });
-                        }
-                    }));
+            CacheTestUtil.determineOperationTime("RedisByteCacheTest.testConcurrentStoringOfValuesWithLifetime", () -> {
+                ExecutorService executorService = Executors.newFixedThreadPool(SLEEPING_THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(
+                        thread -> thread.setUncaughtExceptionHandler(
+                                (t, e) -> unexpectedThrowable.set(e)
+                        )
+                ));
 
-                    final AtomicInteger pathIndex = new AtomicInteger();
+                AtomicInteger pathIndex = new AtomicInteger();
 
-                    for (int threadIndex = 0; threadIndex < SLEEPING_THREAD_COUNT; ++threadIndex) {
-                        final long threadSleepTime = 10L * threadIndex;
+                for (int threadIndex = 0; threadIndex < SLEEPING_THREAD_COUNT; ++threadIndex) {
+                    long threadSleepTime = 10L * threadIndex;
 
-                        executorService.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                ThreadUtil.sleep(threadSleepTime);
+                    executorService.execute(() -> {
+                        ThreadUtil.sleep(threadSleepTime);
 
-                                while (assertionError.get() == null
-                                        && pathIndex.getAndIncrement() < TOTAL_KEY_COUNT) {
-                                    try {
-                                        checkStoringOneValueWithLifetime(
-                                                cache, cachePaths.poll(), valueLifetimeMillis, valueCheckIntervalMillis
-                                        );
-                                    } catch (AssertionError error) {
-                                        assertionError.set(error);
-                                    }
-                                }
+                        while (assertionError.get() == null
+                                && pathIndex.getAndIncrement() < TOTAL_KEY_COUNT) {
+                            try {
+                                checkStoringOneValueWithLifetime(
+                                        cache, cachePaths.poll(), valueLifetimeMillis, valueCheckIntervalMillis
+                                );
+                            } catch (AssertionError error) {
+                                assertionError.set(error);
                             }
-                        });
-                    }
+                        }
+                    });
+                }
 
-                    executorService.shutdown();
-                    try {
-                        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException ignored) {
-                        // No operations.
-                    }
+                executorService.shutdown();
+                try {
+                    executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ignored) {
+                    // No operations.
+                }
 
-                    if (assertionError.get() != null) {
-                        throw assertionError.get();
-                    }
+                if (assertionError.get() != null) {
+                    throw assertionError.get();
                 }
             });
 

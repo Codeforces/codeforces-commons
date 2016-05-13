@@ -26,7 +26,7 @@ class AsynchronousByteCache extends ByteCache {
     private final AtomicLong lastValidationFail = new AtomicLong();
 
     private final ExecutorService validationService = new ThreadPoolExecutor(0, THREAD_COUNT, 1L, TimeUnit.MINUTES,
-            new LinkedBlockingQueue<Runnable>(), new ThreadFactory() {
+            new LinkedBlockingQueue<>(), new ThreadFactory() {
         private final AtomicLong threadIndex = new AtomicLong();
 
         @Nonnull
@@ -108,12 +108,7 @@ class AsynchronousByteCache extends ByteCache {
         if (validationTimeoutMillis == 0) {
             return cache.validate();
         } else {
-            Future<Boolean> future = validationService.submit(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return cache.validate();
-                }
-            });
+            Future<Boolean> future = validationService.submit(cache::validate);
 
             try {
                 return future.get(validationTimeoutMillis, TimeUnit.MILLISECONDS);
@@ -130,45 +125,25 @@ class AsynchronousByteCache extends ByteCache {
     }
 
     @Override
-    public void put(@Nonnull final String section, @Nonnull final String key, @Nonnull final byte[] value) {
-        executionService.execute(new Runnable() {
-            @Override
-            public void run() {
-                cache.put(section, key, value);
-            }
-        });
+    public void put(@Nonnull String section, @Nonnull String key, @Nonnull byte[] value) {
+        executionService.execute(() -> cache.put(section, key, value));
     }
 
     @Override
-    public void put(@Nonnull final String section, @Nonnull final String key,
-                    @Nonnull final byte[] value, final long lifetimeMillis) {
-        executionService.execute(new Runnable() {
-            @Override
-            public void run() {
-                cache.put(section, key, value, lifetimeMillis);
-            }
-        });
+    public void put(@Nonnull String section, @Nonnull String key,
+                    @Nonnull byte[] value, long lifetimeMillis) {
+        executionService.execute(() -> cache.put(section, key, value, lifetimeMillis));
     }
 
     @Override
-    public void putIfAbsent(@Nonnull final String section, @Nonnull final String key, @Nonnull final byte[] value) {
-        executionService.execute(new Runnable() {
-            @Override
-            public void run() {
-                cache.putIfAbsent(section, key, value);
-            }
-        });
+    public void putIfAbsent(@Nonnull String section, @Nonnull String key, @Nonnull byte[] value) {
+        executionService.execute(() -> cache.putIfAbsent(section, key, value));
     }
 
     @Override
-    public void putIfAbsent(@Nonnull final String section, @Nonnull final String key,
-                            @Nonnull final byte[] value, final long lifetimeMillis) {
-        executionService.execute(new Runnable() {
-            @Override
-            public void run() {
-                cache.putIfAbsent(section, key, value, lifetimeMillis);
-            }
-        });
+    public void putIfAbsent(@Nonnull String section, @Nonnull String key,
+                            @Nonnull byte[] value, long lifetimeMillis) {
+        executionService.execute(() -> cache.putIfAbsent(section, key, value, lifetimeMillis));
     }
 
     @Nullable

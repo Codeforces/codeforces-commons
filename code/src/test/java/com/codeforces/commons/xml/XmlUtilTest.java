@@ -181,6 +181,7 @@ public class XmlUtilTest {
         }
     }
 
+    @SuppressWarnings("MessageMissingOnJUnitAssertion")
     @Test
     public void testEnsureXmlElementExistDoesntRewriteFileIfNoChanges() throws IOException {
         File tempDir = null;
@@ -201,17 +202,16 @@ public class XmlUtilTest {
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, filterAttributes, null);
             Assert.assertEquals(lastModified, testFile.lastModified());
 
-            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Arrays.asList("c")));
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Collections.singletonList("c")));
             Assert.assertEquals(lastModified, testFile.lastModified());
 
-            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Arrays.asList("intAttr")));
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Collections.singletonList("intAttr")));
             Assert.assertNotEquals(lastModified, testFile.lastModified());
             lastModified = testFile.lastModified();
 
-            Map<String, String> expectedAttributes = new HashMap<String, String>() {{
-                put("x", "");
-                put("notBoolAttr", "false");
-            }};
+            Map<String, String> expectedAttributes = new HashMap<>();
+            expectedAttributes.put("x", "");
+            expectedAttributes.put("notBoolAttr", "false");
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, expectedAttributes, null);
             Assert.assertNotEquals(lastModified, testFile.lastModified());
             lastModified = testFile.lastModified();
@@ -240,10 +240,10 @@ public class XmlUtilTest {
 
             Map<String, String> newAttributes = new HashMap<>();
             newAttributes.put("value", "123");
-            XmlUtil.ensureXmlElementExists(testFile, "/a", "e", new HashMap<String, String>(), newAttributes,
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "e", new HashMap<>(), newAttributes,
                     null);
             newAttributes.put("value2", "1234");
-            XmlUtil.ensureXmlElementExists(testFile, "/a", "e", new HashMap<String, String>(), newAttributes,
+            XmlUtil.ensureXmlElementExists(testFile, "/a", "e", new HashMap<>(), newAttributes,
                     null);
             XmlUtil.removeElementsIfExists(testFile, "/a/e");
             Assert.assertEquals(
@@ -260,35 +260,31 @@ public class XmlUtilTest {
         }
     }
 
+    @SuppressWarnings("MessageMissingOnJUnitAssertion")
     @Test
     public void testConcurrentExtractFromXml() throws Exception {
         File tempDir = null;
 
         try {
             tempDir = FileUtil.createTemporaryDirectory("test-xml");
-            final File testFile = new File(tempDir, "test.xml");
+            File testFile = new File(tempDir, "test.xml");
             FileUtil.writeFile(testFile, getBytes("test.xml"));
 
             int concurrency = 4 * Runtime.getRuntime().availableProcessors();
             List<Thread> threads = new ArrayList<>();
             for (int i = 0; i < concurrency; i++) {
-                threads.add(new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i = 0; i < 100; i++) {
-                            try {
-                                Assert.assertEquals("false", XmlUtil.extractFromXml(testFile, "/a/c/@boolAttr", String.class));
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
+                threads.add(new Thread(() -> {
+                    for (int i1 = 0; i1 < 100; i1++) {
+                        try {
+                            Assert.assertEquals("false", XmlUtil.extractFromXml(testFile, "/a/c/@boolAttr", String.class));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
                     }
                 }));
             }
 
-            for (Thread thread : threads) {
-                thread.start();
-            }
+            threads.forEach(Thread::start);
 
             for (Thread thread : threads) {
                 thread.join();

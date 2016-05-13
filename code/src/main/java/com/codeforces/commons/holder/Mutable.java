@@ -7,14 +7,22 @@ package com.codeforces.commons.holder;
 public abstract class Mutable<T> implements Readable<T>, Writable<T> {
     @Override
     public boolean equals(Object o) {
-        return this == o
-                || o instanceof Mutable
-                && (get() == null ? ((Readable) o).get() == null : get().equals(((Readable) o).get()));
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof Mutable)) {
+            return false;
+        }
+
+        T value = get();
+        return value == null ? ((Readable) o).get() == null : value.equals(((Readable) o).get());
     }
 
     @Override
     public int hashCode() {
-        return get() == null ? 0 : get().hashCode();
+        T value = get();
+        return value == null ? 0 : value.hashCode();
     }
 
     @Override

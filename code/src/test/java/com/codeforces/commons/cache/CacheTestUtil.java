@@ -4,6 +4,8 @@ import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import org.junit.Assert;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,71 +22,57 @@ final class CacheTestUtil {
     }
 
     public static void testStoringOfValues(
-            Class<?> cacheTestClass, final Cache<String, byte[]> cache,
-            int sectionCount, int keyPerSectionCount, final int totalKeyCount, final int valueLength) {
-        final CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
+            Class<?> cacheTestClass, Cache<String, byte[]> cache,
+            int sectionCount, int keyPerSectionCount, int totalKeyCount, int valueLength) {
+        CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues", new Runnable() {
-            @Override
-            public void run() {
-                for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
-                    checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
-                }
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues", () -> {
+            for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
+                checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
             }
         });
 
         System.gc();
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues (after warm up)", new Runnable() {
-            @Override
-            public void run() {
-                for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
-                    checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
-                }
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues (after warm up)", () -> {
+            for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
+                checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
             }
         });
     }
 
     public static void testOverridingOfValuesWithLifetime(
-            Class<?> cacheTestClass, final Cache<String, byte[]> cache, final int valueLength) {
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testOverridingOfValuesWithLifetime", new Runnable() {
-            @Override
-            public void run() {
-                byte[] temporaryBytes = RandomUtil.getRandomBytes(valueLength);
-                byte[] finalBytes = RandomUtil.getRandomBytes(valueLength);
+            Class<?> cacheTestClass, Cache<String, byte[]> cache, int valueLength) {
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testOverridingOfValuesWithLifetime", () -> {
+            byte[] temporaryBytes = RandomUtil.getRandomBytes(valueLength);
+            byte[] finalBytes = RandomUtil.getRandomBytes(valueLength);
 
-                cache.put("S", "K", temporaryBytes, 1000L);
-                Assert.assertTrue(
-                        "Restored value (with lifetime) does not equal to original value.",
-                        Arrays.equals(temporaryBytes, cache.get("S", "K"))
-                );
+            cache.put("S", "K", temporaryBytes, 1000L);
+            Assert.assertTrue(
+                    "Restored value (with lifetime) does not equal to original value.",
+                    Arrays.equals(temporaryBytes, cache.get("S", "K"))
+            );
 
-                cache.put("S", "K", finalBytes, 1000L);
-                ThreadUtil.sleep(500L);
-                Assert.assertNotNull("Value is 'null' after previous value lifetime expiration.", cache.get("S", "K"));
-                Assert.assertEquals("Restored value does not equal to original value.", finalBytes, cache.get("S", "K"));
+            cache.put("S", "K", finalBytes, 1000L);
+            ThreadUtil.sleep(500L);
+            Assert.assertNotNull("Value is 'null' after previous value lifetime expiration.", cache.get("S", "K"));
+            Assert.assertEquals("Restored value does not equal to original value.", finalBytes, cache.get("S", "K"));
 
-                ThreadUtil.sleep(1000L);
-                Assert.assertNull("Value is not 'null' after lifetime expiration.", cache.get("S", "K"));
-            }
+            ThreadUtil.sleep(1000L);
+            Assert.assertNull("Value is not 'null' after lifetime expiration.", cache.get("S", "K"));
         });
     }
 
     public static void testConcurrentStoringOfValues(
-            Class<?> cacheTestClass, final Cache<String, byte[]> cache,
-            int sectionCount, int keyPerSectionCount, final int totalKeyCount, final int valueLength, final int threadCount) {
-        final CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
-        final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-        final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
+            Class<?> cacheTestClass, Cache<String, byte[]> cache,
+            int sectionCount, int keyPerSectionCount, int totalKeyCount, int valueLength, int threadCount) {
+        CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
+        AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+        AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues", new Runnable() {
-            @Override
-            public void run() {
-                executeConcurrentStoringOfValues(
-                        cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
-                );
-            }
-        });
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues", () -> executeConcurrentStoringOfValues(
+                cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
+        ));
 
         if (unexpectedThrowable.get() != null) {
             throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
@@ -92,14 +80,9 @@ final class CacheTestUtil {
 
         System.gc();
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues (after warm up)", new Runnable() {
-            @Override
-            public void run() {
-                executeConcurrentStoringOfValues(
-                        cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
-                );
-            }
-        });
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues (after warm up)", () -> executeConcurrentStoringOfValues(
+                cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
+        ));
 
         if (unexpectedThrowable.get() != null) {
             throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
@@ -107,64 +90,48 @@ final class CacheTestUtil {
     }
 
     public static void testConcurrentStoringOfValuesWithLifetime(
-            Class<?> cacheTestClass, final Cache<String, byte[]> cache,
-            int sectionCount, int keyPerSectionCount, final int totalKeyCount, final int valueLength,
-            final int sleepingThreadCount, final long valueLifetimeMillis, final long valueCheckIntervalMillis) {
-        final CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
-        final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-        final AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
+            Class<?> cacheTestClass, Cache<String, byte[]> cache,
+            int sectionCount, int keyPerSectionCount, int totalKeyCount, int valueLength,
+            int sleepingThreadCount, long valueLifetimeMillis, long valueCheckIntervalMillis) {
+        CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
+        AtomicReference<AssertionError> assertionError = new AtomicReference<>();
+        AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValuesWithLifetime", new Runnable() {
-            @Override
-            public void run() {
-                ExecutorService executorService = Executors.newFixedThreadPool(sleepingThreadCount, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
-                    @Override
-                    public void customize(Thread thread) {
-                        thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                            @Override
-                            public void uncaughtException(Thread t, Throwable e) {
-                                unexpectedThrowable.set(e);
-                            }
-                        });
-                    }
-                }));
+        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValuesWithLifetime", () -> {
+            ExecutorService executorService = Executors.newFixedThreadPool(sleepingThreadCount, ThreadUtil.getCustomPoolThreadFactory(thread -> thread.setUncaughtExceptionHandler((t, e) -> unexpectedThrowable.set(e))));
 
-                final AtomicInteger pathIndexCounter = new AtomicInteger();
+            AtomicInteger pathIndexCounter = new AtomicInteger();
 
-                for (int threadIndex = 0; threadIndex < sleepingThreadCount; ++threadIndex) {
-                    final long threadSleepTime = 1L * threadIndex;
+            for (int threadIndex = 0; threadIndex < sleepingThreadCount; ++threadIndex) {
+                @SuppressWarnings("PointlessArithmeticExpression") long threadSleepTime = 1L * threadIndex;
 
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            ThreadUtil.sleep(threadSleepTime);
-                            int pathIndex;
+                executorService.execute(() -> {
+                    ThreadUtil.sleep(threadSleepTime);
+                    int pathIndex;
 
-                            while (assertionError.get() == null
-                                    && (pathIndex = pathIndexCounter.getAndIncrement()) < totalKeyCount) {
-                                try {
-                                    checkStoringOneValueWithLifetime(
-                                            cache, cachePaths[pathIndex], valueLength,
-                                            valueLifetimeMillis, valueCheckIntervalMillis
-                                    );
-                                } catch (AssertionError error) {
-                                    assertionError.set(error);
-                                }
-                            }
+                    while (assertionError.get() == null
+                            && (pathIndex = pathIndexCounter.getAndIncrement()) < totalKeyCount) {
+                        try {
+                            checkStoringOneValueWithLifetime(
+                                    cache, cachePaths[pathIndex], valueLength,
+                                    valueLifetimeMillis, valueCheckIntervalMillis
+                            );
+                        } catch (AssertionError error) {
+                            assertionError.set(error);
                         }
-                    });
-                }
+                    }
+                });
+            }
 
-                executorService.shutdown();
-                try {
-                    executorService.awaitTermination(1L, TimeUnit.HOURS);
-                } catch (InterruptedException ignored) {
-                    // No operations.
-                }
+            executorService.shutdown();
+            try {
+                executorService.awaitTermination(1L, TimeUnit.HOURS);
+            } catch (InterruptedException ignored) {
+                // No operations.
+            }
 
-                if (assertionError.get() != null) {
-                    throw assertionError.get();
-                }
+            if (assertionError.get() != null) {
+                throw assertionError.get();
             }
         });
 
@@ -174,36 +141,23 @@ final class CacheTestUtil {
     }
 
     private static void executeConcurrentStoringOfValues(
-            final Cache<String, byte[]> cache, final CachePath[] cachePaths,
-            final AtomicReference<AssertionError> assertionError, final AtomicReference<Throwable> unexpectedThrowable,
-            final int totalKeyCount, final int valueLength, int threadCount) {
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount, ThreadUtil.getCustomPoolThreadFactory(new ThreadUtil.ThreadCustomizer() {
-            @Override
-            public void customize(Thread thread) {
-                thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                    @Override
-                    public void uncaughtException(Thread t, Throwable e) {
-                        unexpectedThrowable.set(e);
-                    }
-                });
-            }
-        }));
+            Cache<String, byte[]> cache, CachePath[] cachePaths,
+            AtomicReference<AssertionError> assertionError, AtomicReference<Throwable> unexpectedThrowable,
+            int totalKeyCount, int valueLength, int threadCount) {
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount, ThreadUtil.getCustomPoolThreadFactory(thread -> thread.setUncaughtExceptionHandler((t, e) -> unexpectedThrowable.set(e))));
 
-        final AtomicInteger pathIndexCounter = new AtomicInteger();
+        AtomicInteger pathIndexCounter = new AtomicInteger();
 
         for (int threadIndex = 0; threadIndex < threadCount; ++threadIndex) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    int pathIndex;
+            executorService.execute(() -> {
+                int pathIndex;
 
-                    while (assertionError.get() == null
-                            && (pathIndex = pathIndexCounter.getAndIncrement()) < totalKeyCount) {
-                        try {
-                            checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
-                        } catch (AssertionError error) {
-                            assertionError.set(error);
-                        }
+                while (assertionError.get() == null
+                        && (pathIndex = pathIndexCounter.getAndIncrement()) < totalKeyCount) {
+                    try {
+                        checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
+                    } catch (AssertionError error) {
+                        assertionError.set(error);
                     }
                 }
             });
@@ -320,7 +274,8 @@ final class CacheTestUtil {
         System.out.flush();
     }
 
-    private static String toShortString(byte[] array) {
+    @Nonnull
+    private static String toShortString(@Nullable byte[] array) {
         if (array == null) {
             return "null";
         }

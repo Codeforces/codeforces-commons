@@ -51,7 +51,7 @@ public final class XmlUtil {
      * @return Return value.
      * @throws IOException In case of I/O error.
      */
-    public static <T> T extractFromXml(@Nonnull final File xmlFile, final String xPath, final Class<T> clazz)
+    public static <T> T extractFromXml(@Nonnull File xmlFile, String xPath, Class<T> clazz)
             throws IOException {
         return Preconditions.checkNotNull(FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
             @Nonnull
@@ -80,7 +80,7 @@ public final class XmlUtil {
      * @throws IOException In case of I/O error.
      */
     @Nonnull
-    public static <T> T extractFromXml(final InputStream xmlInputStream, final String xPath, final Class<T> clazz)
+    public static <T> T extractFromXml(InputStream xmlInputStream, String xPath, Class<T> clazz)
             throws IOException {
         return Preconditions.checkNotNull(FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
             @Nonnull
@@ -98,7 +98,7 @@ public final class XmlUtil {
      * @param document XML document.
      * @throws IOException In case of I/O error.
      */
-    public static void writeXml(@Nonnull final File xmlFile, @Nonnull final Document document) throws IOException {
+    public static void writeXml(@Nonnull File xmlFile, @Nonnull Document document) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
             @Nullable
             @Override
@@ -122,7 +122,7 @@ public final class XmlUtil {
      * @param document        XML document.
      * @throws IOException In case of I/O error.
      */
-    public static void writeXml(final OutputStream xmlOutputStream, @Nonnull final Document document) throws IOException {
+    public static void writeXml(OutputStream xmlOutputStream, @Nonnull Document document) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
             @Nullable
             @Override
@@ -141,7 +141,7 @@ public final class XmlUtil {
      * @param value   Value to be set for found node.
      * @throws IOException In case of I/O error.
      */
-    public static void updateXml(@Nonnull final File xmlFile, final String xPath, final String value) throws IOException {
+    public static void updateXml(@Nonnull File xmlFile, String xPath, String value) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
             @Nullable
             @Override
@@ -178,7 +178,7 @@ public final class XmlUtil {
      * @throws IOException In case of I/O error.
      */
     public static void updateXml(
-            final InputStream xmlInputStream, final OutputStream xmlOutputStream, final String xPath, final String value)
+            InputStream xmlInputStream, OutputStream xmlOutputStream, String xPath, String value)
             throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
             @Nullable
@@ -198,7 +198,7 @@ public final class XmlUtil {
      * @param value   New text value.
      * @throws IOException In case of I/O error.
      */
-    public static void updateText(@Nonnull final File xmlFile, final String xPath, @Nullable final String value)
+    public static void updateText(@Nonnull File xmlFile, String xPath, @Nullable String value)
             throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
             @Nullable
@@ -237,8 +237,8 @@ public final class XmlUtil {
      * @throws IOException In case of I/O error.
      */
     public static void updateText(
-            final InputStream xmlInputStream, final OutputStream xmlOutputStream, final String xPath,
-            @Nullable final String value) throws IOException {
+            InputStream xmlInputStream, OutputStream xmlOutputStream, String xPath,
+            @Nullable String value) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
             @Nullable
             @Override
@@ -268,9 +268,9 @@ public final class XmlUtil {
      * @throws IOException In case of I/O error.
      */
     public static void ensureXmlElementExists(
-            @Nonnull final File xmlFile, @Nonnull final String parentElementXPath, @Nonnull final String elementName,
-            @Nonnull final Map<String, String> filterAttributes, @Nullable final Map<String, String> newAttributes,
-            @Nullable final Set<String> obsoleteAttributes) throws IOException {
+            @Nonnull File xmlFile, @Nonnull String parentElementXPath, @Nonnull String elementName,
+            @Nonnull Map<String, String> filterAttributes, @Nullable Map<String, String> newAttributes,
+            @Nullable Set<String> obsoleteAttributes) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
             @Nullable
             @Override
@@ -320,10 +320,10 @@ public final class XmlUtil {
      * @throws IOException In case of I/O error.
      */
     public static void ensureXmlElementExists(
-            @Nonnull final InputStream xmlInputStream, @Nonnull final OutputStream xmlOutputStream,
-            @Nonnull final String parentElementXPath, @Nonnull final String elementName,
-            @Nonnull final Map<String, String> filterAttributes, @Nullable final Map<String, String> newAttributes,
-            @Nullable final Set<String> obsoleteAttributes) throws IOException {
+            @Nonnull InputStream xmlInputStream, @Nonnull OutputStream xmlOutputStream,
+            @Nonnull String parentElementXPath, @Nonnull String elementName,
+            @Nonnull Map<String, String> filterAttributes, @Nullable Map<String, String> newAttributes,
+            @Nullable Set<String> obsoleteAttributes) throws IOException {
         FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
             @Nullable
             @Override

@@ -1,7 +1,5 @@
 package com.codeforces.commons.io;
 
-import com.codeforces.commons.process.ThreadUtil;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -57,7 +55,7 @@ public class FileBackup implements Closeable {
         this(DEFAULT_CONCURRENCY_LEVEL);
     }
 
-    public void backup(final File file) throws IOException {
+    public void backup(File file) throws IOException {
         ensureNotClosed();
 
         semaphore.acquireUninterruptibly();
@@ -83,12 +81,9 @@ public class FileBackup implements Closeable {
                 }
 
                 if (file.isFile()) {
-                    backupFile = FileUtil.executeIoOperation(new ThreadUtil.Operation<File>() {
-                        @Override
-                        public File run() throws Throwable {
-                            return File.createTempFile(file.getName() + '-', "", backupDir);
-                        }
-                    });
+                    backupFile = FileUtil.executeIoOperation(
+                            () -> File.createTempFile(file.getName() + '-', "", backupDir)
+                    );
                     FileUtil.copyFile(file, backupFile);
                 } else if (file.isDirectory()) {
                     backupFile = FileUtil.createTemporaryDirectory(file.getName(), backupDir);

@@ -22,7 +22,8 @@ public class ThreadUtil {
 
     @SuppressWarnings("AssignmentToMethodParameter")
     public static Thread newThread(
-            @Nullable String name, @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
+            @Nullable String name, @Nonnull Runnable runnable,
+            @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
         if (name == null) {
             name = String.format(
                     "Unnamed thread by %s running %s at %s.",
@@ -34,17 +35,14 @@ public class ThreadUtil {
 
         if (uncaughtExceptionHandler != null || Thread.getDefaultUncaughtExceptionHandler() == null) {
             if (uncaughtExceptionHandler == null) {
-                uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
-                    @Override
-                    public void uncaughtException(Thread t, Throwable e) {
-                        System.out.printf(
-                                "Unexpected exception %s (%s) in %s:%n%s%n",
-                                e.getClass(), e.getMessage(), t.getName(), ExceptionUtil.toString(e)
-                        );
-                        logger.error(String.format(
-                                "Unexpected exception %s (%s) in %s.", e.getClass(), e.getMessage(), t.getName()
-                        ), e);
-                    }
+                uncaughtExceptionHandler = (t, e) -> {
+                    System.out.printf(
+                            "Unexpected exception %s (%s) in %s:%n%s%n",
+                            e.getClass(), e.getMessage(), t.getName(), ExceptionUtil.toString(e)
+                    );
+                    logger.error(String.format(
+                            "Unexpected exception %s (%s) in %s.", e.getClass(), e.getMessage(), t.getName()
+                    ), e);
                 };
             }
 
@@ -59,16 +57,19 @@ public class ThreadUtil {
     }
 
     public static Thread newThread(
-            @Nullable String name, @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+            @Nullable String name, @Nonnull Runnable runnable,
+            @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
         return newThread(name, runnable, uncaughtExceptionHandler, 0);
     }
 
-    public static Thread newThread(@Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+    public static Thread newThread(@Nonnull Runnable runnable,
+                                   @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
         return newThread(null, runnable, uncaughtExceptionHandler, 0);
     }
 
     public static Thread newThread(
-            @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
+            @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler,
+            long stackSize) {
         return newThread(null, runnable, uncaughtExceptionHandler, stackSize);
     }
 
@@ -145,7 +146,7 @@ public class ThreadUtil {
         }
     }
 
-    public static ThreadFactory getCustomPoolThreadFactory(final ThreadCustomizer threadCustomizer) {
+    public static ThreadFactory getCustomPoolThreadFactory(ThreadCustomizer threadCustomizer) {
         return new ThreadFactory() {
             private final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
 

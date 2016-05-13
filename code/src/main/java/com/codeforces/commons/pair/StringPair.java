@@ -15,7 +15,7 @@ public class StringPair extends Pair<String, String> {
         super(first, second);
     }
 
-    public StringPair(@Nonnull SimplePair<String, String> pair) {
+    public StringPair(@Nonnull Pair<String, String> pair) {
         super(pair);
     }
 }

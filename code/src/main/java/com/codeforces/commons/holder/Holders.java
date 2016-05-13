@@ -13,13 +13,14 @@ public class Holders {
     }
 
     @Nonnull
-    public static <T> Readable<T> readOnly(@Nonnull final Mutable<T> mutable) {
+    public static <T> Readable<T> readOnly(@Nonnull Mutable<T> mutable) {
         return new Mutable<T>() {
             @Override
             public T get() {
                 return mutable.get();
             }
 
+            @SuppressWarnings("Contract")
             @Nonnull
             @Override
             public T set(T value) {

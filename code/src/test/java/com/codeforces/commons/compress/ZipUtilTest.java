@@ -226,7 +226,7 @@ public class ZipUtilTest extends TestCase {
             FileUtil.writeFile(validArchive, getBytes(validArchive.getName()));
             FileUtil.writeFile(validInnerArchive, getBytes(validInnerArchive.getName()));
 
-            List<AssertionError> errors = Collections.synchronizedList(new ArrayList<AssertionError>());
+            List<AssertionError> errors = Collections.synchronizedList(new ArrayList<>());
             int iterationCount = 1000;
 
             Thread emptyArchiveTestThread = startThreadToTestIsCorrectZipFile(
@@ -262,9 +262,7 @@ public class ZipUtilTest extends TestCase {
 
             if (!errors.isEmpty()) {
                 if (errors.size() > 1) {
-                    for (AssertionError error : errors) {
-                        error.printStackTrace();
-                    }
+                    errors.forEach(AssertionError::printStackTrace);
                 }
 
                 throw errors.get(0);
@@ -274,27 +272,24 @@ public class ZipUtilTest extends TestCase {
         }
     }
 
-    private static Thread startThreadToTestGetBytes(final File validArchive, final File validInnerArchive, final List<AssertionError> errors, final int iterationCount) {
-        Thread getBytesTestThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int iterationIndex = 1; iterationIndex <= iterationCount; ++iterationIndex) {
+    private static Thread startThreadToTestGetBytes(File validArchive, File validInnerArchive, List<AssertionError> errors, int iterationCount) {
+        Thread getBytesTestThread = new Thread(() -> {
+            for (int iterationIndex = 1; iterationIndex <= iterationCount; ++iterationIndex) {
+                try {
                     try {
-                        try {
-                            assertTrue(
-                                    "Valid archive and inner valid archive have different content.",
-                                    Arrays.equals(
-                                            FileUtil.getBytes(validArchive),
-                                            FileUtil.getBytes(new TFile(validInnerArchive, "valid.zip"))
-                                    )
-                            );
-                        } catch (IOException e) {
-                            throw new AssertionError(e.toString());
-                        }
-                    } catch (@SuppressWarnings("ErrorNotRethrown") AssertionError e) {
-                        errors.add(e);
-                        break;
+                        assertTrue(
+                                "Valid archive and inner valid archive have different content.",
+                                Arrays.equals(
+                                        FileUtil.getBytes(validArchive),
+                                        FileUtil.getBytes(new TFile(validInnerArchive, "valid.zip"))
+                                )
+                        );
+                    } catch (IOException e) {
+                        throw new AssertionError(e.toString());
                     }
+                } catch (@SuppressWarnings("ErrorNotRethrown") AssertionError e) {
+                    errors.add(e);
+                    break;
                 }
             }
         });
@@ -303,32 +298,29 @@ public class ZipUtilTest extends TestCase {
     }
 
     private static Thread startThreadToTestIsCorrectZipFile(
-            final File zipFile, final List<AssertionError> errors, final int iterationCount,
-            final boolean isCorrectZipFile, final boolean isEmptyZipFile) {
-        Thread zipFileTestThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int iterationIndex = 1; iterationIndex <= iterationCount; ++iterationIndex) {
-                    try {
-                        assertEquals(
-                                String.format("ZipUtil.isCorrectZipFile(\"%s\", false)", zipFile.getName()),
-                                isCorrectZipFile,
-                                ZipUtil.isCorrectZipFile(zipFile, false)
-                        );
-                        assertEquals(
-                                String.format("ZipUtil.isCorrectZipFile(\"%s\", true)", zipFile.getName()),
-                                isCorrectZipFile && !isEmptyZipFile,
-                                ZipUtil.isCorrectZipFile(zipFile, true)
-                        );
-                        assertEquals(
-                                String.format("ZipUtil.isCorrectZipFile(\"%s\")", zipFile.getName()),
-                                isCorrectZipFile && !isEmptyZipFile,
-                                ZipUtil.isCorrectZipFile(zipFile)
-                        );
-                    } catch (@SuppressWarnings("ErrorNotRethrown") AssertionError e) {
-                        errors.add(e);
-                        break;
-                    }
+            File zipFile, List<AssertionError> errors, int iterationCount,
+            boolean isCorrectZipFile, boolean isEmptyZipFile) {
+        Thread zipFileTestThread = new Thread(() -> {
+            for (int iterationIndex = 1; iterationIndex <= iterationCount; ++iterationIndex) {
+                try {
+                    assertEquals(
+                            String.format("ZipUtil.isCorrectZipFile(\"%s\", false)", zipFile.getName()),
+                            isCorrectZipFile,
+                            ZipUtil.isCorrectZipFile(zipFile, false)
+                    );
+                    assertEquals(
+                            String.format("ZipUtil.isCorrectZipFile(\"%s\", true)", zipFile.getName()),
+                            isCorrectZipFile && !isEmptyZipFile,
+                            ZipUtil.isCorrectZipFile(zipFile, true)
+                    );
+                    assertEquals(
+                            String.format("ZipUtil.isCorrectZipFile(\"%s\")", zipFile.getName()),
+                            isCorrectZipFile && !isEmptyZipFile,
+                            ZipUtil.isCorrectZipFile(zipFile)
+                    );
+                } catch (@SuppressWarnings("ErrorNotRethrown") AssertionError e) {
+                    errors.add(e);
+                    break;
                 }
             }
         });

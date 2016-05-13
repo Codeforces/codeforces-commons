@@ -28,7 +28,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.zip.*;
 
@@ -335,16 +334,13 @@ public final class ZipUtil {
 
     @SuppressWarnings("OverlyComplexMethod")
     private static ArrayList<File> deepListFilesInDirectory(
-            @Nonnull File directory, @Nullable final FileFilter skipFilter, boolean ignoreHiddenFiles)
+            @Nonnull File directory, @Nullable FileFilter skipFilter, boolean ignoreHiddenFiles)
             throws IOException {
         ArrayList<File> filesToAdd = new ArrayList<>();
 
-        File[] files = skipFilter == null ? directory.listFiles() : directory.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return !skipFilter.accept(pathname);
-            }
-        });
+        File[] files = skipFilter == null ? directory.listFiles() : directory.listFiles(
+                pathname -> !skipFilter.accept(pathname)
+        );
 
         if (files == null) {
             throw new IOException(String.format(
@@ -372,14 +368,10 @@ public final class ZipUtil {
     @SuppressWarnings("OverlyComplexMethod")
     private static void addDirectory(
             String prefix, File source, ZipOutputStream zipOutputStream,
-            @Nullable final FileFilter skipFilter, boolean ignoreHiddenFiles)
+            @Nullable FileFilter skipFilter, boolean ignoreHiddenFiles)
             throws IOException {
-        File[] files = skipFilter == null ? source.listFiles() : source.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return !skipFilter.accept(pathname);
-            }
-        });
+        File[] files = skipFilter == null ? source.listFiles()
+                : source.listFiles(pathname -> !skipFilter.accept(pathname));
 
         if (files == null) {
             throw new IOException(String.format(
@@ -598,16 +590,11 @@ public final class ZipUtil {
      * @see #formatZipArchiveContentForView(File, int, int, int)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
-            byte[] zipFileBytes, final int maxLength, final int maxEntryLineCount, final int maxEntryLineLength)
+            byte[] zipFileBytes, int maxLength, int maxEntryLineCount, int maxEntryLineLength)
             throws IOException {
-        return formatZipArchiveContentForView(zipFileBytes, new ZipFileFormatHandler() {
-            @Override
-            public FileUtil.FirstBytes formatZipArchiveContentForView(File zipFile) throws IOException {
-                return ZipUtil.formatZipArchiveContentForView(
-                        zipFile, maxLength, maxEntryLineCount, maxEntryLineLength
-                );
-            }
-        });
+        return formatZipArchiveContentForView(zipFileBytes, zipFile -> formatZipArchiveContentForView(
+                zipFile, maxLength, maxEntryLineCount, maxEntryLineLength
+        ));
     }
 
     /**
@@ -627,16 +614,11 @@ public final class ZipUtil {
      * @see #formatZipArchiveContentForView(File, int, int, int, ZipUtil.ZipFileFormatConfiguration)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
-            byte[] zipFileBytes, final int maxLength, final int maxEntryLineCount, final int maxEntryLineLength,
-            final ZipFileFormatConfiguration configuration) throws IOException {
-        return formatZipArchiveContentForView(zipFileBytes, new ZipFileFormatHandler() {
-            @Override
-            public FileUtil.FirstBytes formatZipArchiveContentForView(File zipFile) throws IOException {
-                return ZipUtil.formatZipArchiveContentForView(
-                        zipFile, maxLength, maxEntryLineCount, maxEntryLineLength, configuration
-                );
-            }
-        });
+            byte[] zipFileBytes, int maxLength, int maxEntryLineCount, int maxEntryLineLength,
+            ZipFileFormatConfiguration configuration) throws IOException {
+        return formatZipArchiveContentForView(zipFileBytes, zipFile -> formatZipArchiveContentForView(
+                zipFile, maxLength, maxEntryLineCount, maxEntryLineLength, configuration
+        ));
     }
 
     /**
@@ -665,26 +647,21 @@ public final class ZipUtil {
      * @see #formatZipArchiveContentForView(File, int, int, int, String, String, String, String, String, String, String, String, String, String)
      */
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
-            byte[] zipFileBytes, final int maxLength, final int maxEntryLineCount, final int maxEntryLineLength,
-            final String entryListHeaderPattern, final String entryListItemPattern,
-            final String entryListItemSeparatorPattern, final String entryListCloserPattern,
-            final String entryContentHeaderPattern, final String entryContentLinePattern,
-            final String entryContentLineSeparatorPattern, final String entryContentCloserPattern,
-            final String binaryEntryContentPlaceholderPattern, final String emptyZipFilePlaceholderPattern)
+            byte[] zipFileBytes, int maxLength, int maxEntryLineCount, int maxEntryLineLength,
+            String entryListHeaderPattern, String entryListItemPattern,
+            String entryListItemSeparatorPattern, String entryListCloserPattern,
+            String entryContentHeaderPattern, String entryContentLinePattern,
+            String entryContentLineSeparatorPattern, String entryContentCloserPattern,
+            String binaryEntryContentPlaceholderPattern, String emptyZipFilePlaceholderPattern)
             throws IOException {
-        return formatZipArchiveContentForView(zipFileBytes, new ZipFileFormatHandler() {
-            @Override
-            public FileUtil.FirstBytes formatZipArchiveContentForView(File zipFile) throws IOException {
-                return ZipUtil.formatZipArchiveContentForView(
-                        zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
-                        entryListHeaderPattern, entryListItemPattern,
-                        entryListItemSeparatorPattern, entryListCloserPattern,
-                        entryContentHeaderPattern, entryContentLinePattern,
-                        entryContentLineSeparatorPattern, entryContentCloserPattern,
-                        binaryEntryContentPlaceholderPattern, emptyZipFilePlaceholderPattern
-                );
-            }
-        });
+        return formatZipArchiveContentForView(zipFileBytes, zipFile -> formatZipArchiveContentForView(
+                zipFile, maxLength, maxEntryLineCount, maxEntryLineLength,
+                entryListHeaderPattern, entryListItemPattern,
+                entryListItemSeparatorPattern, entryListCloserPattern,
+                entryContentHeaderPattern, entryContentLinePattern,
+                entryContentLineSeparatorPattern, entryContentCloserPattern,
+                binaryEntryContentPlaceholderPattern, emptyZipFilePlaceholderPattern
+        ));
     }
 
     private static FileUtil.FirstBytes formatZipArchiveContentForView(
@@ -827,12 +804,9 @@ public final class ZipUtil {
                 ));
             }
 
-            Collections.sort(fileHeaders, new Comparator<Object>() {
-                @Override
-                public int compare(Object headerA, Object headerB) {
-                    return ((FileHeader) headerA).getFileName().compareTo(((FileHeader) headerB).getFileName());
-                }
-            });
+            Collections.sort(fileHeaders, (headerA, headerB) -> ((FileHeader) headerA).getFileName().compareTo(
+                    ((FileHeader) headerB).getFileName()
+            ));
 
             for (int headerIndex = 0; headerIndex < headerCount; ++headerIndex) {
                 FileHeader header = (FileHeader) fileHeaders.get(headerIndex);

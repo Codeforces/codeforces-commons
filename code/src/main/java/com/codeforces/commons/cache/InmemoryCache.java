@@ -3,6 +3,7 @@ package com.codeforces.commons.cache;
 import com.codeforces.commons.cache.annotation.*;
 import com.codeforces.commons.process.ReadWriteEvent;
 import com.codeforces.commons.process.ThreadUtil;
+import com.google.common.base.Preconditions;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.matcher.Matchers;
@@ -12,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.naming.ConfigurationException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -41,29 +43,26 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
 
     private final AtomicBoolean stopBackgroundThreads = new AtomicBoolean();
 
-    private final Thread cacheEntryRemovalThread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            while (!stopBackgroundThreads.get()) {
-                try {
-                    if (hasExpirationInfos()) {
-                        CacheEntryExpirationInfo<K, V> expirationInfo = getFirstExpirationInfo();
-                        long currentTimeMillis = System.currentTimeMillis();
+    private final Thread cacheEntryRemovalThread = new Thread(() -> {
+        while (!stopBackgroundThreads.get()) {
+            try {
+                if (hasExpirationInfos()) {
+                    CacheEntryExpirationInfo<K, V> expirationInfo = Preconditions.checkNotNull(getFirstExpirationInfo());
+                    long currentTimeMillis = System.currentTimeMillis();
 
-                        if (currentTimeMillis < expirationInfo.getExpirationTimeMillis()) {
-                            ThreadUtil.sleep(expirationInfo.getExpirationTimeMillis() - currentTimeMillis);
-                        } else {
-                            removeCacheEntryWithLifetimeIfNeeded(expirationInfo.getSection(), expirationInfo);
-                        }
+                    if (currentTimeMillis < expirationInfo.getExpirationTimeMillis()) {
+                        ThreadUtil.sleep(expirationInfo.getExpirationTimeMillis() - currentTimeMillis);
                     } else {
-                        ThreadUtil.sleep(Long.MAX_VALUE);
+                        removeCacheEntryWithLifetimeIfNeeded(expirationInfo.getSection(), expirationInfo);
                     }
-                } catch (RuntimeException e) {
-                    logger.error(String.format(
-                            "Got unexpected exception while removing expired entries in '%s' #%d.",
-                            InmemoryCache.class, getIndex()
-                    ), e);
+                } else {
+                    ThreadUtil.sleep(Long.MAX_VALUE);
                 }
+            } catch (RuntimeException e) {
+                logger.error(String.format(
+                        "Got unexpected exception while removing expired entries in '%s' #%d.",
+                        InmemoryCache.class, getIndex()
+                ), e);
             }
         }
     });
@@ -245,7 +244,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         }
     }
 
-    boolean hasExpirationInfos() {
+    final boolean hasExpirationInfos() {
         String[] expirationInfoSections = getExpirationInfoSections();
         int sectionsCount = expirationInfoSections.length;
 
@@ -263,7 +262,8 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         return !ensureAndReturnExpirationInfosSection(section).isEmpty();
     }
 
-    CacheEntryExpirationInfo<K, V> getFirstExpirationInfo() {
+    @Nullable
+    final CacheEntryExpirationInfo<K, V> getFirstExpirationInfo() {
         CacheEntryExpirationInfo<K, V> firstExpirationInfo = null;
 
         String[] expirationInfoSections = getExpirationInfoSections();
@@ -295,7 +295,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     }
 
     @CacheSectionWrite
-    void removeCacheEntryWithLifetimeIfNeeded(
+    final void removeCacheEntryWithLifetimeIfNeeded(
             @CacheSection String section, CacheEntryExpirationInfo<K, V> expirationInfo) {
         Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
         CacheEntry<V> cacheEntry = cacheEntryByKey.get(expirationInfo.getKey());
