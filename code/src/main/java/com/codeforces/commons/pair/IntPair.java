@@ -43,7 +43,7 @@ public class IntPair implements Comparable<IntPair> {
         this.second = second;
     }
 
-    @SuppressWarnings({"ObjectEquality", "CompareToUsesNonFinalVariable"})
+    @SuppressWarnings("CompareToUsesNonFinalVariable")
     @Override
     public int compareTo(@Nonnull IntPair pair) {
         int comparisonResult = Integer.compare(first, pair.first);

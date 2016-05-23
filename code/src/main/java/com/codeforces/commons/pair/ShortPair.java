@@ -43,7 +43,7 @@ public class ShortPair implements Comparable<ShortPair> {
         this.second = second;
     }
 
-    @SuppressWarnings({"ObjectEquality", "CompareToUsesNonFinalVariable"})
+    @SuppressWarnings("CompareToUsesNonFinalVariable")
     @Override
     public int compareTo(@Nonnull ShortPair pair) {
         int comparisonResult = Short.compare(first, pair.first);

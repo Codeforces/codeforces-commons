@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 11.07.13
  */
-public class Pair<F extends Comparable<F>, S extends Comparable<S>> implements Comparable<Pair<F, S>> {
+public class Pair<F extends Comparable<? super F>, S extends Comparable<? super S>> implements Comparable<Pair<F, S>> {
     @Nullable
     private F first;
 

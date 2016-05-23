@@ -43,7 +43,7 @@ public class BytePair implements Comparable<BytePair> {
         this.second = second;
     }
 
-    @SuppressWarnings({"ObjectEquality", "CompareToUsesNonFinalVariable"})
+    @SuppressWarnings("CompareToUsesNonFinalVariable")
     @Override
     public int compareTo(@Nonnull BytePair pair) {
         int comparisonResult = Byte.compare(first, pair.first);

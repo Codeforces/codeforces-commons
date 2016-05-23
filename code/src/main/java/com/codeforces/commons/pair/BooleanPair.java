@@ -43,7 +43,7 @@ public class BooleanPair implements Comparable<BooleanPair> {
         this.second = second;
     }
 
-    @SuppressWarnings({"ObjectEquality", "CompareToUsesNonFinalVariable"})
+    @SuppressWarnings("CompareToUsesNonFinalVariable")
     @Override
     public int compareTo(@Nonnull BooleanPair pair) {
         int comparisonResult = Boolean.compare(first, pair.first);

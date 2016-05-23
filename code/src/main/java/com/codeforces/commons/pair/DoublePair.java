@@ -43,7 +43,7 @@ public class DoublePair implements Comparable<DoublePair> {
         this.second = second;
     }
 
-    @SuppressWarnings({"ObjectEquality", "CompareToUsesNonFinalVariable"})
+    @SuppressWarnings("CompareToUsesNonFinalVariable")
     @Override
     public int compareTo(@Nonnull DoublePair pair) {
         int comparisonResult = Double.compare(first, pair.first);

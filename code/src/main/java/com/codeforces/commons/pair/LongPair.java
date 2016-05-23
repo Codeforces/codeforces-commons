@@ -43,7 +43,7 @@ public class LongPair implements Comparable<LongPair> {
         this.second = second;
     }
 
-    @SuppressWarnings({"ObjectEquality", "CompareToUsesNonFinalVariable"})
+    @SuppressWarnings("CompareToUsesNonFinalVariable")
     @Override
     public int compareTo(@Nonnull LongPair pair) {
         int comparisonResult = Long.compare(first, pair.first);
