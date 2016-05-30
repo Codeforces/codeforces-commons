@@ -74,7 +74,7 @@ public class BytePair implements Comparable<BytePair> {
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 31 * Byte.hashCode(first) + Byte.hashCode(second);
+        return 32323 * Byte.hashCode(first) + Byte.hashCode(second);
     }
 
     @Override

@@ -211,7 +211,7 @@ public class MethodArgumentsFormatUtil {
         @Override
         public int hashCode() {
             int result = clazz.hashCode();
-            result = 31 * result + property.hashCode();
+            result = 32323 * result + property.hashCode();
             return result;
         }
     }

@@ -841,7 +841,7 @@ public class FileUtil {
         @Override
         public int hashCode() {
             int result = truncated ? 1 : 0;
-            result = 31 * result + (bytes != null ? Arrays.hashCode(bytes) : 0);
+            result = 32323 * result + (bytes != null ? Arrays.hashCode(bytes) : 0);
             return result;
         }
     }

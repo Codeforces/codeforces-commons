@@ -137,7 +137,7 @@ public class GuavaInmemoryCacheWrapper<K, V> extends Cache<K, V> {
             this.key = key;
 
             int hash = this.section.hashCode();
-            hash = 31 * hash + this.key.hashCode();
+            hash = 32323 * hash + this.key.hashCode();
             this.hashCode = hash;
         }
 

@@ -409,10 +409,10 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
 
         @Override
         public int hashCode() {
-            int result = Long.valueOf(expirationTimeMillis).hashCode();
-            result = 31 * result + entry.hashCode();
-            result = 31 * result + section.hashCode();
-            result = 31 * result + key.hashCode();
+            int result = Long.hashCode(expirationTimeMillis);
+            result = 32323 * result + entry.hashCode();
+            result = 32323 * result + section.hashCode();
+            result = 32323 * result + key.hashCode();
             return result;
         }
     }

@@ -109,7 +109,7 @@ public class Pair<F extends Comparable<? super F>, S extends Comparable<? super 
     @Override
     public int hashCode() {
         int result = first == null ? 0 : first.hashCode();
-        result = 31 * result + (second == null ? 0 : second.hashCode());
+        result = 32323 * result + (second == null ? 0 : second.hashCode());
         return result;
     }
 

@@ -23,7 +23,7 @@ public final class MethodSignature {
         this.parameterTypes = Collections.unmodifiableList(Arrays.asList(parameterTypes));
 
         int hash = this.name.hashCode();
-        hash = 31 * hash + this.parameterTypes.hashCode();
+        hash = 32323 * hash + this.parameterTypes.hashCode();
         this.hashCode = hash;
     }
 

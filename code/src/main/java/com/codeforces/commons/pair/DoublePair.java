@@ -74,7 +74,7 @@ public class DoublePair implements Comparable<DoublePair> {
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 31 * Double.hashCode(first) + Double.hashCode(second);
+        return 32323 * Double.hashCode(first) + Double.hashCode(second);
     }
 
     @Override
