@@ -909,7 +909,7 @@ public class FileUtil {
 
     @Contract("null -> false")
     public static boolean isSymbolicLink(@Nullable File file) {
-        return exists(file) && Files.isSymbolicLink(FileSystems.getDefault().getPath(file.getAbsolutePath()));
+        return exists(file) && Files.isSymbolicLink(Paths.get(file.toURI()));
     }
 
     public static void createSymbolicLink(@Nonnull File source, @Nonnull File target) throws IOException {
@@ -921,10 +921,7 @@ public class FileUtil {
         ensureParentDirectoryExists(target);
 
         try {
-            Files.createSymbolicLink(
-                    FileSystems.getFileSystem(target.toURI()).getPath(target.getAbsolutePath()),
-                    FileSystems.getFileSystem(source.toURI()).getPath(source.getAbsolutePath())
-            );
+            Files.createSymbolicLink(Paths.get(target.toURI()), Paths.get(source.toURI()));
         } catch (RuntimeException e) {
             throw new IOException(String.format(
                     "Can't create the symbolic link '%s' to '%s'.", target, source
@@ -941,10 +938,7 @@ public class FileUtil {
         ensureParentDirectoryExists(target);
 
         try {
-            Files.createSymbolicLink(
-                    FileSystems.getFileSystem(target.toURI()).getPath(target.getAbsolutePath()),
-                    FileSystems.getFileSystem(source.toURI()).getPath(source.getAbsolutePath())
-            );
+            Files.createSymbolicLink(Paths.get(target.toURI()), Paths.get(source.toURI()));
         } catch (UnsupportedOperationException | IOException | InternalError ignored) {
             if (isFile(source)) {
                 UnsafeFileUtil.copyFile(source, target);
