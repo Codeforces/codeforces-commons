@@ -1,7 +1,5 @@
 package com.codeforces.commons.compress;
 
-import com.codeforces.commons.holder.Mutable;
-import com.codeforces.commons.holder.SimpleMutable;
 import com.codeforces.commons.io.CountingOutputStream;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
@@ -19,6 +17,7 @@ import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.NameFileFilter;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -789,7 +788,7 @@ public final class ZipUtil {
                 return formatEmptyZipFilePlaceholder(zipFile, maxLength, emptyZipFilePlaceholderPattern, charset);
             }
 
-            Mutable<Boolean> truncated = new SimpleMutable<>(Boolean.FALSE);
+            MutableBoolean truncated = new MutableBoolean(Boolean.FALSE);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             CountingOutputStream countingOutputStream = new CountingOutputStream(byteArrayOutputStream);
 
@@ -838,19 +837,19 @@ public final class ZipUtil {
                         binaryEntryContentPlaceholderPattern
                 );
 
-                if (truncated.get()) {
+                if (truncated.booleanValue()) {
                     break;
                 }
             }
 
-            return new FileUtil.FirstBytes(truncated.get(), byteArrayOutputStream.toByteArray());
+            return new FileUtil.FirstBytes(truncated.booleanValue(), byteArrayOutputStream.toByteArray());
         } catch (ZipException e) {
             throw new IOException("Can't format ZIP-file for view.", e);
         }
     }
 
     private static void formatAndAppendEntryContent(
-            CountingOutputStream countingOutputStream, int maxLength, Mutable<Boolean> truncated, Charset charset,
+            CountingOutputStream countingOutputStream, int maxLength, MutableBoolean truncated, Charset charset,
             ZipFile zipFile, FileHeader zipEntryHeader, int maxEntryLineCount, int maxEntryLineLength,
             String entryContentHeaderPattern, String entryContentLinePattern,
             String entryContentLineSeparatorPattern, String entryContentCloserPattern,
@@ -926,20 +925,20 @@ public final class ZipUtil {
     }
 
     private static boolean writeBytesForView(
-            CountingOutputStream countingOutputStream, byte[] bytes, int maxLength, Mutable<Boolean> truncated) {
-        if (truncated.get()) {
+            CountingOutputStream countingOutputStream, byte[] bytes, int maxLength, MutableBoolean truncated) {
+        if (truncated.booleanValue()) {
             return false;
         }
 
         if (countingOutputStream.getTotalWrittenByteCount() + bytes.length > maxLength) {
-            truncated.set(true);
+            truncated.setTrue();
             return false;
         } else {
             try {
                 countingOutputStream.write(bytes);
                 return true;
             } catch (IOException ignored) {
-                truncated.set(true);
+                truncated.setTrue();
                 return false;
             }
         }
