@@ -1,8 +1,6 @@
 package com.codeforces.commons.text;
 
 import com.codeforces.commons.holder.Holders;
-import com.codeforces.commons.holder.Mutable;
-import com.codeforces.commons.holder.SimpleMutable;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.pair.*;
@@ -13,6 +11,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -666,7 +665,7 @@ public final class StringUtil {
             return (boolean) value ? fieldName : '!' + fieldName;
         }
 
-        Mutable<Boolean> quoted = new SimpleMutable<>();
+        MutableBoolean quoted = new MutableBoolean();
         String stringValue = valueToString(value, quoted);
 
         if (shouldSkipField(stringValue, options, quoted)) {
@@ -678,13 +677,13 @@ public final class StringUtil {
 
     @SuppressWarnings({"AccessingNonPublicFieldOfAnotherObject", "OverlyComplexMethod"})
     private static boolean shouldSkipField(
-            @Nullable String stringValue, ToStringOptions options, Mutable<Boolean> quoted) {
+            @Nullable String stringValue, ToStringOptions options, MutableBoolean quoted) {
         if (options.skipNulls && stringValue == null) {
             return true;
         }
 
         if (options.skipEmptyStrings) {
-            if (quoted != null && quoted.get() != null && quoted.get()) {
+            if (quoted != null && quoted.booleanValue()) {
                 if ("''".equals(stringValue) || "\"\"".equals(stringValue)) {
                     return true;
                 }
@@ -696,7 +695,7 @@ public final class StringUtil {
         }
 
         if (options.skipBlankStrings) {
-            if (quoted != null && quoted.get() != null && quoted.get()) {
+            if (quoted != null && quoted.booleanValue()) {
                 if (isBlank(stringValue) || isBlank(stringValue.substring(1, stringValue.length() - 1))) {
                     return true;
                 }
@@ -713,7 +712,7 @@ public final class StringUtil {
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "unchecked"})
     @Contract("null, _ -> null")
     @Nullable
-    private static String valueToString(@Nullable Object value, @Nullable Mutable<Boolean> quoted) {
+    private static String valueToString(@Nullable Object value, @Nullable MutableBoolean quoted) {
         if (value == null) {
             return null;
         }
