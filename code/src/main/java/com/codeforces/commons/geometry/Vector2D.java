@@ -13,10 +13,11 @@ import static com.codeforces.commons.math.Math.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 22.07.13
+ *         Date: 22.07.2013
  */
 public class Vector2D extends DoublePair {
     public static final double DEFAULT_EPSILON = Line2D.DEFAULT_EPSILON;
+    public static final Vector2D[] EMPTY_VECTOR_ARRAY = {};
 
     public Vector2D(double x, double y) {
         super(x, y);

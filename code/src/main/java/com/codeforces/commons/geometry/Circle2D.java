@@ -3,6 +3,7 @@ package com.codeforces.commons.geometry;
 import com.codeforces.commons.text.StringUtil;
 import org.jetbrains.annotations.Contract;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
 import static com.codeforces.commons.math.Math.sqrt;
@@ -16,6 +17,7 @@ import static com.codeforces.commons.math.Math.sqrt;
 @SuppressWarnings("StandardVariableNames")
 public class Circle2D {
     public static final double DEFAULT_EPSILON = Line2D.DEFAULT_EPSILON;
+    public static final Circle2D[] EMPTY_CIRCLE_ARRAY = {};
 
     private final double a;
     private final double b;
@@ -110,6 +112,16 @@ public class Circle2D {
     @Contract(pure = true)
     public double getCenterY() {
         return -b / 2.0D;
+    }
+
+    @Nonnull
+    public Point2D[] getIntersectionPoints(@Nonnull Line2D line, @Nonnegative double epsilon) {
+        return line.getIntersectionPoints(this, epsilon);
+    }
+
+    @Nonnull
+    public Point2D[] getIntersectionPoints(@Nonnull Line2D line) {
+        return line.getIntersectionPoints(this, DEFAULT_EPSILON);
     }
 
     @Contract(value = "-> !null", pure = true)

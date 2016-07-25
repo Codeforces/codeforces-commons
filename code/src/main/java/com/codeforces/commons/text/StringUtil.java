@@ -1436,17 +1436,6 @@ public final class StringUtil {
     }
 
     /**
-     * @see Objects#toString(Object) as a closest (but not equal) replacement.
-     * @deprecated It will be removed soon, because its behaviour differs from StringUtil.toString(...) method family.
-     */
-    @Deprecated
-    @Contract("null -> null")
-    @Nullable
-    public static String toString(@Nullable Object object) {
-        return object == null ? null : object.toString();
-    }
-
-    /**
      * Escape special characters from string to safely pass it to SQL query.
      * Does not escape % and _ characters.
      *
