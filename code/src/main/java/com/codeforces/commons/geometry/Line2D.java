@@ -141,9 +141,9 @@ public class Line2D {
     public Vector2D getUnitNormalFrom(double x, double y, @Nonnegative double epsilon) {
         double signedDistance = getSignedDistanceFrom(x, y);
 
-        if (signedDistance <= -epsilon) {
+        if (signedDistance < -epsilon) {
             return new Vector2D(a / pseudoLength, b / pseudoLength);
-        } else if (signedDistance >= epsilon) {
+        } else if (signedDistance > epsilon) {
             return new Vector2D(-a / pseudoLength, -b / pseudoLength);
         } else {
             throw new IllegalArgumentException(String.format("Point {x=%s, y=%s} is on the %s.", x, y, this));
@@ -164,7 +164,7 @@ public class Line2D {
 
     public Point2D getProjectionOf(double x, double y, @Nonnegative double epsilon) {
         double distance = getDistanceFrom(x, y);
-        if (distance < epsilon) {
+        if (distance <= epsilon) {
             return new Point2D(x, y);
         }
 
@@ -194,7 +194,7 @@ public class Line2D {
     @Nullable
     public Point2D getIntersectionPoint(@Nonnull Line2D line, @Nonnegative double epsilon) {
         double d = a * line.b - line.a * b;
-        return abs(d) < epsilon ? null : new Point2D((b * line.c - line.b * c) / d, (line.a * c - a * line.c) / d);
+        return abs(d) <= epsilon ? null : new Point2D((b * line.c - line.b * c) / d, (line.a * c - a * line.c) / d);
     }
 
     /**
