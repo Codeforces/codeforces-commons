@@ -209,11 +209,12 @@ public class Line2D {
         return getIntersectionPoint(line, DEFAULT_EPSILON);
     }
 
+    @SuppressWarnings("QuestionableName")
     @Nonnull
     public Point2D[] getIntersectionPoints(@Nonnull Circle2D circle, @Nonnegative double epsilon) {
-        double sqrA = a * a;
-        double sqrB = b * b;
-        double sqrC = c * c;
+        double aa = a * a;
+        double bb = b * b;
+        double cc = c * c;
 
         double ab = a * b;
         double ac = a * c;
@@ -223,10 +224,10 @@ public class Line2D {
         double circleB = circle.getB();
         double circleC = circle.getC();
 
-        double axy = sqrA + sqrB; // a-factor for both x and y quadratic equations
+        double axy = aa + bb; // a-factor for both x and y quadratic equations
 
-        double bx = 2.0D * ac + sqrB * circleA - ab * circleB; // b-factor for x quadratic equation
-        double cx = sqrB * circleC - bc * circleB + sqrC; // c-factor for x quadratic equation
+        double bx = 2.0D * ac + bb * circleA - ab * circleB; // b-factor for x quadratic equation
+        double cx = bb * circleC - bc * circleB + cc; // c for x quadratic equation
 
         double dx = bx * bx - 4 * axy * cx;
 
@@ -234,8 +235,8 @@ public class Line2D {
             return Point2D.EMPTY_POINT_ARRAY;
         }
 
-        double by = 2.0D * bc + sqrA * circleB - ab * circleA; // b-factor for y quadratic equation
-        double cy = sqrA * circleC - ac * circleA + sqrC; // c-factor for y quadratic equation
+        double by = 2.0D * bc + aa * circleB - ab * circleA; // b-factor for y quadratic equation
+        double cy = aa * circleC - ac * circleA + cc; // c for y quadratic equation
 
         double dy = by * by - 4 * axy * cy;
 
