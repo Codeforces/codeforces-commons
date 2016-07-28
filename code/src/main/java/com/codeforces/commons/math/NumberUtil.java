@@ -228,6 +228,50 @@ public final class NumberUtil {
         throw new IllegalArgumentException("Can't convert double " + value + " to long.");
     }
 
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Double toDouble(@Nullable Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value instanceof Byte) {
+            return (double) (byte) value;
+        }
+
+        if (value instanceof Short) {
+            return (double) (short) value;
+        }
+
+        if (value instanceof Integer) {
+            return (double) (int) value;
+        }
+
+        if (value instanceof Long) {
+            return (double) (long) value;
+        }
+
+        if (value instanceof Float) {
+            return (double) (float) value;
+        }
+
+        if (value instanceof Double) {
+            return (Double) value;
+        }
+
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+
+        return Double.parseDouble(StringUtil.trim(value.toString()));
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Double toDouble(@Nullable String value) {
+        return value == null ? null : Double.parseDouble(StringUtil.trim(value));
+    }
+
     @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
     public static boolean equals(@Nullable Byte numberA, @Nullable Byte numberB) {
         return numberA == null ? numberB == null : numberA.equals(numberB);
@@ -308,7 +352,7 @@ public final class NumberUtil {
             return false;
         }
 
-        return abs(numberA - numberB) < epsilon;
+        return abs(numberA - numberB) <= epsilon;
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
@@ -331,7 +375,7 @@ public final class NumberUtil {
             return false;
         }
 
-        return abs(numberA - numberB) < epsilon;
+        return abs(numberA - numberB) <= epsilon;
     }
 
     @Contract(pure = true)

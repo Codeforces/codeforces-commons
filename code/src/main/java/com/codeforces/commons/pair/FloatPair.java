@@ -74,7 +74,7 @@ public class FloatPair implements Comparable<FloatPair> {
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 31 * Float.hashCode(first) + Float.hashCode(second);
+        return 32323 * Float.hashCode(first) + Float.hashCode(second);
     }
 
     @Override

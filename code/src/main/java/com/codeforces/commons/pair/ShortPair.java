@@ -74,7 +74,7 @@ public class ShortPair implements Comparable<ShortPair> {
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 31 * Short.hashCode(first) + Short.hashCode(second);
+        return 32323 * Short.hashCode(first) + Short.hashCode(second);
     }
 
     @Override

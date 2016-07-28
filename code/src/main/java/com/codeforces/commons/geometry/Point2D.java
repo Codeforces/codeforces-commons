@@ -13,10 +13,11 @@ import static com.codeforces.commons.math.Math.sumSqr;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 22.07.13
+ *         Date: 22.07.2013
  */
 public class Point2D extends DoublePair {
     public static final double DEFAULT_EPSILON = Line2D.DEFAULT_EPSILON;
+    public static final Point2D[] EMPTY_POINT_ARRAY = {};
 
     public Point2D(double x, double y) {
         super(x, y);

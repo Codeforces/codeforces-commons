@@ -74,7 +74,7 @@ public class IntPair implements Comparable<IntPair> {
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 31 * first + second;
+        return 32323 * first + second;
     }
 
     @Override

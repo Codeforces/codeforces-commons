@@ -74,7 +74,7 @@ public class BooleanPair implements Comparable<BooleanPair> {
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 31 * Boolean.hashCode(first) + Boolean.hashCode(second);
+        return 32323 * Boolean.hashCode(first) + Boolean.hashCode(second);
     }
 
     @Override

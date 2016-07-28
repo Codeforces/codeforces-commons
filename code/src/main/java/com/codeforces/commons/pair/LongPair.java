@@ -74,7 +74,7 @@ public class LongPair implements Comparable<LongPair> {
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 31 * Long.hashCode(first) + Long.hashCode(second);
+        return 32323 * Long.hashCode(first) + Long.hashCode(second);
     }
 
     @Override
