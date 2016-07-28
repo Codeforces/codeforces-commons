@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.security.InvalidKeyException;
@@ -55,6 +56,31 @@ public final class StringUtil {
 
     public static boolean isWhitespace(char c) {
         return Character.isWhitespace(c) || c == NON_BREAKING_SPACE || c == ZERO_WIDTH_SPACE;
+    }
+
+    public static boolean isPrintable(char c) {
+        Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
+        return (!Character.isISOControl(c) && c != KeyEvent.CHAR_UNDEFINED
+                && block != null && !Objects.equals(block, Character.UnicodeBlock.SPECIALS)) || c == '\r' || c == '\n' || c == '\t';
+    }
+
+    public static String showInvisible(String s) {
+        return showInvisible(s, (char) 182);
+    }
+
+    public static String showInvisible(String s, char replacement) {
+        if (s == null) {
+            return null;
+        }
+        char[] result = new char[s.length()];
+        for (int i = 0; i < s.length(); i++) {
+            if (isPrintable(s.charAt(i))) {
+                result[i] = s.charAt(i);
+            } else {
+                result[i] = replacement;
+            }
+        }
+        return new String(result);
     }
 
     @Contract(pure = true)
