@@ -9,42 +9,17 @@ import javax.annotation.Nullable;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 11.07.13
  */
-public class Pair<F extends Comparable<? super F>, S extends Comparable<? super S>> implements Comparable<Pair<F, S>> {
-    @Nullable
-    private F first;
-
-    @Nullable
-    private S second;
-
+public class Pair<F extends Comparable<? super F>, S extends Comparable<? super S>>
+        extends SimplePair<F, S> implements Comparable<Pair<F, S>> {
     public Pair() {
     }
 
     public Pair(@Nullable F first, @Nullable S second) {
-        this.first = first;
-        this.second = second;
+        super(first, second);
     }
 
     public Pair(@Nonnull Pair<F, S> pair) {
-        this.first = pair.first;
-        this.second = pair.second;
-    }
-
-    @Nullable
-    public F getFirst() {
-        return first;
-    }
-
-    public void setFirst(@Nullable F first) {
-        this.first = first;
-    }
-
-    @Nullable
-    public S getSecond() {
-        return second;
-    }
-
-    public void setSecond(@Nullable S second) {
-        this.second = second;
+        super(pair);
     }
 
     @SuppressWarnings({"ObjectEquality", "CompareToUsesNonFinalVariable"})
