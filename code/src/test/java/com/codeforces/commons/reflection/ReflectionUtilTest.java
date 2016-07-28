@@ -1,8 +1,10 @@
 package com.codeforces.commons.reflection;
 
+import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.text.StringUtil;
 import junit.framework.TestCase;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -101,6 +103,56 @@ public class ReflectionUtilTest extends TestCase {
         );
     }
 
+    public void testCopyProperties() throws InvocationTargetException, IllegalAccessException {
+        for (int t = 0; t <= 20; t++) {
+            int count = 10000;
+            B[] b = new B[count];
+            for (int i = 0; i < count; i++) {
+                b[i] = newB();
+            }
+            C[] bb = new C[count];
+
+            for (int i = 0; i < count; i++) {
+                bb[i] = new C();
+            }
+
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < count; i++) {
+                //BeanUtils.copyProperties(b[i], bb[i]);
+                ReflectionUtil.copyProperties(b[i], bb[i]);
+            }
+            //System.out.println(System.currentTimeMillis() - start);
+
+            for (int i = 0; i < count; i++) {
+                assertEquals(b[i], bb[i]);
+            }
+        }
+    }
+
+    public B newB() {
+        B b = new B();
+        b.setId(RandomUtil.getRandomLong());
+        b.setSize(RandomUtil.getRandomInt(10));
+        if (RandomUtil.getRandomInt(2) == 0) {
+            b.setName(RandomUtil.getRandomToken());
+        }
+        b.setVolume(RandomUtil.getRandomLong() * 1.0 / RandomUtil.getRandomLong());
+        if (RandomUtil.getRandomInt(2) == 0) {
+            b.setType(A.Type.values()[RandomUtil.getRandomInt(A.Type.values().length)]);
+        }
+        b.setLetter((char) ('a' + RandomUtil.getRandomInt(26)));
+        if (RandomUtil.getRandomInt(2) == 0) {
+            b.setKind(B.Kind.values()[RandomUtil.getRandomInt(B.Kind.values().length)]);
+        }
+        if (RandomUtil.getRandomInt(2) == 0) {
+            BB nestedInstance = new BB();
+            nestedInstance.setUuid(RandomUtil.getRandomLong());
+            b.setNestedInstance(nestedInstance);
+        }
+
+        return b;
+    }
+
     private static class Person {
         protected final long id;
         protected final int age;
@@ -149,6 +201,244 @@ public class ReflectionUtilTest extends TestCase {
 
         public String handle() {
             return login;
+        }
+    }
+
+    public static class A {
+        private long id;
+        private String name;
+        private int size;
+        private double volume;
+        private Type type;
+
+        public long getId() {
+            return id;
+        }
+
+        public void setId(long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public void setSize(int size) {
+            this.size = size;
+        }
+
+        public double getVolume() {
+            return volume;
+        }
+
+        public void setVolume(double volume) {
+            this.volume = volume;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public void setType(Type type) {
+            this.type = type;
+        }
+
+        public enum Type {
+            LARGE,
+            SMALL
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null) return false;
+
+            A a = (A) o;
+
+            if (id != a.id) return false;
+            if (size != a.size) return false;
+            if (Double.compare(a.volume, volume) != 0) return false;
+            if (name != null ? !name.equals(a.name) : a.name != null) return false;
+            return type == a.type;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result;
+            long temp;
+            result = (int) (id ^ (id >>> 32));
+            result = 31 * result + (name != null ? name.hashCode() : 0);
+            result = 31 * result + size;
+            temp = Double.doubleToLongBits(volume);
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + (type != null ? type.hashCode() : 0);
+            return result;
+        }
+    }
+
+    public static class C extends A {
+        private char letter;
+        private Kind kind;
+        private AA nestedInstance;
+
+        public AA getNestedInstance() {
+            return nestedInstance;
+        }
+
+        public void setNestedInstance(AA nestedInstance) {
+            this.nestedInstance = nestedInstance;
+        }
+
+
+        public char getLetter() {
+            return letter;
+        }
+
+        public void setLetter(char letter) {
+            this.letter = letter;
+        }
+
+        public Kind getKind() {
+            return kind;
+        }
+
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+
+        public enum Kind {
+            X, x, Y, y
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+
+            B b = (B) o;
+
+            if (letter != b.letter) return false;
+            if (kind == null && b.kind == null) {
+                return true;
+            }
+            if (kind == null || b.kind == null) {
+                return false;
+            }
+            return kind.toString().equals(b.kind.toString());
+        }
+
+        @Override
+        public int hashCode() {
+            int result = super.hashCode();
+            result = 31 * result + (int) letter;
+            result = 31 * result + (kind != null ? kind.hashCode() : 0);
+            return result;
+        }
+    }
+
+
+    public static class B extends A {
+        private char letter;
+        private Kind kind;
+        private BB nestedInstance;
+
+        public BB getNestedInstance() {
+            return nestedInstance;
+        }
+
+        public void setNestedInstance(BB nestedInstance) {
+            this.nestedInstance = nestedInstance;
+        }
+
+        public char getLetter() {
+            return letter;
+        }
+
+        public void setLetter(char letter) {
+            this.letter = letter;
+        }
+
+        public Kind getKind() {
+            return kind;
+        }
+
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+
+        public enum Kind {
+            X, x, Y, y
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            //if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+
+            C b = (C) o;
+
+            if (letter != b.letter) return false;
+            if (!(kind == null && b.kind == null)) {
+                if (kind == null || b.kind == null) {
+                    return false;
+                }
+
+                if (!kind.toString().equals(b.kind.toString())) {
+                    return false;
+                }
+            }
+
+            if (nestedInstance == null && b.nestedInstance == null) {
+                return true;
+            }
+            if (nestedInstance == null || b.nestedInstance == null) {
+                return false;
+            }
+            return nestedInstance.uuid == b.nestedInstance.uuid;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = super.hashCode();
+            result = 31 * result + (int) letter;
+            result = 31 * result + (kind != null ? kind.hashCode() : 0);
+            result = 31 * result + (nestedInstance != null ? nestedInstance.hashCode() : 0);
+            return result;
+        }
+    }
+
+    public static class AA {
+        private long uuid;
+
+        public long getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(long uuid) {
+            this.uuid = uuid;
+        }
+    }
+
+    public static class BB {
+        public long uuid;
+
+        public long getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(long uuid) {
+            this.uuid = uuid;
         }
     }
 }
