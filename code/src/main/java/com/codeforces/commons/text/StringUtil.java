@@ -64,11 +64,11 @@ public final class StringUtil {
                 && block != null && !Objects.equals(block, Character.UnicodeBlock.SPECIALS)) || c == '\r' || c == '\n' || c == '\t';
     }
 
-    public static String showInvisible(String s) {
-        return showInvisible(s, (char) 182);
+    public static String replaceInvisibleCharacters(String s) {
+        return replaceInvisibleCharacters(s, (char) 182);
     }
 
-    public static String showInvisible(String s, char replacement) {
+    public static String replaceInvisibleCharacters(String s, char replacement) {
         if (s == null) {
             return null;
         }
