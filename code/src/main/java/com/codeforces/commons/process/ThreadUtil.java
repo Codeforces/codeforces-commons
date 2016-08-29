@@ -3,6 +3,7 @@ package com.codeforces.commons.process;
 import com.codeforces.commons.exception.ExceptionUtil;
 import org.apache.log4j.Logger;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Date;
@@ -23,7 +24,8 @@ public class ThreadUtil {
     @SuppressWarnings("AssignmentToMethodParameter")
     public static Thread newThread(
             @Nullable String name, @Nonnull Runnable runnable,
-            @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, long stackSize) {
+            @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, @Nonnegative long stackSize,
+            boolean daemon) {
         if (name == null) {
             name = String.format(
                     "Unnamed thread by %s running %s at %s.",
@@ -31,7 +33,11 @@ public class ThreadUtil {
             );
         }
 
-        Thread thread = new Thread(null, runnable, name, stackSize);
+        Thread thread = stackSize > 0L ? new Thread(null, runnable, name, stackSize) : new Thread(null, runnable, name);
+
+        if (daemon) {
+            thread.setDaemon(true);
+        }
 
         if (uncaughtExceptionHandler != null || Thread.getDefaultUncaughtExceptionHandler() == null) {
             if (uncaughtExceptionHandler == null) {
@@ -52,29 +58,61 @@ public class ThreadUtil {
         return thread;
     }
 
-    public static Thread newThread(@Nullable String name, @Nonnull Runnable runnable) {
-        return newThread(name, runnable, null, 0);
+    public static Thread newThread(
+            @Nullable String name, @Nonnull Runnable runnable,
+            @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, @Nonnegative long stackSize) {
+        return newThread(name, runnable, uncaughtExceptionHandler, stackSize, false);
+    }
+
+    public static Thread newThread(
+            @Nullable String name, @Nonnull Runnable runnable,
+            @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler, boolean daemon) {
+        return newThread(name, runnable, uncaughtExceptionHandler, 0L, daemon);
     }
 
     public static Thread newThread(
             @Nullable String name, @Nonnull Runnable runnable,
             @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
-        return newThread(name, runnable, uncaughtExceptionHandler, 0);
+        return newThread(name, runnable, uncaughtExceptionHandler, 0L, false);
     }
 
-    public static Thread newThread(@Nonnull Runnable runnable,
-                                   @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
-        return newThread(null, runnable, uncaughtExceptionHandler, 0);
+    public static Thread newThread(@Nullable String name, @Nonnull Runnable runnable, boolean daemon) {
+        return newThread(name, runnable, null, 0L, daemon);
+    }
+
+    public static Thread newThread(@Nullable String name, @Nonnull Runnable runnable) {
+        return newThread(name, runnable, null, 0L, false);
     }
 
     public static Thread newThread(
             @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler,
-            long stackSize) {
-        return newThread(null, runnable, uncaughtExceptionHandler, stackSize);
+            @Nonnegative long stackSize, boolean daemon) {
+        return newThread(null, runnable, uncaughtExceptionHandler, stackSize, daemon);
+    }
+
+    public static Thread newThread(
+            @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler,
+            @Nonnegative long stackSize) {
+        return newThread(null, runnable, uncaughtExceptionHandler, stackSize, false);
+    }
+
+    public static Thread newThread(
+            @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler,
+            boolean daemon) {
+        return newThread(null, runnable, uncaughtExceptionHandler, 0L, daemon);
+    }
+
+    public static Thread newThread(
+            @Nonnull Runnable runnable, @Nullable Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+        return newThread(null, runnable, uncaughtExceptionHandler, 0L, false);
+    }
+
+    public static Thread newThread(@Nonnull Runnable runnable, boolean daemon) {
+        return newThread(null, runnable, null, 0L, daemon);
     }
 
     public static Thread newThread(@Nonnull Runnable runnable) {
-        return newThread(null, runnable, null, 0);
+        return newThread(null, runnable, null, 0L, false);
     }
 
     public static void sleep(long millis) {

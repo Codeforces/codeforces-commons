@@ -1,11 +1,13 @@
 package com.codeforces.commons.geometry;
 
 import com.codeforces.commons.text.StringUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
+import static com.codeforces.commons.math.Math.abs;
 import static com.codeforces.commons.math.Math.sqrt;
 
 /**
@@ -92,6 +94,50 @@ public class Circle2D {
     @Contract(pure = true)
     public Circle2D setC(double c) {
         return new Circle2D(a, b, c);
+    }
+
+    @Nonnull
+    public double[] getXs(double y, @Nonnegative double epsilon) {
+        double d = a * a - 4.0D * (y * y + b * y + c);
+
+        if (d < -epsilon) {
+            return ArrayUtils.EMPTY_DOUBLE_ARRAY;
+        }
+
+        if (abs(d) <= epsilon) {
+            return new double[]{-a / 2.0D};
+        }
+
+        double sqrtD = sqrt(d);
+
+        return new double[]{(-sqrtD - a) / 2.0D, (sqrtD - a) / 2.0D};
+    }
+
+    @Nonnull
+    public double[] getXs(double y) {
+        return getXs(y, DEFAULT_EPSILON);
+    }
+
+    @Nonnull
+    public double[] getYs(double x, @Nonnegative double epsilon) {
+        double d = b * b - 4.0D * (x * x + a * x + c);
+
+        if (d < -epsilon) {
+            return ArrayUtils.EMPTY_DOUBLE_ARRAY;
+        }
+
+        if (abs(d) <= epsilon) {
+            return new double[]{-b / 2.0D};
+        }
+
+        double sqrtD = sqrt(d);
+
+        return new double[]{(-sqrtD - b) / 2.0D, (sqrtD - b) / 2.0D};
+    }
+
+    @Nonnull
+    public double[] getYs(double x) {
+        return getYs(x, DEFAULT_EPSILON);
     }
 
     @Contract(pure = true)

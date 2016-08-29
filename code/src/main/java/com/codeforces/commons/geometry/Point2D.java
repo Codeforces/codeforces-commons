@@ -43,7 +43,7 @@ public class Point2D extends DoublePair {
         setSecond(y);
     }
 
-    public Point2D add(Vector2D vector) {
+    public Point2D add(@Nonnull Vector2D vector) {
         setX(getX() + vector.getX());
         setY(getY() + vector.getY());
         return this;
@@ -55,7 +55,7 @@ public class Point2D extends DoublePair {
         return this;
     }
 
-    public Point2D subtract(Vector2D vector) {
+    public Point2D subtract(@Nonnull Vector2D vector) {
         setX(getX() - vector.getX());
         setY(getY() - vector.getY());
         return this;
