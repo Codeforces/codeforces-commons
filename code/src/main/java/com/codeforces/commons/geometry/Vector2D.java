@@ -174,7 +174,7 @@ public class Vector2D extends DoublePair {
         return this;
     }
 
-    public double getAngle(Vector2D vector) {
+    public double getAngle(@Nonnull Vector2D vector) {
         return org.apache.commons.math3.geometry.euclidean.twod.Vector2D.angle(
                 new org.apache.commons.math3.geometry.euclidean.twod.Vector2D(getX(), getY()),
                 new org.apache.commons.math3.geometry.euclidean.twod.Vector2D(vector.getX(), vector.getY())
