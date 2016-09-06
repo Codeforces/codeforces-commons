@@ -59,36 +59,47 @@ public class Vector2D extends DoublePair {
         setSecond(y);
     }
 
+    @Nonnull
     public Vector2D add(@Nonnull Vector2D vector) {
         setX(getX() + vector.getX());
         setY(getY() + vector.getY());
         return this;
     }
 
+    @Nonnull
     public Vector2D add(double x, double y) {
         setX(getX() + x);
         setY(getY() + y);
         return this;
     }
 
+    @Nonnull
+    public Point2D add(@Nonnull Point2D point) {
+        return new Point2D(point.getX() + getX(), point.getY() + getY());
+    }
+
+    @Nonnull
     public Vector2D subtract(@Nonnull Vector2D vector) {
         setX(getX() - vector.getX());
         setY(getY() - vector.getY());
         return this;
     }
 
+    @Nonnull
     public Vector2D subtract(double x, double y) {
         setX(getX() - x);
         setY(getY() - y);
         return this;
     }
 
+    @Nonnull
     public Vector2D multiply(double factor) {
         setX(factor * getX());
         setY(factor * getY());
         return this;
     }
 
+    @Nonnull
     public Vector2D rotate(double angle) {
         double cos = cos(angle);
         double sin = sin(angle);
@@ -103,6 +114,7 @@ public class Vector2D extends DoublePair {
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
+    @Nonnull
     public Vector2D rotateHalfPi() {
         double x = getX();
         double y = getY();
@@ -114,6 +126,7 @@ public class Vector2D extends DoublePair {
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
+    @Nonnull
     public Vector2D rotateMinusHalfPi() {
         double x = getX();
         double y = getY();
@@ -128,12 +141,14 @@ public class Vector2D extends DoublePair {
         return MathArrays.linearCombination(getX(), vector.getX(), getY(), vector.getY());
     }
 
+    @Nonnull
     public Vector2D negate() {
         setX(-getX());
         setY(-getY());
         return this;
     }
 
+    @Nonnull
     public Vector2D normalize() {
         double length = getLength();
         if (length == 0.0D) {
@@ -148,6 +163,7 @@ public class Vector2D extends DoublePair {
         return atan2(getY(), getX());
     }
 
+    @Nonnull
     public Vector2D setAngle(double angle) {
         double length = getLength();
         if (length == 0.0D) {
@@ -169,6 +185,7 @@ public class Vector2D extends DoublePair {
         return hypot(getX(), getY());
     }
 
+    @Nonnull
     public Vector2D setLength(double length) {
         double currentLength = getLength();
         if (currentLength == 0.0D) {
@@ -181,6 +198,7 @@ public class Vector2D extends DoublePair {
         return getX() * getX() + getY() * getY();
     }
 
+    @Nonnull
     public Vector2D setSquaredLength(double squaredLength) {
         double currentSquaredLength = getSquaredLength();
         if (currentSquaredLength == 0.0D) {
@@ -190,11 +208,13 @@ public class Vector2D extends DoublePair {
     }
 
     @Contract(value = "-> !null", pure = true)
+    @Nonnull
     public Vector2D copy() {
         return new Vector2D(this);
     }
 
     @Contract(value = "-> !null", pure = true)
+    @Nonnull
     public Vector2D copyNegate() {
         return new Vector2D(-getX(), -getY());
     }
@@ -220,6 +240,7 @@ public class Vector2D extends DoublePair {
         return nearlyEquals(x, y, DEFAULT_EPSILON);
     }
 
+    @Nonnull
     @Override
     public String toString() {
         return StringUtil.toString(this, false, "x", "y");

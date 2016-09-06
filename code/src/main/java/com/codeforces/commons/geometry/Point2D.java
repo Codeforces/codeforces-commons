@@ -43,28 +43,37 @@ public class Point2D extends DoublePair {
         setSecond(y);
     }
 
+    @Nonnull
     public Point2D add(@Nonnull Vector2D vector) {
         setX(getX() + vector.getX());
         setY(getY() + vector.getY());
         return this;
     }
 
+    @Nonnull
     public Point2D add(double x, double y) {
         setX(getX() + x);
         setY(getY() + y);
         return this;
     }
 
+    @Nonnull
     public Point2D subtract(@Nonnull Vector2D vector) {
         setX(getX() - vector.getX());
         setY(getY() - vector.getY());
         return this;
     }
 
+    @Nonnull
     public Point2D subtract(double x, double y) {
         setX(getX() - x);
         setY(getY() - y);
         return this;
+    }
+
+    @Nonnull
+    public Vector2D subtract(@Nonnull Point2D point) {
+        return new Vector2D(point.getX() - getX(), point.getY() - getY());
     }
 
     public double getDistanceTo(@Nonnull Point2D point) {
@@ -84,6 +93,7 @@ public class Point2D extends DoublePair {
     }
 
     @Contract(value = "-> !null", pure = true)
+    @Nonnull
     public Point2D copy() {
         return new Point2D(this);
     }
@@ -109,6 +119,7 @@ public class Point2D extends DoublePair {
         return nearlyEquals(x, y, DEFAULT_EPSILON);
     }
 
+    @Nonnull
     @Override
     public String toString() {
         return StringUtil.toString(this, false, "x", "y");
