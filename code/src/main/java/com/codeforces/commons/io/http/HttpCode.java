@@ -3,6 +3,7 @@ package com.codeforces.commons.io.http;
 /**
  * Server status codes; see RFC 2068.
  */
+@SuppressWarnings("unused")
 public final class HttpCode {
     /**
      * Status code (100) indicating the client can continue.

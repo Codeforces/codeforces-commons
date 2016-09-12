@@ -1,9 +1,12 @@
 package com.codeforces.commons.io.http;
 
+import javax.annotation.Nullable;
+import java.util.List;
+
 /**
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
  */
-@SuppressWarnings("UnusedDeclaration")
+@SuppressWarnings({"UnusedDeclaration", "OverloadedVarargsMethod", "WeakerAccess"})
 public final class HttpUtil {
     public static HttpRequest newRequest(String url, Object... parameters) {
         return HttpRequest.create(url, parameters);
@@ -38,7 +41,25 @@ public final class HttpUtil {
     }
 
     public static HttpResponse executePostRequestAndReturnResponse(int timeoutMillis, String url, Object... parameters) {
-        return newRequest(url, parameters).setTimeoutMillis(timeoutMillis).setMethod(HttpMethod.POST).executeAndReturnResponse();
+        return newRequest(url, parameters).setTimeoutMillis(timeoutMillis).setMethod(HttpMethod.POST)
+                .executeAndReturnResponse();
+    }
+
+    @Nullable
+    static String getHeader(List<String> headers, String headerName, boolean throwIfMany) {
+        int headerCount = headers.size();
+
+        if (headerCount == 0) {
+            return null;
+        }
+
+        if (headerCount > 1 && throwIfMany) {
+            throw new IllegalStateException(String.format(
+                    "Expected only one header with name '%s' but %d has been found.", headerName, headerCount
+            ));
+        }
+
+        return headers.get(0);
     }
 
     private HttpUtil() {

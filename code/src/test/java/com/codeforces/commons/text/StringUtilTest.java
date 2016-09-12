@@ -146,10 +146,10 @@ public class StringUtilTest {
                 StringUtil.formatIntegers(numbersB, ", ", "::")
         );
 
-        assertEquals("", StringUtil.formatIntegers(Collections.<Integer>emptyList()));
-        assertEquals("", StringUtil.formatIntegers(Collections.<Integer>emptyList(), ", ", "-"));
-        assertEquals("", StringUtil.formatIntegers(Collections.<Integer>emptyList(), ", ", "::"));
-        assertEquals("", StringUtil.formatIntegers(Collections.<Integer>emptyList(), "abracadabra", ":::"));
+        assertEquals("", StringUtil.formatIntegers(Collections.emptyList()));
+        assertEquals("", StringUtil.formatIntegers(Collections.emptyList(), ", ", "-"));
+        assertEquals("", StringUtil.formatIntegers(Collections.emptyList(), ", ", "::"));
+        assertEquals("", StringUtil.formatIntegers(Collections.emptyList(), "abracadabra", ":::"));
 
         String notBlankString = "\r  cabaca  \r\n";
         assertEquals("\r  cabaca", StringUtil.trimRight(notBlankString));

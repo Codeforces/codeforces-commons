@@ -30,10 +30,7 @@ import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.InflaterInputStream;
-import java.util.zip.ZipInputStream;
+import java.util.zip.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -84,7 +81,7 @@ public final class HttpRequest {
 
     public List<String> getParameters(String parameterName) {
         List<String> parameters = parametersByName.get(parameterName);
-        return parameters == null ? Collections.<String>emptyList() : Collections.unmodifiableList(parameters);
+        return parameters == null ? Collections.emptyList() : Collections.unmodifiableList(parameters);
     }
 
     @Nullable
@@ -116,20 +113,7 @@ public final class HttpRequest {
         }
 
         String[] encodedParameters = validateAndEncodeParameters(url, parameters);
-        int parameterCount = encodedParameters.length;
-
-        for (int parameterIndex = 0; parameterIndex < parameterCount; parameterIndex += 2) {
-            String parameterName = encodedParameters[parameterIndex];
-            String parameterValue = encodedParameters[parameterIndex + 1];
-
-            List<String> parametersForName = parametersByName.get(parameterName);
-            if (parametersForName == null) {
-                parametersForName = new ArrayList<>(1);
-                parametersByName.put(parameterName, parametersForName);
-            }
-            parametersForName.add(parameterValue);
-        }
-
+        appendNamedItems(encodedParameters, parametersByName);
         return this;
     }
 
@@ -143,20 +127,7 @@ public final class HttpRequest {
         }
 
         String[] encodedParameters = validateAndEncodeParameters(url, parameters);
-        int parameterCount = encodedParameters.length;
-
-        for (int parameterIndex = parameterCount - 2; parameterIndex >= 0; parameterIndex -= 2) {
-            String parameterName = encodedParameters[parameterIndex];
-            String parameterValue = encodedParameters[parameterIndex + 1];
-
-            List<String> parametersForName = parametersByName.get(parameterName);
-            if (parametersForName == null) {
-                parametersForName = new ArrayList<>(1);
-                parametersByName.put(parameterName, parametersForName);
-            }
-            parametersForName.add(0, parameterValue);
-        }
-
+        prependNamedItems(encodedParameters, parametersByName);
         return this;
     }
 
@@ -258,7 +229,7 @@ public final class HttpRequest {
 
     public List<String> getHeaders(String headerName) {
         List<String> headers = headersByName.get(headerName);
-        return headers == null ? Collections.<String>emptyList() : Collections.unmodifiableList(headers);
+        return headers == null ? Collections.emptyList() : Collections.unmodifiableList(headers);
     }
 
     @Nullable
@@ -268,38 +239,12 @@ public final class HttpRequest {
 
     @Nullable
     public String getHeader(String headerName, boolean throwIfMany) {
-        List<String> headers = getHeaders(headerName);
-        int headerCount = headers.size();
-
-        if (headerCount == 0) {
-            return null;
-        }
-
-        if (headerCount > 1 && throwIfMany) {
-            throw new IllegalStateException(String.format(
-                    "Expected only one header with name '%s' but %d has been found.", headerName, headerCount
-            ));
-        }
-
-        return headers.get(0);
+        return HttpUtil.getHeader(getHeaders(headerName), headerName, throwIfMany);
     }
 
     public HttpRequest appendHeaders(String... headers) {
         validateHeaders(headers);
-        int headerCount = headers.length;
-
-        for (int headerIndex = 0; headerIndex < headerCount; headerIndex += 2) {
-            String headerName = headers[headerIndex];
-            String headerValue = headers[headerIndex + 1];
-
-            List<String> headersForName = headersByName.get(headerName);
-            if (headersForName == null) {
-                headersForName = new ArrayList<>(1);
-                headersByName.put(headerName, headersForName);
-            }
-            headersForName.add(headerValue);
-        }
-
+        appendNamedItems(headers, headersByName);
         return this;
     }
 
@@ -309,20 +254,7 @@ public final class HttpRequest {
 
     public HttpRequest prependHeaders(String... headers) {
         validateHeaders(headers);
-        int headerCount = headers.length;
-
-        for (int headerIndex = headerCount - 2; headerIndex >= 0; headerIndex -= 2) {
-            String headerName = headers[headerIndex];
-            String headerValue = headers[headerIndex + 1];
-
-            List<String> headersForName = headersByName.get(headerName);
-            if (headersForName == null) {
-                headersForName = new ArrayList<>(1);
-                headersByName.put(headerName, headersForName);
-            }
-            headersForName.add(0, headerValue);
-        }
-
+        prependNamedItems(headers, headersByName);
         return this;
     }
 
@@ -537,11 +469,15 @@ public final class HttpRequest {
             if (connectionInputStream == null) {
                 bytes = null;
             } else {
-                if ("gzip".equalsIgnoreCase(connection.getContentEncoding())) {
-                    connectionInputStream = new GZIPInputStream(connectionInputStream);
-                } else if ("deflate".equalsIgnoreCase(connection.getContentEncoding())) {
-                    connectionInputStream = new InflaterInputStream(connectionInputStream);
-                } else if ("zip".equalsIgnoreCase(connection.getContentEncoding())) {
+                String contentEncoding = connection.getContentEncoding();
+
+                if ("gzip".equalsIgnoreCase(contentEncoding)) {
+                    connectionInputStream = new GZIPInputStream(connectionInputStream, IoUtil.BUFFER_SIZE);
+                } else if ("deflate".equalsIgnoreCase(contentEncoding)) {
+                    connectionInputStream = new InflaterInputStream(
+                            connectionInputStream, new Inflater(), IoUtil.BUFFER_SIZE
+                    );
+                } else if ("zip".equalsIgnoreCase(contentEncoding)) {
                     connectionInputStream = new ZipInputStream(connectionInputStream);
                 }
 
@@ -801,10 +737,9 @@ public final class HttpRequest {
     }
 
     private void writeEntity(@Nonnull HttpURLConnection connection, @Nonnull byte[] entity) throws IOException {
-        OutputStream outputStream = new BufferedOutputStream(
-                gzip ? new GZIPOutputStream(connection.getOutputStream()) : connection.getOutputStream(),
-                IoUtil.BUFFER_SIZE
-        );
+        OutputStream outputStream = gzip
+                ? new GZIPOutputStream(connection.getOutputStream(), IoUtil.BUFFER_SIZE)
+                : new BufferedOutputStream(connection.getOutputStream(), IoUtil.BUFFER_SIZE);
 
         long startTimeMillis = System.currentTimeMillis();
 
@@ -823,6 +758,38 @@ public final class HttpRequest {
                         writeTimeMillis, entity.length, gzip
                 ));
             }
+        }
+    }
+
+    private static void appendNamedItems(String[] itemParts, Map<String, List<String>> itemsByName) {
+        int partCount = itemParts.length;
+
+        for (int partIndex = 0; partIndex < partCount; partIndex += 2) {
+            String itemName = itemParts[partIndex];
+            String itemValue = itemParts[partIndex + 1];
+
+            List<String> items = itemsByName.get(itemName);
+            if (items == null) {
+                items = new ArrayList<>(1);
+                itemsByName.put(itemName, items);
+            }
+            items.add(itemValue);
+        }
+    }
+
+    private static void prependNamedItems(String[] itemParts, Map<String, List<String>> itemsByName) {
+        int partCount = itemParts.length;
+
+        for (int partIndex = partCount - 2; partIndex >= 0; partIndex -= 2) {
+            String itemName = itemParts[partIndex];
+            String itemValue = itemParts[partIndex + 1];
+
+            List<String> items = itemsByName.get(itemName);
+            if (items == null) {
+                items = new ArrayList<>(1);
+                itemsByName.put(itemName, items);
+            }
+            items.add(0, itemValue);
         }
     }
 

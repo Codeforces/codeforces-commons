@@ -60,13 +60,13 @@ public final class HttpResponse {
 
     @Nonnull
     public Map<String, List<String>> getHeadersByNameMap() {
-        return headersByName == null ? Collections.<String, List<String>>emptyMap() : headersByName;
+        return headersByName == null ? Collections.emptyMap() : headersByName;
     }
 
     @Nonnull
     public List<String> getHeaders(String headerName) {
         List<String> headers = getHeadersByNameMap().get(headerName);
-        return headers == null ? Collections.<String>emptyList() : Collections.unmodifiableList(headers);
+        return headers == null ? Collections.emptyList() : Collections.unmodifiableList(headers);
     }
 
     @Nullable
@@ -76,20 +76,7 @@ public final class HttpResponse {
 
     @Nullable
     public String getHeader(String headerName, boolean throwIfMany) {
-        List<String> headers = getHeaders(headerName);
-        int headerCount = headers.size();
-
-        if (headerCount == 0) {
-            return null;
-        }
-
-        if (headerCount > 1 && throwIfMany) {
-            throw new IllegalStateException(String.format(
-                    "Expected only one header with name '%s' but %d has been found.", headerName, headerCount
-            ));
-        }
-
-        return headers.get(0);
+        return HttpUtil.getHeader(getHeaders(headerName), headerName, throwIfMany);
     }
 
     @Nullable
