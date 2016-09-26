@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 19.06.2015
  */
+@SuppressWarnings("WeakerAccess")
 public final class Math {
     public static final double E = StrictMath.E;
 
@@ -99,6 +100,12 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static int avg(int numberA, int numberB, int numberC, int numberD, int numberE) {
+        return numberA / 5 + numberB / 5 + numberC / 5 + numberD / 5 + numberE / 5
+                + (numberA % 5 + numberB % 5 + numberC % 5 + numberD % 5 + numberE % 5) / 5;
+    }
+
+    @Contract(pure = true)
     public static long avg(long numberA, long numberB) {
         return numberA / 2L + numberB / 2L + (numberA % 2L + numberB % 2L) / 2L;
     }
@@ -112,6 +119,12 @@ public final class Math {
     public static long avg(long numberA, long numberB, long numberC, long numberD) {
         return numberA / 4L + numberB / 4L + numberC / 4L + numberD / 4L
                 + (numberA % 4L + numberB % 4L + numberC % 4L + numberD % 4L) / 4L;
+    }
+
+    @Contract(pure = true)
+    public static long avg(long numberA, long numberB, long numberC, long numberD, long numberE) {
+        return numberA / 5L + numberB / 5L + numberC / 5L + numberD / 5L + numberE / 5L
+                + (numberA % 5L + numberB % 5L + numberC % 5L + numberD % 5L + numberE % 5L) / 5L;
     }
 
     @Contract(pure = true)
@@ -130,6 +143,11 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static float avg(float numberA, float numberB, float numberC, float numberD, float numberE) {
+        return numberA * 0.2F + numberB * 0.2F + numberC * 0.2F + numberD * 0.2F + numberE * 0.2F;
+    }
+
+    @Contract(pure = true)
     public static double avg(double numberA, double numberB) {
         return numberA * 0.5D + numberB * 0.5D;
     }
@@ -142,6 +160,11 @@ public final class Math {
     @Contract(pure = true)
     public static double avg(double numberA, double numberB, double numberC, double numberD) {
         return numberA * 0.25D + numberB * 0.25D + numberC * 0.25D + numberD * 0.25D;
+    }
+
+    @Contract(pure = true)
+    public static double avg(double numberA, double numberB, double numberC, double numberD, double numberE) {
+        return numberA * 0.2D + numberB * 0.2D + numberC * 0.2D + numberD * 0.2D + numberE * 0.2D;
     }
 
     @Contract(pure = true)
@@ -162,6 +185,11 @@ public final class Math {
     @Contract(pure = true)
     public static double sumSqr(double numberA, double numberB, double numberC, double numberD) {
         return numberA * numberA + numberB * numberB + numberC * numberC + numberD * numberD;
+    }
+
+    @Contract(pure = true)
+    public static double sumSqr(double numberA, double numberB, double numberC, double numberD, double numberE) {
+        return numberA * numberA + numberB * numberB + numberC * numberC + numberD * numberD + numberE * numberE;
     }
 
     @Contract(pure = true)
