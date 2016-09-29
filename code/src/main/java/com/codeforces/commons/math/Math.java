@@ -209,12 +209,22 @@ public final class Math {
 
     @Contract(pure = true)
     public static int min(int numberA, int numberB, int numberC) {
-        return min(numberA <= numberB ? numberA : numberB, numberC);
+        return numberA <= numberB ? numberA <= numberC ? numberA : numberC : numberB <= numberC ? numberB : numberC;
     }
 
     @Contract(pure = true)
     public static int min(int numberA, int numberB, int numberC, int numberD) {
         return min(numberA <= numberB ? numberA : numberB, numberC <= numberD ? numberC : numberD);
+    }
+
+    @Contract(pure = true)
+    public static int min(int numberA, int numberB, int numberC, int numberD, int numberE) {
+        return min(min(numberA, numberB, numberC), numberD <= numberE ? numberD : numberE);
+    }
+
+    @Contract(pure = true)
+    public static int min(int numberA, int numberB, int numberC, int numberD, int numberE, int numberF) {
+        return min(min(numberA, numberB, numberC), min(numberD, numberE, numberF));
     }
 
     @Contract(pure = true)
@@ -224,12 +234,22 @@ public final class Math {
 
     @Contract(pure = true)
     public static long min(long numberA, long numberB, long numberC) {
-        return min(numberA <= numberB ? numberA : numberB, numberC);
+        return numberA <= numberB ? numberA <= numberC ? numberA : numberC : numberB <= numberC ? numberB : numberC;
     }
 
     @Contract(pure = true)
     public static long min(long numberA, long numberB, long numberC, long numberD) {
         return min(numberA <= numberB ? numberA : numberB, numberC <= numberD ? numberC : numberD);
+    }
+
+    @Contract(pure = true)
+    public static long min(long numberA, long numberB, long numberC, long numberD, long numberE) {
+        return min(min(numberA, numberB, numberC), numberD <= numberE ? numberD : numberE);
+    }
+
+    @Contract(pure = true)
+    public static long min(long numberA, long numberB, long numberC, long numberD, long numberE, long numberF) {
+        return min(min(numberA, numberB, numberC), min(numberD, numberE, numberF));
     }
 
     @Contract(pure = true)
@@ -248,6 +268,16 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static float min(float numberA, float numberB, float numberC, float numberD, float numberE) {
+        return min(min(numberA, numberB, numberC), min(numberD, numberE));
+    }
+
+    @Contract(pure = true)
+    public static float min(float numberA, float numberB, float numberC, float numberD, float numberE, float numberF) {
+        return min(min(numberA, numberB, numberC), min(numberD, numberE, numberF));
+    }
+
+    @Contract(pure = true)
     public static double min(double numberA, double numberB) {
         return java.lang.Math.min(numberA, numberB);
     }
@@ -263,18 +293,39 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static double min(double numberA, double numberB, double numberC, double numberD, double numberE) {
+        return min(min(numberA, numberB, numberC), min(numberD, numberE));
+    }
+
+    @Contract(pure = true)
+    public static double min(
+            double numberA, double numberB, double numberC, double numberD, double numberE, double numberF) {
+        return min(min(numberA, numberB, numberC), min(numberD, numberE, numberF));
+    }
+
+    @Contract(pure = true)
     public static int max(int numberA, int numberB) {
         return numberA >= numberB ? numberA : numberB;
     }
 
     @Contract(pure = true)
     public static int max(int numberA, int numberB, int numberC) {
-        return max(numberA >= numberB ? numberA : numberB, numberC);
+        return numberA >= numberB ? numberA >= numberC ? numberA : numberC : numberB >= numberC ? numberB : numberC;
     }
 
     @Contract(pure = true)
     public static int max(int numberA, int numberB, int numberC, int numberD) {
         return max(numberA >= numberB ? numberA : numberB, numberC >= numberD ? numberC : numberD);
+    }
+
+    @Contract(pure = true)
+    public static int max(int numberA, int numberB, int numberC, int numberD, int numberE) {
+        return max(max(numberA, numberB, numberC), numberD >= numberE ? numberD : numberE);
+    }
+
+    @Contract(pure = true)
+    public static int max(int numberA, int numberB, int numberC, int numberD, int numberE, int numberF) {
+        return max(max(numberA, numberB, numberC), max(numberD, numberE, numberF));
     }
 
     @Contract(pure = true)
@@ -284,12 +335,22 @@ public final class Math {
 
     @Contract(pure = true)
     public static long max(long numberA, long numberB, long numberC) {
-        return max(numberA >= numberB ? numberA : numberB, numberC);
+        return numberA >= numberB ? numberA >= numberC ? numberA : numberC : numberB >= numberC ? numberB : numberC;
     }
 
     @Contract(pure = true)
     public static long max(long numberA, long numberB, long numberC, long numberD) {
         return max(numberA >= numberB ? numberA : numberB, numberC >= numberD ? numberC : numberD);
+    }
+
+    @Contract(pure = true)
+    public static long max(long numberA, long numberB, long numberC, long numberD, long numberE) {
+        return max(max(numberA, numberB, numberC), numberD >= numberE ? numberD : numberE);
+    }
+
+    @Contract(pure = true)
+    public static long max(long numberA, long numberB, long numberC, long numberD, long numberE, long numberF) {
+        return max(max(numberA, numberB, numberC), max(numberD, numberE, numberF));
     }
 
     @Contract(pure = true)
@@ -308,6 +369,16 @@ public final class Math {
     }
 
     @Contract(pure = true)
+    public static float max(float numberA, float numberB, float numberC, float numberD, float numberE) {
+        return max(max(numberA, numberB, numberC), max(numberD, numberE));
+    }
+
+    @Contract(pure = true)
+    public static float max(float numberA, float numberB, float numberC, float numberD, float numberE, float numberF) {
+        return max(max(numberA, numberB, numberC), max(numberD, numberE, numberF));
+    }
+
+    @Contract(pure = true)
     public static double max(double numberA, double numberB) {
         return java.lang.Math.max(numberA, numberB);
     }
@@ -320,6 +391,17 @@ public final class Math {
     @Contract(pure = true)
     public static double max(double numberA, double numberB, double numberC, double numberD) {
         return max(max(numberA, numberB), max(numberC, numberD));
+    }
+
+    @Contract(pure = true)
+    public static double max(double numberA, double numberB, double numberC, double numberD, double numberE) {
+        return max(max(numberA, numberB, numberC), max(numberD, numberE));
+    }
+
+    @Contract(pure = true)
+    public static double max(
+            double numberA, double numberB, double numberC, double numberD, double numberE, double numberF) {
+        return max(max(numberA, numberB, numberC), max(numberD, numberE, numberF));
     }
 
     @Contract(pure = true)
