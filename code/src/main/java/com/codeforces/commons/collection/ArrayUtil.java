@@ -1,9 +1,15 @@
 package com.codeforces.commons.collection;
 
+import com.codeforces.commons.annotation.NonnullElements;
+
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
+import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
+import java.util.function.IntConsumer;
+import java.util.function.LongConsumer;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -17,9 +23,23 @@ public class ArrayUtil {
     public static <T> void shuffle(T[] array, Random random) {
         int count;
         if (array != null && (count = array.length) > 1) {
-            for (int index = count - 1; index > 0; --index) {
+            int index = count;
+            while (--index > 0) {
                 int newIndex = random.nextInt(index + 1);
                 T temp = array[index];
+                array[index] = array[newIndex];
+                array[newIndex] = temp;
+            }
+        }
+    }
+
+    public static void shuffle(float[] array, Random random) {
+        int count;
+        if (array != null && (count = array.length) > 1) {
+            int index = count;
+            while (--index > 0) {
+                int newIndex = random.nextInt(index + 1);
+                float temp = array[index];
                 array[index] = array[newIndex];
                 array[newIndex] = temp;
             }
@@ -29,9 +49,23 @@ public class ArrayUtil {
     public static void shuffle(double[] array, Random random) {
         int count;
         if (array != null && (count = array.length) > 1) {
-            for (int index = count - 1; index > 0; --index) {
+            int index = count;
+            while (--index > 0) {
                 int newIndex = random.nextInt(index + 1);
                 double temp = array[index];
+                array[index] = array[newIndex];
+                array[newIndex] = temp;
+            }
+        }
+    }
+
+    public static void shuffle(short[] array, Random random) {
+        int count;
+        if (array != null && (count = array.length) > 1) {
+            int index = count;
+            while (--index > 0) {
+                int newIndex = random.nextInt(index + 1);
+                short temp = array[index];
                 array[index] = array[newIndex];
                 array[newIndex] = temp;
             }
@@ -41,7 +75,8 @@ public class ArrayUtil {
     public static void shuffle(int[] array, Random random) {
         int count;
         if (array != null && (count = array.length) > 1) {
-            for (int index = count - 1; index > 0; --index) {
+            int index = count;
+            while (--index > 0) {
                 int newIndex = random.nextInt(index + 1);
                 int temp = array[index];
                 array[index] = array[newIndex];
@@ -53,7 +88,8 @@ public class ArrayUtil {
     public static void shuffle(long[] array, Random random) {
         int count;
         if (array != null && (count = array.length) > 1) {
-            for (int index = count - 1; index > 0; --index) {
+            int index = count;
+            while (--index > 0) {
                 int newIndex = random.nextInt(index + 1);
                 long temp = array[index];
                 array[index] = array[newIndex];
@@ -72,7 +108,17 @@ public class ArrayUtil {
         return array;
     }
 
+    public static float[] sort(float[] array) {
+        Arrays.sort(array);
+        return array;
+    }
+
     public static double[] sort(double[] array) {
+        Arrays.sort(array);
+        return array;
+    }
+
+    public static short[] sort(short[] array) {
         Arrays.sort(array);
         return array;
     }
@@ -85,6 +131,51 @@ public class ArrayUtil {
     public static long[] sort(long[] array) {
         Arrays.sort(array);
         return array;
+    }
+
+    @SuppressWarnings("OverloadedVarargsMethod")
+    @SafeVarargs
+    public static <T> void forEach(@Nonnull Consumer<? super T> action, @Nonnull @NonnullElements T[]... arrays) {
+        for (int arrayIndex = 0, arrayCount = arrays.length; arrayIndex < arrayCount; ++arrayIndex) {
+            T[] array = arrays[arrayIndex];
+
+            for (int elementIndex = 0, elementCount = array.length; elementIndex < elementCount; ++elementIndex) {
+                action.accept(array[elementIndex]);
+            }
+        }
+    }
+
+    @SuppressWarnings("OverloadedVarargsMethod")
+    public static void forEach(@Nonnull DoubleConsumer action, @Nonnull @NonnullElements double[]... arrays) {
+        for (int arrayIndex = 0, arrayCount = arrays.length; arrayIndex < arrayCount; ++arrayIndex) {
+            double[] array = arrays[arrayIndex];
+
+            for (int elementIndex = 0, elementCount = array.length; elementIndex < elementCount; ++elementIndex) {
+                action.accept(array[elementIndex]);
+            }
+        }
+    }
+
+    @SuppressWarnings("OverloadedVarargsMethod")
+    public static void forEach(@Nonnull IntConsumer action, @Nonnull @NonnullElements int[]... arrays) {
+        for (int arrayIndex = 0, arrayCount = arrays.length; arrayIndex < arrayCount; ++arrayIndex) {
+            int[] array = arrays[arrayIndex];
+
+            for (int elementIndex = 0, elementCount = array.length; elementIndex < elementCount; ++elementIndex) {
+                action.accept(array[elementIndex]);
+            }
+        }
+    }
+
+    @SuppressWarnings("OverloadedVarargsMethod")
+    public static void forEach(@Nonnull LongConsumer action, @Nonnull @NonnullElements long[]... arrays) {
+        for (int arrayIndex = 0, arrayCount = arrays.length; arrayIndex < arrayCount; ++arrayIndex) {
+            long[] array = arrays[arrayIndex];
+
+            for (int elementIndex = 0, elementCount = array.length; elementIndex < elementCount; ++elementIndex) {
+                action.accept(array[elementIndex]);
+            }
+        }
     }
 
     public static int getDimensionCount(@Nonnull Class arrayClass) {
