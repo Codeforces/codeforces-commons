@@ -81,7 +81,7 @@
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.9.2</version>
+            <version>1.9.3</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -111,12 +111,12 @@
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-driver-zip</artifactId>
-            <version>7.7.9</version>
+            <version>7.7.10</version>
         </dependency>
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-file</artifactId>
-            <version>7.7.9</version>
+            <version>7.7.10</version>
         </dependency>
         <dependency>
             <groupId>java3d</groupId>
@@ -162,7 +162,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.11</version>
+            <version>1.12</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
