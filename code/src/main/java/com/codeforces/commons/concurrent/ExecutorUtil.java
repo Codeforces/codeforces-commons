@@ -1,5 +1,9 @@
 package com.codeforces.commons.concurrent;
 
+import com.codeforces.commons.annotation.NullableElements;
+import com.codeforces.commons.time.TimeUtil;
+
+import javax.annotation.Nullable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -8,34 +12,34 @@ import java.util.concurrent.TimeUnit;
  *         Date: 13.11.2016
  */
 public final class ExecutorUtil {
-    @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
-    public static void shutdownQuietly(long timeoutMillis, ExecutorService... executors) {
-        for (int executorIndex = executors.length; --executorIndex >= 0; ) {
-            executors[executorIndex].shutdown();
+    @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod", "WeakerAccess"})
+    public static void shutdownQuietly(long timeoutMillis, @Nullable @NullableElements ExecutorService... executors) {
+        if (executors == null) {
+            return;
         }
 
         for (int executorIndex = executors.length; --executorIndex >= 0; ) {
-            try {
-                executors[executorIndex].awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ignored) {
-                // No operations.
+            ExecutorService executor = executors[executorIndex];
+            if (executor != null) {
+                executor.shutdown();
+            }
+        }
+
+        for (int executorIndex = executors.length; --executorIndex >= 0; ) {
+            ExecutorService executor = executors[executorIndex];
+            if (executor != null) {
+                try {
+                    executor.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ignored) {
+                    // No operations.
+                }
             }
         }
     }
 
-    @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
-    public static void shutdownQuietly(ExecutorService... executors) {
-        for (int executorIndex = executors.length; --executorIndex >= 0; ) {
-            executors[executorIndex].shutdown();
-        }
-
-        for (int executorIndex = executors.length; --executorIndex >= 0; ) {
-            try {
-                executors[executorIndex].awaitTermination(1L, TimeUnit.DAYS);
-            } catch (InterruptedException ignored) {
-                // No operations.
-            }
-        }
+    @SuppressWarnings("OverloadedVarargsMethod")
+    public static void shutdownQuietly(@Nullable @NullableElements ExecutorService... executors) {
+        shutdownQuietly(TimeUtil.MILLIS_PER_WEEK, executors);
     }
 
     private ExecutorUtil() {
