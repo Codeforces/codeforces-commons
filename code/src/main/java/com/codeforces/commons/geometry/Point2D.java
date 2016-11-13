@@ -73,7 +73,7 @@ public class Point2D extends DoublePair {
 
     @Nonnull
     public Vector2D subtract(@Nonnull Point2D point) {
-        return new Vector2D(point.getX() - getX(), point.getY() - getY());
+        return new Vector2D(getX() - point.getX(), getY() - point.getY());
     }
 
     public double getDistanceTo(@Nonnull Point2D point) {
