@@ -1,8 +1,6 @@
 #NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
-#Sun Nov 13 21:58:20 MSK 2016
+#Thu Nov 24 20:36:35 MSK 2016
 commons-2.3-SNAPSHOT.jar>=
-commons-2.3-SNAPSHOT.pom>codeforces-commons=
 commons-2.3-SNAPSHOT-sources.jar>=
 commons-2.3-SNAPSHOT.pom>=
-commons-2.3-SNAPSHOT.jar>codeforces-commons=
 commons-2.3-SNAPSHOT-javadoc.jar>=

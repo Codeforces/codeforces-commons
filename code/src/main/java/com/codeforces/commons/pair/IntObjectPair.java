@@ -7,35 +7,32 @@ import javax.annotation.Nullable;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 28.07.2016
+ *         Date: 24.11.2016
  */
-@SuppressWarnings("ProtectedField")
-public class SimplePair<F, S> {
-    @Nullable
-    protected F first;
+public class IntObjectPair<S> {
+    private int first;
 
     @Nullable
-    protected S second;
+    private S second;
 
-    public SimplePair() {
+    public IntObjectPair() {
     }
 
-    public SimplePair(@Nullable F first, @Nullable S second) {
+    public IntObjectPair(int first, @Nullable S second) {
         this.first = first;
         this.second = second;
     }
 
-    public SimplePair(@Nonnull SimplePair<F, S> pair) {
+    public IntObjectPair(@Nonnull IntObjectPair<S> pair) {
         this.first = pair.first;
         this.second = pair.second;
     }
 
-    @Nullable
-    public F getFirst() {
+    public int getFirst() {
         return first;
     }
 
-    public void setFirst(@Nullable F first) {
+    public void setFirst(int first) {
         this.first = first;
     }
 
@@ -48,11 +45,6 @@ public class SimplePair<F, S> {
         this.second = second;
     }
 
-    public boolean equals(@Nullable F first, @Nullable S second) {
-        return (this.first == null ? first == null : this.first.equals(first))
-                && (this.second == null ? second == null : this.second.equals(second));
-    }
-
     @SuppressWarnings("NonFinalFieldReferenceInEquals")
     @Override
     public boolean equals(Object o) {
@@ -60,22 +52,20 @@ public class SimplePair<F, S> {
             return true;
         }
 
-        if (!(o instanceof SimplePair)) {
+        if (!(o instanceof IntObjectPair)) {
             return false;
         }
 
-        SimplePair pair = (SimplePair) o;
+        IntObjectPair pair = (IntObjectPair) o;
 
-        return (first == null ? pair.first == null : first.equals(pair.first))
+        return first == pair.first
                 && (second == null ? pair.second == null : second.equals(pair.second));
     }
 
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        int result = first == null ? 0 : first.hashCode();
-        result = 32323 * result + (second == null ? 0 : second.hashCode());
-        return result;
+        return 32323 * first + (second == null ? 0 : second.hashCode());
     }
 
     @Override
