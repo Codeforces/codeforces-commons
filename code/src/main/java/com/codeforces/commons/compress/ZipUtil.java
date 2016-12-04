@@ -35,14 +35,15 @@ import static com.codeforces.commons.math.Math.max;
 /**
  * @author Mike Mirzayanov
  */
+@SuppressWarnings("WeakerAccess")
 public final class ZipUtil {
     @SuppressWarnings("unused")
     public static final int MINIMAL_COMPRESSION_LEVEL = 0;
     public static final int DEFAULT_COMPRESSION_LEVEL = 5;
     public static final int MAXIMAL_COMPRESSION_LEVEL = 9;
 
-    private static final long MAX_ZIP_ENTRY_SIZE = 512L * FileUtil.BYTES_PER_MB;
-    private static final long MAX_ZIP_ENTRY_COUNT = 50000L;
+    private static final long MAX_ZIP_ENTRY_SIZE = FileUtil.BYTES_PER_GB;
+    private static final long MAX_ZIP_ENTRY_COUNT = 100_000L;
 
     private static final int DEFAULT_BUFFER_SIZE = Ints.checkedCast(FileUtil.BYTES_PER_MB);
 
@@ -280,13 +281,19 @@ public final class ZipUtil {
 
                 if (entry.isDirectory()) {
                     FileUtil.ensureDirectoryExists(file);
-                } else if (entry.getUncompressedSize() <= MAX_ZIP_ENTRY_SIZE
-                        && entry.getCompressedSize() <= MAX_ZIP_ENTRY_SIZE) {
-                    FileUtil.ensureDirectoryExists(file.getParentFile());
-                    zipFile.extractFile(entry, destinationDirectory.getAbsolutePath());
                 } else {
-                    long size = max(entry.getUncompressedSize(), entry.getCompressedSize());
-                    throw new IOException("Entry '" + entry.getFileName() + "' is larger than " + size + " B.");
+                    long maxSize = max(entry.getUncompressedSize(), entry.getCompressedSize());
+
+                    if (maxSize <= MAX_ZIP_ENTRY_SIZE) {
+                        FileUtil.ensureDirectoryExists(file.getParentFile());
+                        zipFile.extractFile(entry, destinationDirectory.getAbsolutePath());
+                    } else {
+                        throw new IOException(String.format(
+                                "Entry '%s' (%s) is larger than %s.",
+                                entry.getFileName(), FileUtil.formatSize(maxSize),
+                                FileUtil.formatSize(MAX_ZIP_ENTRY_SIZE)
+                        ));
+                    }
                 }
 
                 ++count;
