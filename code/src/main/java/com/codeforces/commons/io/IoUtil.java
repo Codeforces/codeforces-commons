@@ -20,6 +20,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Mike Mirzayanov
  * @author Maxim Shipko (sladethe@gmail.com)
  */
+@SuppressWarnings("WeakerAccess")
 public class IoUtil {
     public static final int BUFFER_SIZE = NumberUtil.toInt(FileUtil.BYTES_PER_MB);
 
@@ -152,8 +153,14 @@ public class IoUtil {
         }
     }
 
-    @SuppressWarnings("OverloadedVarargsMethod")
+    @SuppressWarnings({"OverloadedVarargsMethod", "ForLoopWithMissingComponent"})
     public static void closeQuietly(AutoCloseable... closeables) {
+        for (int i = closeables.length; --i >= 0; ) {
+            closeQuietly(closeables[i]);
+        }
+    }
+
+    public static void closeQuietly(Iterable<? extends AutoCloseable> closeables) {
         for (AutoCloseable closeable : closeables) {
             closeQuietly(closeable);
         }
