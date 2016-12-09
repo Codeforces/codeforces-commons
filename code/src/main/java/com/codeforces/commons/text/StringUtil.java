@@ -39,6 +39,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 10.07.13
  */
+@SuppressWarnings({"WeakerAccess", "ForLoopWithMissingComponent"})
 public final class StringUtil {
     private static final Pattern FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN = Pattern.compile("\\[pre\\]|\\[/pre\\]");
     private static final Pattern FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN = Pattern.compile("[\n\r][\n\r]+");
@@ -64,22 +65,27 @@ public final class StringUtil {
                 && block != null && !Objects.equals(block, Character.UnicodeBlock.SPECIALS)) || c == '\r' || c == '\n' || c == '\t';
     }
 
-    public static String replaceInvisibleCharacters(String s) {
+    @Contract("null -> null")
+    @Nullable
+    public static String replaceInvisibleCharacters(@Nullable String s) {
         return replaceInvisibleCharacters(s, (char) 182);
     }
 
-    public static String replaceInvisibleCharacters(String s, char replacement) {
+    @Contract("null, _ -> null")
+    @Nullable
+    public static String replaceInvisibleCharacters(@Nullable String s, char replacement) {
         if (s == null) {
             return null;
         }
-        char[] result = new char[s.length()];
-        for (int i = 0; i < s.length(); i++) {
-            if (isPrintable(s.charAt(i))) {
-                result[i] = s.charAt(i);
-            } else {
-                result[i] = replacement;
-            }
+
+        int length = s.length();
+        char[] result = new char[length];
+
+        for (int i = length; --i >= 0; ) {
+            char c = s.charAt(i);
+            result[i] = isPrintable(c) ? c : replacement;
         }
+
         return new String(result);
     }
 
@@ -108,7 +114,7 @@ public final class StringUtil {
             return false;
         }
 
-        for (int i = 0; i < length; ++i) {
+        for (int i = length; --i >= 0; ) {
             if (!isCyrillic(s.charAt(i))) {
                 return false;
             }
@@ -138,7 +144,7 @@ public final class StringUtil {
 
         int matchCount = 0;
 
-        for (int i = 0; i < length; ++i) {
+        for (int i = length; --i >= 0; ) {
             if (isCyrillic(s.charAt(i))) {
                 ++matchCount;
             }
@@ -176,7 +182,7 @@ public final class StringUtil {
             return true;
         }
 
-        for (int charIndex = s.length() - 1; charIndex >= 0; --charIndex) {
+        for (int charIndex = s.length(); --charIndex >= 0; ) {
             if (!isWhitespace(s.charAt(charIndex))) {
                 return false;
             }
@@ -197,7 +203,7 @@ public final class StringUtil {
             return false;
         }
 
-        for (int charIndex = s.length() - 1; charIndex >= 0; --charIndex) {
+        for (int charIndex = s.length(); --charIndex >= 0; ) {
             if (!isWhitespace(s.charAt(charIndex))) {
                 return true;
             }
@@ -1404,8 +1410,8 @@ public final class StringUtil {
             String groupValueA = numberGroupA.toString();
             String groupValueB = numberGroupB.toString();
 
-            numberGroupA.delete(0, numberGroupA.length());
-            numberGroupB.delete(0, numberGroupB.length());
+            numberGroupA.setLength(0);
+            numberGroupB.setLength(0);
 
             long numberA;
             try {
