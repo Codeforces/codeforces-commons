@@ -12,6 +12,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.text.translate.*;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -47,6 +48,22 @@ public final class StringUtil {
     private static final Map<Class, ToStringConverter> toStringConverterByClass = new HashMap<>();
     private static final ReadWriteLock toStringConverterByClassMapLock = new ReentrantReadWriteLock();
 
+    private static final CharSequenceTranslator ESCAPE_JAVA_RETAIN_CYRILLIC = new LookupTranslator(
+            new String[][]{{"\"", "\\\""}, {"\\", "\\\\"}}
+    ).with(
+            new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())
+    ).with(
+            JavaUnicodeEscaper.below(32)
+    ).with(
+            JavaUnicodeEscaper.between(128, (int) 'Ё' - 1)
+    ).with(
+            JavaUnicodeEscaper.between((int) 'Ё' + 1, (int) 'А' - 1)
+    ).with(
+            JavaUnicodeEscaper.between((int) 'я' + 1, (int) 'ё' - 1)
+    ).with(
+            JavaUnicodeEscaper.above((int) 'ё')
+    );
+
     static final char NON_BREAKING_SPACE = (char) 160;
     static final char THIN_SPACE = '\u2009';
     static final char ZERO_WIDTH_SPACE = '\u200B';
@@ -60,9 +77,14 @@ public final class StringUtil {
     }
 
     public static boolean isPrintable(char c) {
+        if (c == '\r' || c == '\n' || c == '\t') {
+            return true;
+        }
+
         Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
-        return (!Character.isISOControl(c) && c != KeyEvent.CHAR_UNDEFINED
-                && block != null && !Objects.equals(block, Character.UnicodeBlock.SPECIALS)) || c == '\r' || c == '\n' || c == '\t';
+
+        return !Character.isISOControl(c) && c != KeyEvent.CHAR_UNDEFINED
+                && block != null && !Objects.equals(block, Character.UnicodeBlock.SPECIALS);
     }
 
     @Contract("null -> null")
@@ -91,7 +113,7 @@ public final class StringUtil {
 
     @Contract(pure = true)
     public static boolean isCyrillic(char c) {
-        return c >= 'а' && c <= 'я' || c >= 'А' && c <= 'Я';
+        return c >= 'а' && c <= 'я' || c >= 'А' && c <= 'Я' || c == 'ё' || c == 'Ё';
     }
 
     /**
@@ -1464,6 +1486,12 @@ public final class StringUtil {
             result = result * 9369319L + (long) s.charAt(i) * 39916801L + 7561L;
         }
         return result;
+    }
+
+    @Contract(value = "null -> null; !null -> !null", pure = true)
+    @Nullable
+    public static String escapeJavaRetainCyrillic(@Nullable String s) {
+        return s == null ? null : ESCAPE_JAVA_RETAIN_CYRILLIC.translate(s);
     }
 
     /**
