@@ -3,11 +3,13 @@ package com.codeforces.commons.time;
 import com.codeforces.commons.math.NumberUtil;
 import org.jetbrains.annotations.Contract;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import static com.codeforces.commons.math.Math.round;
 
@@ -89,6 +91,49 @@ public class TimeUtil {
         return NumberUtil.toInt(round(
                 (endCalendar.getTimeInMillis() - beginCalendar.getTimeInMillis()) / (double) MILLIS_PER_DAY
         ));
+    }
+
+    @Nonnull
+    public static String formatInterval(@Nonnegative long intervalMillis) {
+        if (intervalMillis < 0) {
+            throw new IllegalArgumentException("Argument 'intervalMillis' must be a positive integer or zero.");
+        }
+
+        if (intervalMillis >= MILLIS_PER_WEEK) {
+            return formatInterval(intervalMillis, MILLIS_PER_WEEK, "week", "weeks");
+        }
+
+        if (intervalMillis >= MILLIS_PER_DAY) {
+            return formatInterval(intervalMillis, MILLIS_PER_DAY, "day", "days");
+        }
+
+        if (intervalMillis >= MILLIS_PER_HOUR) {
+            return formatInterval(intervalMillis, MILLIS_PER_HOUR, "hour", "hours");
+        }
+
+        if (intervalMillis >= MILLIS_PER_MINUTE) {
+            return formatInterval(intervalMillis, MILLIS_PER_MINUTE, "minute", "minutes");
+        }
+
+        if (intervalMillis >= MILLIS_PER_SECOND) {
+            return formatInterval(intervalMillis, MILLIS_PER_SECOND, "second", "seconds");
+        }
+
+        return intervalMillis + " ms";
+    }
+
+    @Nonnull
+    private static String formatInterval(@Nonnegative long intervalMillis, @Nonnegative long unit,
+                                         @Nonnull String unitName, @Nonnull String unitsName) {
+        if (intervalMillis == unit) {
+            return "1 " + unitName;
+        }
+
+        if (intervalMillis % unit == 0) {
+            return intervalMillis / unit + " " + unitsName;
+        }
+
+        return String.format(Locale.US, "%.1f %s", (double) intervalMillis / (double) unit, unitsName);
     }
 
     private TimeUtil() {
