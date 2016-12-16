@@ -15,6 +15,8 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -493,7 +495,7 @@ public final class ZipUtil {
             for (Object fileHeader : internalZipFile.getFileHeaders()) {
                 FileHeader entry = (FileHeader) fileHeader;
                 long size = entry.getUncompressedSize();
-                if (size != -1) {
+                if (size > 0L) {
                     totalSize += size;
                 }
                 ++entryCount;
@@ -511,6 +513,38 @@ public final class ZipUtil {
 
     public static long getZipArchiveEntryCount(File zipFile) throws IOException {
         return getZipArchiveInfo(zipFile).getEntryCount();
+    }
+
+    public static ZipArchiveInfo getZipArchiveInfo(byte[] zipFileBytes) throws IOException {
+        ZipArchiveInputStream zipInputStream = null;
+        try {
+            zipInputStream = new ZipArchiveInputStream(new ByteArrayInputStream(zipFileBytes));
+            long totalSize = 0;
+            long entryCount = 0;
+            ZipArchiveEntry zipEntry;
+
+            while ((zipEntry = zipInputStream.getNextZipEntry()) != null) {
+                long size = zipEntry.getSize();
+                if (size > 0L) {
+                    totalSize += size;
+                }
+                ++entryCount;
+            }
+
+            zipInputStream.close();
+            return new ZipArchiveInfo(totalSize, entryCount);
+        } catch (IOException e) {
+            IoUtil.closeQuietly(zipInputStream);
+            throw new IOException("Can't get inmemory ZIP-archive info.", e);
+        }
+    }
+
+    public static long getZipArchiveSize(byte[] zipFileBytes) throws IOException {
+        return getZipArchiveInfo(zipFileBytes).getUncompressedSize();
+    }
+
+    public static long getZipArchiveEntryCount(byte[] zipFileBytes) throws IOException {
+        return getZipArchiveInfo(zipFileBytes).getEntryCount();
     }
 
     /**
