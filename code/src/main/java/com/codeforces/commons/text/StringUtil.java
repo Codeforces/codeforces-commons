@@ -1155,6 +1155,27 @@ public final class StringUtil {
      * @param s         Given string.
      * @param maxLength Maximal length.
      * @return Makes string to contain no more than maxLength characters.
+     * If needed removes suffix and appends string with "...".
+     * Returns {@code null} iff {@code s} is {@code null}.
+     */
+    @Contract(value = "!null, _ -> !null", pure = true)
+    @Nullable
+    public static String cropTo(@Nullable String s, int maxLength) {
+        if (maxLength < 8) {
+            throw new IllegalArgumentException("Argument maxLength is expected to be at least 8.");
+        }
+
+        if (s == null || s.length() <= maxLength) {
+            return s;
+        } else {
+            return s.substring(0, maxLength - 3) + "...";
+        }
+    }
+
+    /**
+     * @param s         Given string.
+     * @param maxLength Maximal length.
+     * @return Makes string to contain no more than maxLength characters.
      * Removes middle part and inserts "..." instead of it if needed.
      * Returns {@code null} iff {@code s} is {@code null}.
      */

@@ -407,4 +407,34 @@ public final class NumberUtil {
     public static double nullToZero(@Nullable Double value) {
         return value == null ? 0.0D : value;
     }
+
+    @Contract(pure = true)
+    public static Byte zeroToNull(@Nullable Byte value) {
+        return value != null && value == (byte) 0 ? null : value;
+    }
+
+    @Contract(pure = true)
+    public static Short zeroToNull(@Nullable Short value) {
+        return value != null && value == (short) 0 ? null : value;
+    }
+
+    @Contract(pure = true)
+    public static Integer zeroToNull(@Nullable Integer value) {
+        return value != null && value == 0 ? null : value;
+    }
+
+    @Contract(pure = true)
+    public static Long zeroToNull(@Nullable Long value) {
+        return value != null && value == (long) 0 ? null : value;
+    }
+
+    @Contract(pure = true)
+    public static Float zeroToNull(@Nullable Float value) {
+        return value != null && value == (float) 0 ? null : value;
+    }
+
+    @Contract(pure = true)
+    public static Double zeroToNull(@Nullable Double value) {
+        return value != null && value == (double) 0 ? null : value;
+    }
 }
