@@ -1,5 +1,7 @@
 package com.codeforces.commons.io.http;
 
+import com.codeforces.commons.process.ThreadUtil;
+
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -38,6 +40,15 @@ public final class HttpUtil {
 
     public static int executePostRequest(int timeoutMillis, String url, Object... parameters) {
         return newRequest(url, parameters).setTimeoutMillis(timeoutMillis).setMethod(HttpMethod.POST).execute();
+    }
+
+    public static void executePostRequestAsync(String url, Object... parameters) {
+        ThreadUtil.newThread(new Runnable() {
+            @Override
+            public void run() {
+                executePostRequest(url, parameters);
+            }
+        }).start();
     }
 
     public static HttpResponse executePostRequestAndReturnResponse(int timeoutMillis, String url, Object... parameters) {
