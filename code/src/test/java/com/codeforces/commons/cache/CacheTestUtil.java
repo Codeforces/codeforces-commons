@@ -2,6 +2,7 @@ package com.codeforces.commons.cache;
 
 import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.process.ThreadUtil;
+import com.codeforces.commons.time.TimeUtil;
 import org.junit.Assert;
 
 import javax.annotation.Nonnull;
@@ -199,6 +200,7 @@ final class CacheTestUtil {
 
         byte[] value = RandomUtil.getRandomBytes(valueLength);
 
+        long cachePutTime = System.currentTimeMillis();
         cache.put(section, key, value, valueLifetimeMillis);
         Assert.assertTrue(
                 "Restored value (with lifetime) does not equal to original value.",
@@ -208,9 +210,11 @@ final class CacheTestUtil {
         ThreadUtil.sleep(valueLifetimeMillis - valueCheckIntervalMillis);
         byte[] restoredValue = cache.get(section, key);
         Assert.assertTrue(String.format(
-                "Restored value (with lifetime) does not equal to original value after sleeping some time " +
-                        "(restored=%s, expected=%s, section=%s, key=%s).",
-                toShortString(restoredValue), toShortString(value), section, key
+                "Restored value (with lifetime) does not equal to original value after sleeping some time (%s) " +
+                        "(restored=%s, expected=%s, section=%s, key=%s, valueLifetime=%s, valueCheckInterval=%s).",
+                TimeUtil.formatInterval(System.currentTimeMillis() - cachePutTime),
+                toShortString(restoredValue), toShortString(value), section, key,
+                TimeUtil.formatInterval(valueLifetimeMillis), TimeUtil.formatInterval(valueCheckIntervalMillis)
         ), Arrays.equals(value, restoredValue));
 
         ThreadUtil.sleep(2L * valueCheckIntervalMillis);

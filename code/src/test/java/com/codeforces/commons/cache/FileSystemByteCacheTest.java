@@ -57,6 +57,7 @@ public class FileSystemByteCacheTest extends TestCase {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     public void testConcurrentStoringOfValues() throws Exception {
         File tempDir = FileUtil.createTemporaryDirectory("file-system-cache");
         try {
@@ -116,13 +117,20 @@ public class FileSystemByteCacheTest extends TestCase {
                         VALUE_LIFETIME_MILLIS * 2L, VALUE_CHECK_INTERVAL_MILLIS * 2L
                 );
             } catch (AssertionError ignoredB) {
-                internalTestConcurrentStoringOfValuesWithLifetime(
-                        VALUE_LIFETIME_MILLIS * 4L, VALUE_CHECK_INTERVAL_MILLIS * 4L
-                );
+                try {
+                    internalTestConcurrentStoringOfValuesWithLifetime(
+                            VALUE_LIFETIME_MILLIS * 4L, VALUE_CHECK_INTERVAL_MILLIS * 4L
+                    );
+                } catch (AssertionError ignoredC) {
+                    internalTestConcurrentStoringOfValuesWithLifetime(
+                            VALUE_LIFETIME_MILLIS * 8L, VALUE_CHECK_INTERVAL_MILLIS * 8L
+                    );
+                }
             }
         }
     }
 
+    @SuppressWarnings("Duplicates")
     private static void internalTestConcurrentStoringOfValuesWithLifetime(
             long valueLifetimeMillis, long valueCheckIntervalMillis) throws IOException {
         File tempDir = FileUtil.createTemporaryDirectory("file-system-cache");
