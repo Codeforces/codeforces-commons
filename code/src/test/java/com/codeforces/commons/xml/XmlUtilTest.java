@@ -2,6 +2,7 @@ package com.codeforces.commons.xml;
 
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
+import com.codeforces.commons.process.ThreadUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.NodeList;
@@ -196,15 +197,19 @@ public class XmlUtilTest {
             filterAttributes.put("boolAttr", "false");
             filterAttributes.put("strAttr", "");
 
+            ThreadUtil.sleep(1);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, null);
             Assert.assertEquals(lastModified, testFile.lastModified());
 
+            ThreadUtil.sleep(1);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, filterAttributes, null);
             Assert.assertEquals(lastModified, testFile.lastModified());
 
+            ThreadUtil.sleep(1);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Collections.singletonList("c")));
             Assert.assertEquals(lastModified, testFile.lastModified());
 
+            ThreadUtil.sleep(1);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Collections.singletonList("intAttr")));
             Assert.assertNotEquals(lastModified, testFile.lastModified());
             lastModified = testFile.lastModified();
@@ -212,10 +217,12 @@ public class XmlUtilTest {
             Map<String, String> expectedAttributes = new HashMap<>();
             expectedAttributes.put("x", "");
             expectedAttributes.put("notBoolAttr", "false");
+            ThreadUtil.sleep(1);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, expectedAttributes, null);
             Assert.assertNotEquals(lastModified, testFile.lastModified());
             lastModified = testFile.lastModified();
 
+            ThreadUtil.sleep(1);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", expectedAttributes, null, null);
             Assert.assertEquals(lastModified, testFile.lastModified());
         } finally {
