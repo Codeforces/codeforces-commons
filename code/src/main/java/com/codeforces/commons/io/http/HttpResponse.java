@@ -1,5 +1,6 @@
 package com.codeforces.commons.io.http;
 
+import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.text.StringUtil;
 
 import javax.annotation.Nonnull;
@@ -7,10 +8,13 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -88,9 +92,53 @@ public final class HttpResponse {
         return ioException != null;
     }
 
+    public void throwIoException() throws IOException {
+        if (ioException != null) {
+            throw ioException;
+        }
+    }
+
+    public void throwIoException(
+            @Nonnull Function<IOException, IOException> existingExceptionMapper) throws IOException {
+        if (ioException != null) {
+            IOException mappedIoException = existingExceptionMapper.apply(ioException);
+            if (mappedIoException != null) {
+                throw mappedIoException;
+            }
+        }
+    }
+
+    public void throwIoException(
+            @Nonnull Supplier<IOException> nullExceptionReplacement) throws IOException {
+        if (ioException != null) {
+            throw ioException;
+        } else {
+            IOException replacedIoException = nullExceptionReplacement.get();
+            if (replacedIoException != null) {
+                throw replacedIoException;
+            }
+        }
+    }
+
+    public void throwIoException(
+            @Nonnull Function<IOException, IOException> existingExceptionMapper,
+            @Nonnull Supplier<IOException> nullExceptionReplacement) throws IOException {
+        if (ioException != null) {
+            IOException mappedIoException = existingExceptionMapper.apply(ioException);
+            if (mappedIoException != null) {
+                throw mappedIoException;
+            }
+        } else {
+            IOException replacedIoException = nullExceptionReplacement.get();
+            if (replacedIoException != null) {
+                throw replacedIoException;
+            }
+        }
+    }
+
     @Nullable
     public String getUtf8String() {
-        return bytes == null ? null : new String(bytes, StandardCharsets.UTF_8);
+        return bytes == null ? null : new String(bytes, UTF_8);
     }
 
     @Nullable
@@ -108,7 +156,7 @@ public final class HttpResponse {
         return String.format(
                 "Response {code=%d, size=%s, s='%s'}",
                 code,
-                bytes == null ? "null" : Integer.toString(bytes.length),
+                bytes == null ? "null" : FileUtil.formatSize(bytes.length),
                 StringUtil.shrinkTo(getUtf8String(), 50)
         );
     }

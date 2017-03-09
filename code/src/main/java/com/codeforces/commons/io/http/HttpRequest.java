@@ -768,12 +768,7 @@ public final class HttpRequest {
             String itemName = itemParts[partIndex];
             String itemValue = itemParts[partIndex + 1];
 
-            List<String> items = itemsByName.get(itemName);
-            if (items == null) {
-                items = new ArrayList<>(1);
-                itemsByName.put(itemName, items);
-            }
-            items.add(itemValue);
+            itemsByName.computeIfAbsent(itemName, __ -> new ArrayList<>(1)).add(itemValue);
         }
     }
 
@@ -784,12 +779,7 @@ public final class HttpRequest {
             String itemName = itemParts[partIndex];
             String itemValue = itemParts[partIndex + 1];
 
-            List<String> items = itemsByName.get(itemName);
-            if (items == null) {
-                items = new ArrayList<>(1);
-                itemsByName.put(itemName, items);
-            }
-            items.add(0, itemValue);
+            itemsByName.computeIfAbsent(itemName, __ -> new ArrayList<>(1)).add(0, itemValue);
         }
     }
 

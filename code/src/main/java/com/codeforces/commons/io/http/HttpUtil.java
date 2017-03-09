@@ -43,12 +43,7 @@ public final class HttpUtil {
     }
 
     public static void executePostRequestAsync(String url, Object... parameters) {
-        ThreadUtil.newThread(new Runnable() {
-            @Override
-            public void run() {
-                executePostRequest(url, parameters);
-            }
-        }).start();
+        ThreadUtil.newThread(() -> executePostRequest(url, parameters)).start();
     }
 
     public static HttpResponse executePostRequestAndReturnResponse(int timeoutMillis, String url, Object... parameters) {
