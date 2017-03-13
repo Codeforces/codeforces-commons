@@ -12,7 +12,10 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.text.translate.*;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.EntityArrays;
+import org.apache.commons.lang3.text.translate.JavaUnicodeEscaper;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -38,11 +41,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 10.07.13
+ *         Date: 10.07.2013
  */
 @SuppressWarnings({"WeakerAccess", "ForLoopWithMissingComponent"})
 public final class StringUtil {
-    private static final Pattern FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN = Pattern.compile("\\[pre\\]|\\[/pre\\]");
+    private static final Pattern FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN = Pattern.compile("\\[pre]|\\[/pre]");
     private static final Pattern FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN = Pattern.compile("[\n\r][\n\r]+");
 
     private static final Map<Class, ToStringConverter> toStringConverterByClass = new HashMap<>();
@@ -90,7 +93,7 @@ public final class StringUtil {
     @Contract("null -> null")
     @Nullable
     public static String replaceInvisibleCharacters(@Nullable String s) {
-        return replaceInvisibleCharacters(s, (char) 182);
+        return replaceInvisibleCharacters(s, '�');
     }
 
     @Contract("null, _ -> null")
@@ -1494,7 +1497,7 @@ public final class StringUtil {
     }
 
     public static void sortStringsSmart(@Nonnull List<String> strings) {
-        Collections.sort(strings, StringUtil::compareStringsSmart);
+        strings.sort(StringUtil::compareStringsSmart);
     }
 
     public static long longHashCode(@Nullable String s) {
