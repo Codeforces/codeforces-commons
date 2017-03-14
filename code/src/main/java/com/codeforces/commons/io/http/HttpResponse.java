@@ -92,13 +92,14 @@ public final class HttpResponse {
         return ioException != null;
     }
 
-    public void throwIoException() throws IOException {
+    public HttpResponse throwIoException() throws IOException {
         if (ioException != null) {
             throw ioException;
         }
+        return this;
     }
 
-    public void throwIoException(
+    public HttpResponse throwIoException(
             @Nonnull Function<IOException, IOException> existingExceptionMapper) throws IOException {
         if (ioException != null) {
             IOException mappedIoException = existingExceptionMapper.apply(ioException);
@@ -106,9 +107,10 @@ public final class HttpResponse {
                 throw mappedIoException;
             }
         }
+        return this;
     }
 
-    public void throwIoException(
+    public HttpResponse throwIoException(
             @Nonnull Supplier<IOException> nullExceptionReplacement) throws IOException {
         if (ioException != null) {
             throw ioException;
@@ -118,9 +120,10 @@ public final class HttpResponse {
                 throw replacedIoException;
             }
         }
+        return this;
     }
 
-    public void throwIoException(
+    public HttpResponse throwIoException(
             @Nonnull Function<IOException, IOException> existingExceptionMapper,
             @Nonnull Supplier<IOException> nullExceptionReplacement) throws IOException {
         if (ioException != null) {
@@ -134,6 +137,7 @@ public final class HttpResponse {
                 throw replacedIoException;
             }
         }
+        return this;
     }
 
     @Nullable
