@@ -1,9 +1,12 @@
 package com.codeforces.commons.lang;
 
 import com.google.common.base.Preconditions;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -23,5 +26,17 @@ public class ObjectUtil {
     @Nonnull
     public static <T> T toNonNull(@Nullable T value, @Nonnull Supplier<T> nullReplacement) {
         return value == null ? Preconditions.checkNotNull(nullReplacement.get()) : value;
+    }
+
+    public static <T> void ifNonNull(@Nullable T value, @Nonnull Consumer<T> valueConsumer) {
+        if (value != null) {
+            valueConsumer.accept(value);
+        }
+    }
+
+    @Contract("null, _ -> null")
+    @Nullable
+    public static <T, R> R mapNonNull(@Nullable T value, @Nonnull Function<T, R> valueMapper) {
+        return value == null ? null : valueMapper.apply(value);
     }
 }

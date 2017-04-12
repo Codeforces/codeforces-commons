@@ -502,6 +502,16 @@ public final class StringUtil {
         return s == null ? "" : trimLeft(s);
     }
 
+    @Contract(value = "null, _ -> false", pure = true)
+    public static boolean startsWith(@Nullable String s, @Nonnull String prefix) {
+        return s != null && s.startsWith(prefix);
+    }
+
+    @Contract(value = "null, _ -> false", pure = true)
+    public static boolean endsWith(@Nullable String s, @Nonnull String suffix) {
+        return s != null && s.endsWith(suffix);
+    }
+
     /**
      * Splits given string using separator char. All empty parts are included in the result.
      *
