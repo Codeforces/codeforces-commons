@@ -19,16 +19,16 @@ public class ObjectUtil {
     }
 
     @Nonnull
-    public static <T> T toNonNull(@Nullable T value, @Nonnull T nullReplacement) {
+    public static <T> T toNotNull(@Nullable T value, @Nonnull T nullReplacement) {
         return value == null ? Preconditions.checkNotNull(nullReplacement) : value;
     }
 
     @Nonnull
-    public static <T> T toNonNull(@Nullable T value, @Nonnull Supplier<T> nullReplacement) {
+    public static <T> T toNotNull(@Nullable T value, @Nonnull Supplier<T> nullReplacement) {
         return value == null ? Preconditions.checkNotNull(nullReplacement.get()) : value;
     }
 
-    public static <T> void ifNonNull(@Nullable T value, @Nonnull Consumer<T> valueConsumer) {
+    public static <T> void ifNotNull(@Nullable T value, @Nonnull Consumer<T> valueConsumer) {
         if (value != null) {
             valueConsumer.accept(value);
         }
@@ -36,7 +36,7 @@ public class ObjectUtil {
 
     @Contract("null, _ -> null")
     @Nullable
-    public static <T, R> R mapNonNull(@Nullable T value, @Nonnull Function<T, R> valueMapper) {
+    public static <T, R> R mapNotNull(@Nullable T value, @Nonnull Function<T, R> valueMapper) {
         return value == null ? null : valueMapper.apply(value);
     }
 }
