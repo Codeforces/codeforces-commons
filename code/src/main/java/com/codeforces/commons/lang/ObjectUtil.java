@@ -18,23 +18,26 @@ public class ObjectUtil {
         throw new UnsupportedOperationException();
     }
 
+    @Contract("null, null -> fail")
     @Nonnull
     public static <T> T toNotNull(@Nullable T value, @Nonnull T nullReplacement) {
         return value == null ? Preconditions.checkNotNull(nullReplacement) : value;
     }
 
+    @Contract("null, null -> fail")
     @Nonnull
     public static <T> T toNotNull(@Nullable T value, @Nonnull Supplier<T> nullReplacement) {
         return value == null ? Preconditions.checkNotNull(nullReplacement.get()) : value;
     }
 
+    @Contract("!null, null -> fail")
     public static <T> void ifNotNull(@Nullable T value, @Nonnull Consumer<T> valueConsumer) {
         if (value != null) {
             valueConsumer.accept(value);
         }
     }
 
-    @Contract("null, _ -> null")
+    @Contract("null, _ -> null; !null, null -> fail")
     @Nullable
     public static <T, R> R mapNotNull(@Nullable T value, @Nonnull Function<T, R> valueMapper) {
         return value == null ? null : valueMapper.apply(value);
