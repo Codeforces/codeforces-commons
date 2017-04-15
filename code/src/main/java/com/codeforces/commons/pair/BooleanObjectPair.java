@@ -7,32 +7,32 @@ import javax.annotation.Nullable;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 24.11.2016
+ *         Date: 14.04.2017
  */
-public class IntObjectPair<S> {
-    private int first;
+public class BooleanObjectPair<S> {
+    private boolean first;
 
     @Nullable
     private S second;
 
-    public IntObjectPair() {
+    public BooleanObjectPair() {
     }
 
-    public IntObjectPair(int first, @Nullable S second) {
+    public BooleanObjectPair(boolean first, @Nullable S second) {
         this.first = first;
         this.second = second;
     }
 
-    public IntObjectPair(@Nonnull IntObjectPair<S> pair) {
+    public BooleanObjectPair(@Nonnull BooleanObjectPair<S> pair) {
         this.first = pair.first;
         this.second = pair.second;
     }
 
-    public int getFirst() {
+    public boolean getFirst() {
         return first;
     }
 
-    public void setFirst(int first) {
+    public void setFirst(boolean first) {
         this.first = first;
     }
 
@@ -52,11 +52,11 @@ public class IntObjectPair<S> {
             return true;
         }
 
-        if (!(o instanceof IntObjectPair)) {
+        if (!(o instanceof BooleanObjectPair)) {
             return false;
         }
 
-        IntObjectPair pair = (IntObjectPair) o;
+        BooleanObjectPair pair = (BooleanObjectPair) o;
 
         return first == pair.first && (second == null ? pair.second == null : second.equals(pair.second));
     }
@@ -64,7 +64,7 @@ public class IntObjectPair<S> {
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 32323 * first + (second == null ? 0 : second.hashCode());
+        return 32323 * Boolean.hashCode(first) + (second == null ? 0 : second.hashCode());
     }
 
     @Override

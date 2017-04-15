@@ -7,32 +7,32 @@ import javax.annotation.Nullable;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 24.11.2016
+ *         Date: 12.04.2017
  */
-public class IntObjectPair<S> {
-    private int first;
+public class DoubleObjectPair<S> {
+    private double first;
 
     @Nullable
     private S second;
 
-    public IntObjectPair() {
+    public DoubleObjectPair() {
     }
 
-    public IntObjectPair(int first, @Nullable S second) {
+    public DoubleObjectPair(double first, @Nullable S second) {
         this.first = first;
         this.second = second;
     }
 
-    public IntObjectPair(@Nonnull IntObjectPair<S> pair) {
+    public DoubleObjectPair(@Nonnull DoubleObjectPair<S> pair) {
         this.first = pair.first;
         this.second = pair.second;
     }
 
-    public int getFirst() {
+    public double getFirst() {
         return first;
     }
 
-    public void setFirst(int first) {
+    public void setFirst(double first) {
         this.first = first;
     }
 
@@ -52,19 +52,20 @@ public class IntObjectPair<S> {
             return true;
         }
 
-        if (!(o instanceof IntObjectPair)) {
+        if (!(o instanceof DoubleObjectPair)) {
             return false;
         }
 
-        IntObjectPair pair = (IntObjectPair) o;
+        DoubleObjectPair pair = (DoubleObjectPair) o;
 
-        return first == pair.first && (second == null ? pair.second == null : second.equals(pair.second));
+        return Double.compare(first, pair.first) == 0
+                && (second == null ? pair.second == null : second.equals(pair.second));
     }
 
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")
     @Override
     public int hashCode() {
-        return 32323 * first + (second == null ? 0 : second.hashCode());
+        return 32323 * Double.hashCode(first) + (second == null ? 0 : second.hashCode());
     }
 
     @Override

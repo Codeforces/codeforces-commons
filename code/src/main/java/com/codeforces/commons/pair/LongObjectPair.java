@@ -58,8 +58,7 @@ public class LongObjectPair<S> {
 
         LongObjectPair pair = (LongObjectPair) o;
 
-        return first == pair.first
-                && (second == null ? pair.second == null : second.equals(pair.second));
+        return first == pair.first && (second == null ? pair.second == null : second.equals(pair.second));
     }
 
     @SuppressWarnings("NonFinalFieldReferencedInHashCode")

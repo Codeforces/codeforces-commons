@@ -9,30 +9,30 @@ import javax.annotation.Nullable;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 24.11.2016
  */
-public class IntObjectPair<S> {
-    private int first;
+public class ByteObjectPair<S> {
+    private byte first;
 
     @Nullable
     private S second;
 
-    public IntObjectPair() {
+    public ByteObjectPair() {
     }
 
-    public IntObjectPair(int first, @Nullable S second) {
+    public ByteObjectPair(byte first, @Nullable S second) {
         this.first = first;
         this.second = second;
     }
 
-    public IntObjectPair(@Nonnull IntObjectPair<S> pair) {
+    public ByteObjectPair(@Nonnull ByteObjectPair<S> pair) {
         this.first = pair.first;
         this.second = pair.second;
     }
 
-    public int getFirst() {
+    public byte getFirst() {
         return first;
     }
 
-    public void setFirst(int first) {
+    public void setFirst(byte first) {
         this.first = first;
     }
 
@@ -52,11 +52,11 @@ public class IntObjectPair<S> {
             return true;
         }
 
-        if (!(o instanceof IntObjectPair)) {
+        if (!(o instanceof ByteObjectPair)) {
             return false;
         }
 
-        IntObjectPair pair = (IntObjectPair) o;
+        ByteObjectPair pair = (ByteObjectPair) o;
 
         return first == pair.first && (second == null ? pair.second == null : second.equals(pair.second));
     }
