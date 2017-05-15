@@ -11,6 +11,7 @@ import static com.codeforces.commons.math.Math.abs;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 24.07.2013
  */
+@SuppressWarnings("WeakerAccess")
 public final class NumberUtil {
     private NumberUtil() {
         throw new UnsupportedOperationException();
@@ -51,13 +52,13 @@ public final class NumberUtil {
             return toByte(((Number) value).doubleValue());
         }
 
-        return toByte(Double.parseDouble(StringUtil.trim(value.toString())));
+        return toByte(value.toString());
     }
 
     @Contract("null -> null; !null -> !null")
     @Nullable
     public static Byte toByte(@Nullable String value) {
-        return value == null ? null : toByte(Double.parseDouble(StringUtil.trim(value)));
+        return toByte(toDouble(value));
     }
 
     public static byte toByte(short value) {
@@ -68,12 +69,24 @@ public final class NumberUtil {
         throw new IllegalArgumentException("Can't convert short " + value + " to byte.");
     }
 
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Byte toByte(@Nullable Short value) {
+        return value == null ? null : toByte((short) value);
+    }
+
     public static byte toByte(int value) {
         @SuppressWarnings("NumericCastThatLosesPrecision") byte byteValue = (byte) value;
         if ((int) byteValue == value) {
             return byteValue;
         }
         throw new IllegalArgumentException("Can't convert int " + value + " to byte.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Byte toByte(@Nullable Integer value) {
+        return value == null ? null : toByte((int) value);
     }
 
     public static byte toByte(long value) {
@@ -84,12 +97,24 @@ public final class NumberUtil {
         throw new IllegalArgumentException("Can't convert long " + value + " to byte.");
     }
 
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Byte toByte(@Nullable Long value) {
+        return value == null ? null : toByte((long) value);
+    }
+
     public static byte toByte(float value) {
         @SuppressWarnings("NumericCastThatLosesPrecision") byte byteValue = (byte) value;
-        if (abs((float) byteValue - value) < 1.0F) {
+        if (abs((float) byteValue - value) < 1.0f) {
             return byteValue;
         }
         throw new IllegalArgumentException("Can't convert float " + value + " to byte.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Byte toByte(@Nullable Float value) {
+        return value == null ? null : toByte((float) value);
     }
 
     public static byte toByte(double value) {
@@ -102,9 +127,119 @@ public final class NumberUtil {
 
     @Contract("null -> null; !null -> !null")
     @Nullable
+    public static Byte toByte(@Nullable Double value) {
+        return value == null ? null : toByte((double) value);
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Short toShort(@Nullable Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value instanceof Short) {
+            return (short) value;
+        }
+
+        if (value instanceof Byte) {
+            return (short) (byte) value;
+        }
+
+        if (value instanceof Integer) {
+            return toShort((int) value);
+        }
+
+        if (value instanceof Long) {
+            return toShort((long) value);
+        }
+
+        if (value instanceof Float) {
+            return toShort((float) value);
+        }
+
+        if (value instanceof Double) {
+            return toShort((double) value);
+        }
+
+        if (value instanceof Number) {
+            return toShort(((Number) value).doubleValue());
+        }
+
+        return toShort(value.toString());
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Short toShort(@Nullable String value) {
+        return toShort(toDouble(value));
+    }
+
+    public static short toShort(int value) {
+        @SuppressWarnings("NumericCastThatLosesPrecision") short shortValue = (short) value;
+        if ((int) shortValue == value) {
+            return shortValue;
+        }
+        throw new IllegalArgumentException("Can't convert int " + value + " to short.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Short toShort(@Nullable Integer value) {
+        return value == null ? null : toShort((int) value);
+    }
+
+    public static short toShort(long value) {
+        @SuppressWarnings("NumericCastThatLosesPrecision") short shortValue = (short) value;
+        if ((long) shortValue == value) {
+            return shortValue;
+        }
+        throw new IllegalArgumentException("Can't convert long " + value + " to short.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Short toShort(@Nullable Long value) {
+        return value == null ? null : toShort((long) value);
+    }
+
+    public static short toShort(float value) {
+        @SuppressWarnings("NumericCastThatLosesPrecision") short shortValue = (short) value;
+        if (abs((float) shortValue - value) < 1.0f) {
+            return shortValue;
+        }
+        throw new IllegalArgumentException("Can't convert float " + value + " to short.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Short toShort(@Nullable Float value) {
+        return value == null ? null : toShort((float) value);
+    }
+
+    public static short toShort(double value) {
+        @SuppressWarnings("NumericCastThatLosesPrecision") short shortValue = (short) value;
+        if (abs((double) shortValue - value) < 1.0D) {
+            return shortValue;
+        }
+        throw new IllegalArgumentException("Can't convert double " + value + " to short.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Short toShort(@Nullable Double value) {
+        return value == null ? null : toShort((double) value);
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
     public static Integer toInt(@Nullable Object value) {
         if (value == null) {
             return null;
+        }
+
+        if (value instanceof Integer) {
+            return (Integer) value;
         }
 
         if (value instanceof Byte) {
@@ -113,10 +248,6 @@ public final class NumberUtil {
 
         if (value instanceof Short) {
             return (int) (short) value;
-        }
-
-        if (value instanceof Integer) {
-            return (Integer) value;
         }
 
         if (value instanceof Long) {
@@ -135,13 +266,13 @@ public final class NumberUtil {
             return toInt(((Number) value).doubleValue());
         }
 
-        return toInt(Double.parseDouble(StringUtil.trim(value.toString())));
+        return toInt(value.toString());
     }
 
     @Contract("null -> null; !null -> !null")
     @Nullable
     public static Integer toInt(@Nullable String value) {
-        return value == null ? null : toInt(Double.parseDouble(StringUtil.trim(value)));
+        return toInt(toDouble(value));
     }
 
     public static int toInt(long value) {
@@ -152,12 +283,24 @@ public final class NumberUtil {
         throw new IllegalArgumentException("Can't convert long " + value + " to int.");
     }
 
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Integer toInt(@Nullable Long value) {
+        return value == null ? null : toInt((long) value);
+    }
+
     public static int toInt(float value) {
         @SuppressWarnings("NumericCastThatLosesPrecision") int intValue = (int) value;
-        if (abs((float) intValue - value) < 1.0F) {
+        if (abs((float) intValue - value) < 1.0f) {
             return intValue;
         }
         throw new IllegalArgumentException("Can't convert float " + value + " to int.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Integer toInt(@Nullable Float value) {
+        return value == null ? null : toInt((float) value);
     }
 
     public static int toInt(double value) {
@@ -170,9 +313,19 @@ public final class NumberUtil {
 
     @Contract("null -> null; !null -> !null")
     @Nullable
+    public static Integer toInt(@Nullable Double value) {
+        return value == null ? null : toInt((double) value);
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
     public static Long toLong(@Nullable Object value) {
         if (value == null) {
             return null;
+        }
+
+        if (value instanceof Long) {
+            return (Long) value;
         }
 
         if (value instanceof Byte) {
@@ -187,10 +340,6 @@ public final class NumberUtil {
             return (long) (int) value;
         }
 
-        if (value instanceof Long) {
-            return (Long) value;
-        }
-
         if (value instanceof Float) {
             return toLong((float) value);
         }
@@ -203,21 +352,27 @@ public final class NumberUtil {
             return toLong(((Number) value).doubleValue());
         }
 
-        return toLong(Double.parseDouble(StringUtil.trim(value.toString())));
+        return toLong(value.toString());
     }
 
     @Contract("null -> null; !null -> !null")
     @Nullable
     public static Long toLong(@Nullable String value) {
-        return value == null ? null : toLong(Double.parseDouble(StringUtil.trim(value)));
+        return toLong(toDouble(value));
     }
 
     public static long toLong(float value) {
         @SuppressWarnings("NumericCastThatLosesPrecision") long longValue = (long) value;
-        if (abs((float) longValue - value) < 1.0F) {
+        if (abs((float) longValue - value) < 1.0f) {
             return longValue;
         }
         throw new IllegalArgumentException("Can't convert float " + value + " to long.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Long toLong(@Nullable Float value) {
+        return value == null ? null : toLong((float) value);
     }
 
     public static long toLong(double value) {
@@ -230,9 +385,77 @@ public final class NumberUtil {
 
     @Contract("null -> null; !null -> !null")
     @Nullable
+    public static Long toLong(@Nullable Double value) {
+        return value == null ? null : toLong((double) value);
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Float toFloat(@Nullable Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value instanceof Float) {
+            return (Float) value;
+        }
+
+        if (value instanceof Byte) {
+            return (float) (byte) value;
+        }
+
+        if (value instanceof Short) {
+            return (float) (short) value;
+        }
+
+        if (value instanceof Integer) {
+            return (float) (int) value;
+        }
+
+        if (value instanceof Long) {
+            return (float) (long) value;
+        }
+
+        if (value instanceof Double) {
+            return toFloat((double) value);
+        }
+
+        if (value instanceof Number) {
+            return toFloat(((Number) value).doubleValue());
+        }
+
+        return toFloat(value.toString());
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Float toFloat(@Nullable String value) {
+        return toFloat(toDouble(value));
+    }
+
+    public static float toFloat(double value) {
+        @SuppressWarnings("NumericCastThatLosesPrecision") float floatValue = (float) value;
+        if (abs((double) floatValue - value) < 1.0D) {
+            return floatValue;
+        }
+        throw new IllegalArgumentException("Can't convert double " + value + " to float.");
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
+    public static Float toFloat(@Nullable Double value) {
+        return value == null ? null : toFloat((double) value);
+    }
+
+    @Contract("null -> null; !null -> !null")
+    @Nullable
     public static Double toDouble(@Nullable Object value) {
         if (value == null) {
             return null;
+        }
+
+        if (value instanceof Double) {
+            return (Double) value;
         }
 
         if (value instanceof Byte) {
@@ -255,15 +478,11 @@ public final class NumberUtil {
             return (double) (float) value;
         }
 
-        if (value instanceof Double) {
-            return (Double) value;
-        }
-
         if (value instanceof Number) {
             return ((Number) value).doubleValue();
         }
 
-        return Double.parseDouble(StringUtil.trim(value.toString()));
+        return toDouble(value.toString());
     }
 
     @Contract("null -> null; !null -> !null")
@@ -400,7 +619,7 @@ public final class NumberUtil {
 
     @Contract(pure = true)
     public static float nullToZero(@Nullable Float value) {
-        return value == null ? 0.0F : value;
+        return value == null ? 0.0f : value;
     }
 
     @Contract(pure = true)
@@ -408,33 +627,39 @@ public final class NumberUtil {
         return value == null ? 0.0D : value;
     }
 
-    @Contract(pure = true)
+    @Contract(value = "null -> null", pure = true)
+    @Nullable
     public static Byte zeroToNull(@Nullable Byte value) {
-        return value != null && value == (byte) 0 ? null : value;
+        return value == null || value == (byte) 0 ? null : value;
     }
 
-    @Contract(pure = true)
+    @Contract(value = "null -> null", pure = true)
+    @Nullable
     public static Short zeroToNull(@Nullable Short value) {
-        return value != null && value == (short) 0 ? null : value;
+        return value == null || value == (short) 0 ? null : value;
     }
 
-    @Contract(pure = true)
+    @Contract(value = "null -> null", pure = true)
+    @Nullable
     public static Integer zeroToNull(@Nullable Integer value) {
-        return value != null && value == 0 ? null : value;
+        return value == null || value == 0 ? null : value;
     }
 
-    @Contract(pure = true)
+    @Contract(value = "null -> null", pure = true)
+    @Nullable
     public static Long zeroToNull(@Nullable Long value) {
-        return value != null && value == (long) 0 ? null : value;
+        return value == null || value == 0L ? null : value;
     }
 
-    @Contract(pure = true)
+    @Contract(value = "null -> null", pure = true)
+    @Nullable
     public static Float zeroToNull(@Nullable Float value) {
-        return value != null && value == (float) 0 ? null : value;
+        return value == null || value == 0.0f ? null : value;
     }
 
-    @Contract(pure = true)
+    @Contract(value = "null -> null", pure = true)
+    @Nullable
     public static Double zeroToNull(@Nullable Double value) {
-        return value != null && value == (double) 0 ? null : value;
+        return value == null || value == 0.0D ? null : value;
     }
 }
