@@ -1,7 +1,5 @@
 package com.codeforces.commons.collection;
 
-import com.codeforces.commons.pair.StringPair;
-import com.codeforces.commons.process.ThreadUtil;
 import gnu.trove.map.*;
 import gnu.trove.map.hash.*;
 import gnu.trove.set.*;
@@ -922,72 +920,5 @@ public class CollectionUtil {
             }
             return 0;
         }
-    }
-
-    public static void main(String[] args) {
-        List<StringPair> typeNameAndNoValuePairs = new ArrayList<>();
-        typeNameAndNoValuePairs.add(new StringPair("Char", "Character.MIN_VALUE"));
-        typeNameAndNoValuePairs.add(new StringPair("Byte", "Byte.MIN_VALUE"));
-        typeNameAndNoValuePairs.add(new StringPair("Short", "Short.MIN_VALUE"));
-        typeNameAndNoValuePairs.add(new StringPair("Int", "Integer.MIN_VALUE"));
-        typeNameAndNoValuePairs.add(new StringPair("Long", "Long.MIN_VALUE"));
-        typeNameAndNoValuePairs.add(new StringPair("Float", "Float.NaN"));
-        typeNameAndNoValuePairs.add(new StringPair("Double", "Double.NaN"));
-
-        for (StringPair primitiveAndWrapperType : typeNameAndNoValuePairs) {
-            String typeName = primitiveAndWrapperType.getFirst();
-            String noValue = primitiveAndWrapperType.getSecond();
-
-            System.out.printf("    @Nonnull%n" +
-                    "    public static T%1$sSet newT%1$sSet() {%n" +
-                    "        return new T%1$sHashSet(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, %2$s);%n" +
-                    "    }%n%n" +
-                    "    @Nonnull%n" +
-                    "    public static T%1$sSet newT%1$sSet(int capacity) {%n" +
-                    "        return new T%1$sHashSet(capacity, DEFAULT_LOAD_FACTOR, %2$s);%n" +
-                    "    }%n%n", typeName, noValue
-            );
-        }
-
-        for (StringPair primitiveAndWrapperType : typeNameAndNoValuePairs) {
-            String typeName = primitiveAndWrapperType.getFirst();
-            String noValue = primitiveAndWrapperType.getSecond();
-
-            System.out.printf("    @Nonnull%n" +
-                    "    public static <V> T%1$sObjectMap<V> newT%1$sObjectMap() {%n" +
-                    "        return new T%1$sObjectHashMap<>(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, %2$s);%n" +
-                    "    }%n%n" +
-                    "    @Nonnull%n" +
-                    "    public static <V> T%1$sObjectMap<V> newT%1$sObjectMap(int capacity) {%n" +
-                    "        return new T%1$sObjectHashMap<>(capacity, DEFAULT_LOAD_FACTOR, %2$s);%n" +
-                    "    }%n%n" +
-                    "    @Nonnull%n" +
-                    "    public static <V> TObject%1$sMap<V> newTObject%1$sMap() {%n" +
-                    "        return new TObject%1$sHashMap<>(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, %2$s);%n" +
-                    "    }%n%n" +
-                    "    @Nonnull%n" +
-                    "    public static <V> TObject%1$sMap<V> newTObject%1$sMap(int capacity) {%n" +
-                    "        return new TObject%1$sHashMap<>(capacity, DEFAULT_LOAD_FACTOR, %2$s);%n" +
-                    "    }%n%n", typeName, noValue
-            );
-
-            for (StringPair otherPrimitiveAndWrapperType : typeNameAndNoValuePairs) {
-                String otherTypeName = otherPrimitiveAndWrapperType.getFirst();
-                String otherNoValue = otherPrimitiveAndWrapperType.getSecond();
-
-                System.out.printf("    @Nonnull%n" +
-                        "    public static T%1$s%3$sMap newT%1$s%3$sMap() {%n" +
-                        "        return new T%1$s%3$sHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, %2$s, %4$s);%n" +
-                        "    }%n%n" +
-                        "    @Nonnull%n" +
-                        "    public static T%1$s%3$sMap newT%1$s%3$sMap(int capacity) {%n" +
-                        "        return new T%1$s%3$sHashMap(capacity, DEFAULT_LOAD_FACTOR, %2$s, %4$s);%n" +
-                        "    }%n%n", typeName, noValue, otherTypeName, otherNoValue
-                );
-            }
-        }
-
-        System.out.flush();
-        ThreadUtil.sleep(100L);
     }
 }
