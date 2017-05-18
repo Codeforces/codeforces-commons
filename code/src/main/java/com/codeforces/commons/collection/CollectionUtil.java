@@ -1,5 +1,7 @@
 package com.codeforces.commons.collection;
 
+import com.codeforces.commons.pair.StringPair;
+import com.codeforces.commons.process.ThreadUtil;
 import gnu.trove.map.*;
 import gnu.trove.map.hash.*;
 import gnu.trove.set.*;
@@ -272,16 +274,6 @@ public class CollectionUtil {
     }
 
     @Nonnull
-    public static TCharCharMap newTCharCharMap() {
-        return new TCharCharHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Character.MIN_VALUE, Character.MIN_VALUE);
-    }
-
-    @Nonnull
-    public static TCharCharMap newTCharCharMap(int capacity) {
-        return new TCharCharHashMap(capacity, DEFAULT_LOAD_FACTOR, Character.MIN_VALUE, Character.MIN_VALUE);
-    }
-
-    @Nonnull
     public static <V> TCharObjectMap<V> newTCharObjectMap() {
         return new TCharObjectHashMap<>(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Character.MIN_VALUE);
     }
@@ -299,6 +291,16 @@ public class CollectionUtil {
     @Nonnull
     public static <V> TObjectCharMap<V> newTObjectCharMap(int capacity) {
         return new TObjectCharHashMap<>(capacity, DEFAULT_LOAD_FACTOR, Character.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TCharCharMap newTCharCharMap() {
+        return new TCharCharHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Character.MIN_VALUE, Character.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TCharCharMap newTCharCharMap(int capacity) {
+        return new TCharCharHashMap(capacity, DEFAULT_LOAD_FACTOR, Character.MIN_VALUE, Character.MIN_VALUE);
     }
 
     @Nonnull
@@ -362,16 +364,6 @@ public class CollectionUtil {
     }
 
     @Nonnull
-    public static TByteByteMap newTByteByteMap() {
-        return new TByteByteHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Byte.MIN_VALUE, Byte.MIN_VALUE);
-    }
-
-    @Nonnull
-    public static TByteByteMap newTByteByteMap(int capacity) {
-        return new TByteByteHashMap(capacity, DEFAULT_LOAD_FACTOR, Byte.MIN_VALUE, Byte.MIN_VALUE);
-    }
-
-    @Nonnull
     public static <V> TByteObjectMap<V> newTByteObjectMap() {
         return new TByteObjectHashMap<>(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Byte.MIN_VALUE);
     }
@@ -399,6 +391,16 @@ public class CollectionUtil {
     @Nonnull
     public static TByteCharMap newTByteCharMap(int capacity) {
         return new TByteCharHashMap(capacity, DEFAULT_LOAD_FACTOR, Byte.MIN_VALUE, Character.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TByteByteMap newTByteByteMap() {
+        return new TByteByteHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Byte.MIN_VALUE, Byte.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TByteByteMap newTByteByteMap(int capacity) {
+        return new TByteByteHashMap(capacity, DEFAULT_LOAD_FACTOR, Byte.MIN_VALUE, Byte.MIN_VALUE);
     }
 
     @Nonnull
@@ -452,16 +454,6 @@ public class CollectionUtil {
     }
 
     @Nonnull
-    public static TShortShortMap newTShortShortMap() {
-        return new TShortShortHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Short.MIN_VALUE, Short.MIN_VALUE);
-    }
-
-    @Nonnull
-    public static TShortShortMap newTShortShortMap(int capacity) {
-        return new TShortShortHashMap(capacity, DEFAULT_LOAD_FACTOR, Short.MIN_VALUE, Short.MIN_VALUE);
-    }
-
-    @Nonnull
     public static <V> TShortObjectMap<V> newTShortObjectMap() {
         return new TShortObjectHashMap<>(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Short.MIN_VALUE);
     }
@@ -502,6 +494,16 @@ public class CollectionUtil {
     }
 
     @Nonnull
+    public static TShortShortMap newTShortShortMap() {
+        return new TShortShortHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Short.MIN_VALUE, Short.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TShortShortMap newTShortShortMap(int capacity) {
+        return new TShortShortHashMap(capacity, DEFAULT_LOAD_FACTOR, Short.MIN_VALUE, Short.MIN_VALUE);
+    }
+
+    @Nonnull
     public static TShortIntMap newTShortIntMap() {
         return new TShortIntHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Short.MIN_VALUE, Integer.MIN_VALUE);
     }
@@ -539,16 +541,6 @@ public class CollectionUtil {
     @Nonnull
     public static TShortDoubleMap newTShortDoubleMap(int capacity) {
         return new TShortDoubleHashMap(capacity, DEFAULT_LOAD_FACTOR, Short.MIN_VALUE, Double.NaN);
-    }
-
-    @Nonnull
-    public static TIntIntMap newTIntIntMap() {
-        return new TIntIntHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Integer.MIN_VALUE, Integer.MIN_VALUE);
-    }
-
-    @Nonnull
-    public static TIntIntMap newTIntIntMap(int capacity) {
-        return new TIntIntHashMap(capacity, DEFAULT_LOAD_FACTOR, Integer.MIN_VALUE, Integer.MIN_VALUE);
     }
 
     @Nonnull
@@ -602,6 +594,16 @@ public class CollectionUtil {
     }
 
     @Nonnull
+    public static TIntIntMap newTIntIntMap() {
+        return new TIntIntHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TIntIntMap newTIntIntMap(int capacity) {
+        return new TIntIntHashMap(capacity, DEFAULT_LOAD_FACTOR, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    }
+
+    @Nonnull
     public static TIntLongMap newTIntLongMap() {
         return new TIntLongHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Integer.MIN_VALUE, Long.MIN_VALUE);
     }
@@ -629,16 +631,6 @@ public class CollectionUtil {
     @Nonnull
     public static TIntDoubleMap newTIntDoubleMap(int capacity) {
         return new TIntDoubleHashMap(capacity, DEFAULT_LOAD_FACTOR, Integer.MIN_VALUE, Double.NaN);
-    }
-
-    @Nonnull
-    public static TLongLongMap newTLongLongMap() {
-        return new TLongLongHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Long.MIN_VALUE, Long.MIN_VALUE);
-    }
-
-    @Nonnull
-    public static TLongLongMap newTLongLongMap(int capacity) {
-        return new TLongLongHashMap(capacity, DEFAULT_LOAD_FACTOR, Long.MIN_VALUE, Long.MIN_VALUE);
     }
 
     @Nonnull
@@ -702,6 +694,16 @@ public class CollectionUtil {
     }
 
     @Nonnull
+    public static TLongLongMap newTLongLongMap() {
+        return new TLongLongHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Long.MIN_VALUE, Long.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TLongLongMap newTLongLongMap(int capacity) {
+        return new TLongLongHashMap(capacity, DEFAULT_LOAD_FACTOR, Long.MIN_VALUE, Long.MIN_VALUE);
+    }
+
+    @Nonnull
     public static TLongFloatMap newTLongFloatMap() {
         return new TLongFloatHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Long.MIN_VALUE, Float.NaN);
     }
@@ -719,16 +721,6 @@ public class CollectionUtil {
     @Nonnull
     public static TLongDoubleMap newTLongDoubleMap(int capacity) {
         return new TLongDoubleHashMap(capacity, DEFAULT_LOAD_FACTOR, Long.MIN_VALUE, Double.NaN);
-    }
-
-    @Nonnull
-    public static TFloatFloatMap newTFloatFloatMap() {
-        return new TFloatFloatHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Float.NaN, Float.NaN);
-    }
-
-    @Nonnull
-    public static TFloatFloatMap newTFloatFloatMap(int capacity) {
-        return new TFloatFloatHashMap(capacity, DEFAULT_LOAD_FACTOR, Float.NaN, Float.NaN);
     }
 
     @Nonnull
@@ -752,13 +744,73 @@ public class CollectionUtil {
     }
 
     @Nonnull
-    public static TDoubleDoubleMap newTDoubleDoubleMap() {
-        return new TDoubleDoubleHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Double.NaN, Double.NaN);
+    public static TFloatCharMap newTFloatCharMap() {
+        return new TFloatCharHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Float.NaN, Character.MIN_VALUE);
     }
 
     @Nonnull
-    public static TDoubleDoubleMap newTDoubleDoubleMap(int capacity) {
-        return new TDoubleDoubleHashMap(capacity, DEFAULT_LOAD_FACTOR, Double.NaN, Double.NaN);
+    public static TFloatCharMap newTFloatCharMap(int capacity) {
+        return new TFloatCharHashMap(capacity, DEFAULT_LOAD_FACTOR, Float.NaN, Character.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatByteMap newTFloatByteMap() {
+        return new TFloatByteHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Float.NaN, Byte.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatByteMap newTFloatByteMap(int capacity) {
+        return new TFloatByteHashMap(capacity, DEFAULT_LOAD_FACTOR, Float.NaN, Byte.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatShortMap newTFloatShortMap() {
+        return new TFloatShortHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Float.NaN, Short.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatShortMap newTFloatShortMap(int capacity) {
+        return new TFloatShortHashMap(capacity, DEFAULT_LOAD_FACTOR, Float.NaN, Short.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatIntMap newTFloatIntMap() {
+        return new TFloatIntHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Float.NaN, Integer.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatIntMap newTFloatIntMap(int capacity) {
+        return new TFloatIntHashMap(capacity, DEFAULT_LOAD_FACTOR, Float.NaN, Integer.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatLongMap newTFloatLongMap() {
+        return new TFloatLongHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Float.NaN, Long.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatLongMap newTFloatLongMap(int capacity) {
+        return new TFloatLongHashMap(capacity, DEFAULT_LOAD_FACTOR, Float.NaN, Long.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TFloatFloatMap newTFloatFloatMap() {
+        return new TFloatFloatHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Float.NaN, Float.NaN);
+    }
+
+    @Nonnull
+    public static TFloatFloatMap newTFloatFloatMap(int capacity) {
+        return new TFloatFloatHashMap(capacity, DEFAULT_LOAD_FACTOR, Float.NaN, Float.NaN);
+    }
+
+    @Nonnull
+    public static TFloatDoubleMap newTFloatDoubleMap() {
+        return new TFloatDoubleHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Float.NaN, Double.NaN);
+    }
+
+    @Nonnull
+    public static TFloatDoubleMap newTFloatDoubleMap(int capacity) {
+        return new TFloatDoubleHashMap(capacity, DEFAULT_LOAD_FACTOR, Float.NaN, Double.NaN);
     }
 
     @Nonnull
@@ -781,6 +833,76 @@ public class CollectionUtil {
         return new TObjectDoubleHashMap<>(capacity, DEFAULT_LOAD_FACTOR, Double.NaN);
     }
 
+    @Nonnull
+    public static TDoubleCharMap newTDoubleCharMap() {
+        return new TDoubleCharHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Double.NaN, Character.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleCharMap newTDoubleCharMap(int capacity) {
+        return new TDoubleCharHashMap(capacity, DEFAULT_LOAD_FACTOR, Double.NaN, Character.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleByteMap newTDoubleByteMap() {
+        return new TDoubleByteHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Double.NaN, Byte.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleByteMap newTDoubleByteMap(int capacity) {
+        return new TDoubleByteHashMap(capacity, DEFAULT_LOAD_FACTOR, Double.NaN, Byte.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleShortMap newTDoubleShortMap() {
+        return new TDoubleShortHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Double.NaN, Short.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleShortMap newTDoubleShortMap(int capacity) {
+        return new TDoubleShortHashMap(capacity, DEFAULT_LOAD_FACTOR, Double.NaN, Short.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleIntMap newTDoubleIntMap() {
+        return new TDoubleIntHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Double.NaN, Integer.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleIntMap newTDoubleIntMap(int capacity) {
+        return new TDoubleIntHashMap(capacity, DEFAULT_LOAD_FACTOR, Double.NaN, Integer.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleLongMap newTDoubleLongMap() {
+        return new TDoubleLongHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Double.NaN, Long.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleLongMap newTDoubleLongMap(int capacity) {
+        return new TDoubleLongHashMap(capacity, DEFAULT_LOAD_FACTOR, Double.NaN, Long.MIN_VALUE);
+    }
+
+    @Nonnull
+    public static TDoubleFloatMap newTDoubleFloatMap() {
+        return new TDoubleFloatHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Double.NaN, Float.NaN);
+    }
+
+    @Nonnull
+    public static TDoubleFloatMap newTDoubleFloatMap(int capacity) {
+        return new TDoubleFloatHashMap(capacity, DEFAULT_LOAD_FACTOR, Double.NaN, Float.NaN);
+    }
+
+    @Nonnull
+    public static TDoubleDoubleMap newTDoubleDoubleMap() {
+        return new TDoubleDoubleHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, Double.NaN, Double.NaN);
+    }
+
+    @Nonnull
+    public static TDoubleDoubleMap newTDoubleDoubleMap(int capacity) {
+        return new TDoubleDoubleHashMap(capacity, DEFAULT_LOAD_FACTOR, Double.NaN, Double.NaN);
+    }
+
     public static class CollectionComparator<T extends Comparable<T>> implements Comparator<Collection<T>> {
         @Override
         public int compare(Collection<T> o1, Collection<T> o2) {
@@ -800,5 +922,72 @@ public class CollectionUtil {
             }
             return 0;
         }
+    }
+
+    public static void main(String[] args) {
+        List<StringPair> typeNameAndNoValuePairs = new ArrayList<>();
+        typeNameAndNoValuePairs.add(new StringPair("Char", "Character.MIN_VALUE"));
+        typeNameAndNoValuePairs.add(new StringPair("Byte", "Byte.MIN_VALUE"));
+        typeNameAndNoValuePairs.add(new StringPair("Short", "Short.MIN_VALUE"));
+        typeNameAndNoValuePairs.add(new StringPair("Int", "Integer.MIN_VALUE"));
+        typeNameAndNoValuePairs.add(new StringPair("Long", "Long.MIN_VALUE"));
+        typeNameAndNoValuePairs.add(new StringPair("Float", "Float.NaN"));
+        typeNameAndNoValuePairs.add(new StringPair("Double", "Double.NaN"));
+
+        for (StringPair primitiveAndWrapperType : typeNameAndNoValuePairs) {
+            String typeName = primitiveAndWrapperType.getFirst();
+            String noValue = primitiveAndWrapperType.getSecond();
+
+            System.out.printf("    @Nonnull%n" +
+                    "    public static T%1$sSet newT%1$sSet() {%n" +
+                    "        return new T%1$sHashSet(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, %2$s);%n" +
+                    "    }%n%n" +
+                    "    @Nonnull%n" +
+                    "    public static T%1$sSet newT%1$sSet(int capacity) {%n" +
+                    "        return new T%1$sHashSet(capacity, DEFAULT_LOAD_FACTOR, %2$s);%n" +
+                    "    }%n%n", typeName, noValue
+            );
+        }
+
+        for (StringPair primitiveAndWrapperType : typeNameAndNoValuePairs) {
+            String typeName = primitiveAndWrapperType.getFirst();
+            String noValue = primitiveAndWrapperType.getSecond();
+
+            System.out.printf("    @Nonnull%n" +
+                    "    public static <V> T%1$sObjectMap<V> newT%1$sObjectMap() {%n" +
+                    "        return new T%1$sObjectHashMap<>(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, %2$s);%n" +
+                    "    }%n%n" +
+                    "    @Nonnull%n" +
+                    "    public static <V> T%1$sObjectMap<V> newT%1$sObjectMap(int capacity) {%n" +
+                    "        return new T%1$sObjectHashMap<>(capacity, DEFAULT_LOAD_FACTOR, %2$s);%n" +
+                    "    }%n%n" +
+                    "    @Nonnull%n" +
+                    "    public static <V> TObject%1$sMap<V> newTObject%1$sMap() {%n" +
+                    "        return new TObject%1$sHashMap<>(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, %2$s);%n" +
+                    "    }%n%n" +
+                    "    @Nonnull%n" +
+                    "    public static <V> TObject%1$sMap<V> newTObject%1$sMap(int capacity) {%n" +
+                    "        return new TObject%1$sHashMap<>(capacity, DEFAULT_LOAD_FACTOR, %2$s);%n" +
+                    "    }%n%n", typeName, noValue
+            );
+
+            for (StringPair otherPrimitiveAndWrapperType : typeNameAndNoValuePairs) {
+                String otherTypeName = otherPrimitiveAndWrapperType.getFirst();
+                String otherNoValue = otherPrimitiveAndWrapperType.getSecond();
+
+                System.out.printf("    @Nonnull%n" +
+                        "    public static T%1$s%3$sMap newT%1$s%3$sMap() {%n" +
+                        "        return new T%1$s%3$sHashMap(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR, %2$s, %4$s);%n" +
+                        "    }%n%n" +
+                        "    @Nonnull%n" +
+                        "    public static T%1$s%3$sMap newT%1$s%3$sMap(int capacity) {%n" +
+                        "        return new T%1$s%3$sHashMap(capacity, DEFAULT_LOAD_FACTOR, %2$s, %4$s);%n" +
+                        "    }%n%n", typeName, noValue, otherTypeName, otherNoValue
+                );
+            }
+        }
+
+        System.out.flush();
+        ThreadUtil.sleep(100L);
     }
 }
