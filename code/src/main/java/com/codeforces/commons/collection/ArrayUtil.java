@@ -1,15 +1,11 @@
 package com.codeforces.commons.collection;
 
 import com.codeforces.commons.annotation.NonnullElements;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Random;
-import java.util.function.Consumer;
-import java.util.function.DoubleConsumer;
-import java.util.function.IntConsumer;
-import java.util.function.LongConsumer;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -131,6 +127,66 @@ public class ArrayUtil {
     public static long[] sort(long[] array) {
         Arrays.sort(array);
         return array;
+    }
+
+    @Contract(pure = true)
+    public static float sum(float[] array) {
+        float sum = 0.0f;
+        int index = array.length;
+
+        while (--index >= 0) {
+            sum += array[index];
+        }
+
+        return sum;
+    }
+
+    @Contract(pure = true)
+    public static double sum(double[] array) {
+        double sum = 0.0D;
+        int index = array.length;
+
+        while (--index >= 0) {
+            sum += array[index];
+        }
+
+        return sum;
+    }
+
+    @Contract(pure = true)
+    public static short sum(short[] array) {
+        short sum = 0;
+        int index = array.length;
+
+        while (--index >= 0) {
+            sum += array[index];
+        }
+
+        return sum;
+    }
+
+    @Contract(pure = true)
+    public static int sum(int[] array) {
+        int sum = 0;
+        int index = array.length;
+
+        while (--index >= 0) {
+            sum += array[index];
+        }
+
+        return sum;
+    }
+
+    @Contract(pure = true)
+    public static long sum(long[] array) {
+        long sum = 0L;
+        int index = array.length;
+
+        while (--index >= 0) {
+            sum += array[index];
+        }
+
+        return sum;
     }
 
     @SuppressWarnings("OverloadedVarargsMethod")

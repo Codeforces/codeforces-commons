@@ -3,12 +3,11 @@ package com.codeforces.commons.io.internal;
 import com.codeforces.commons.compress.ZipUtil;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
+import com.codeforces.commons.lang.ObjectUtil;
 import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.google.common.primitives.Ints;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.file.TVFS;
+import de.schlichtherle.truezip.file.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -17,15 +16,10 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -133,7 +127,7 @@ public class UnsafeFileUtil {
         ensureDirectoryExists(destination);
 
         try {
-            for (String child : source.list()) {
+            for (String child : ObjectUtil.defaultIfNull(source.list(), ArrayUtils.EMPTY_STRING_ARRAY)) {
                 File nextSource = source instanceof TFile ? new TFile(source, child) : new File(source, child);
                 File nextDestination = new File(destination, child);
 

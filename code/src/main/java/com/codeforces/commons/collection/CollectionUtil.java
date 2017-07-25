@@ -11,13 +11,25 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-import static gnu.trove.impl.Constants.DEFAULT_CAPACITY;
-import static gnu.trove.impl.Constants.DEFAULT_LOAD_FACTOR;
+import static gnu.trove.impl.Constants.*;
 
 /**
  * @author Edvard Davtyan (homo_sapiens@xakep.ru)
  */
 public class CollectionUtil {
+    private static final Class unmodifiableCollectionClass = Collections.unmodifiableCollection(new ArrayList<>()).getClass();
+
+    private static final Class unmodifiableRandomAccessListClass = Collections.unmodifiableList(new ArrayList<>()).getClass();
+    private static final Class unmodifiableListClass = Collections.unmodifiableList(new LinkedList<>()).getClass();
+
+    private static final Class unmodifiableSetClass = Collections.unmodifiableSet(new HashSet<>()).getClass();
+    private static final Class unmodifiableNavigableSetClass = Collections.unmodifiableNavigableSet(new TreeSet<>()).getClass();
+    private static final Class unmodifiableSortedSetClass = Collections.unmodifiableSortedSet(new TreeSet<>()).getClass();
+
+    private static final Class unmodifiableMapClass = Collections.unmodifiableMap(new HashMap<>()).getClass();
+    private static final Class unmodifiableNavigableMapClass = Collections.unmodifiableNavigableMap(new TreeMap<>()).getClass();
+    private static final Class unmodifiableSortedMapClass = Collections.unmodifiableSortedMap(new TreeMap<>()).getClass();
+
     private CollectionUtil() {
         throw new UnsupportedOperationException();
     }
@@ -98,9 +110,9 @@ public class CollectionUtil {
         return newList;
     }
 
-    public static <T1, T2> Collection<T2> convert(Collection<T1> collection, Function<T1, T2> converter) {
+    public static <T1, T2> List<T2> convert(Collection<T1> collection, Function<T1, T2> converter) {
         int count = collection.size();
-        Collection<T2> newCollection = new ArrayList<>(count);
+        List<T2> newCollection = new ArrayList<>(count);
 
         Iterator<T1> iterator = collection.iterator();
         for (int i = 0; i < count; ++i) {
@@ -199,6 +211,54 @@ public class CollectionUtil {
         T temp = list.get(indexA);
         list.set(indexA, list.get(indexB));
         list.set(indexB, temp);
+    }
+
+    @Contract("null -> false")
+    public static boolean isUnmodifiable(@Nullable Collection collection) {
+        if (collection == null) {
+            return false;
+        }
+
+        Class collectionClass = collection.getClass();
+
+        return collectionClass == unmodifiableCollectionClass || collectionClass == unmodifiableRandomAccessListClass
+                || collectionClass == unmodifiableListClass || collectionClass == unmodifiableSetClass
+                || collectionClass == unmodifiableNavigableSetClass || collectionClass == unmodifiableSortedSetClass;
+    }
+
+    @Contract("null -> false")
+    public static boolean isUnmodifiable(@Nullable List list) {
+        if (list == null) {
+            return false;
+        }
+
+        Class listClass = list.getClass();
+
+        return listClass == unmodifiableRandomAccessListClass || listClass == unmodifiableListClass;
+    }
+
+    @Contract("null -> false")
+    public static boolean isUnmodifiable(@Nullable Set set) {
+        if (set == null) {
+            return false;
+        }
+
+        Class setClass = set.getClass();
+
+        return setClass == unmodifiableSetClass || setClass == unmodifiableNavigableSetClass
+                || setClass == unmodifiableSortedSetClass;
+    }
+
+    @Contract("null -> false")
+    public static boolean isUnmodifiable(@Nullable Map map) {
+        if (map == null) {
+            return false;
+        }
+
+        Class mapClass = map.getClass();
+
+        return mapClass == unmodifiableMapClass || mapClass == unmodifiableNavigableMapClass
+                || mapClass == unmodifiableSortedMapClass;
     }
 
     @Nonnull

@@ -13,23 +13,19 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Contract;
 
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
  * @author Mike Mirzayanov
  * @author Maxim Shipko (sladethe@gmail.com)
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class FileUtil {
     public static final long TB_PER_PB = 1024L;
 
@@ -52,7 +48,6 @@ public class FileUtil {
     public static final long BYTES_PER_PB = BYTES_PER_TB * TB_PER_PB;
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("(0|[1-9][01-9]{0,5})(\\.[01-9]{1,5})? ?[KMGTP]?B?");
-
 
     private FileUtil() {
         throw new UnsupportedOperationException();
@@ -607,7 +602,7 @@ public class FileUtil {
         return file;
     }
 
-    @Contract(value = "null -> null; !null -> !null", pure = false)
+    @Contract("null -> null; !null -> !null")
     @Nullable
     public static File hideFileQuietly(@Nullable File file) {
         try {

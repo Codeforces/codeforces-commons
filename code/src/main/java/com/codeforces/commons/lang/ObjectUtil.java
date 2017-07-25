@@ -5,13 +5,11 @@ import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 10.03.2017
+ * Date: 10.03.2017
  */
 @SuppressWarnings("WeakerAccess")
 public class ObjectUtil {
@@ -181,5 +179,11 @@ public class ObjectUtil {
     @Nullable
     public static <T, R extends T> R as(@Nullable T value, @Nonnull Class<R> targetClass) {
         return targetClass.isInstance(value) ? (R) value : null;
+    }
+
+    @SuppressWarnings({"ObjectEquality", "StandardVariableNames"})
+    @Contract(value = "null, null -> true; null, !null -> false; !null, null -> false", pure = true)
+    public static boolean referenceEquals(@Nullable Object a, @Nullable Object b) {
+        return a == b;
     }
 }
