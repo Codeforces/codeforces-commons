@@ -2,15 +2,14 @@ package com.codeforces.commons.io.http;
 
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.text.StringUtil;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -18,7 +17,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 27.11.14
+ * Date: 27.11.14
  */
 public final class HttpResponse {
     private final int code;
@@ -83,15 +82,18 @@ public final class HttpResponse {
         return HttpUtil.getHeader(getHeaders(headerName), headerName, throwIfMany);
     }
 
+    @Contract(pure = true)
     @Nullable
     public IOException getIoException() {
         return ioException;
     }
 
+    @Contract(pure = true)
     public boolean hasIoException() {
         return ioException != null;
     }
 
+    @Contract
     public HttpResponse throwIoException() throws IOException {
         if (ioException != null) {
             throw ioException;
