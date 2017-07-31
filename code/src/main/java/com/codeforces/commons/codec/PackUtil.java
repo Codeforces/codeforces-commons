@@ -30,6 +30,18 @@ public final class PackUtil {
         return (short) value;
     }
 
+    public static short packBytes(byte left, byte right) {
+        return (short) ((left << Byte.SIZE) | (right & 0xff));
+    }
+
+    public static byte unpackLeftByte(short value) {
+        return (byte) (value >> Byte.SIZE);
+    }
+
+    public static byte unpackRightByte(short value) {
+        return (byte) value;
+    }
+
     public static long packFloats(float left, float right) {
         return packInts(Float.floatToRawIntBits(left), Float.floatToRawIntBits(right));
     }

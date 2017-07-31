@@ -83,6 +83,29 @@ public class PackUtilTest {
     }
 
     @Test
+    public void testPackBytesToShort() throws Exception {
+        TByteList bytes = new TByteArrayList();
+
+        for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; ++i) {
+            @SuppressWarnings("NumericCastThatLosesPrecision") byte b = (byte) i;
+            bytes.add(b);
+        }
+
+        for (int i = 0; i < bytes.size(); ++i) {
+            byte left0 = bytes.get(i);
+
+            for (int j = 0; j < bytes.size(); ++j) {
+                byte right0 = bytes.get(j);
+
+                short packedValue = PackUtil.packBytes(left0, right0);
+
+                Assert.assertEquals("Can't unpack left byte.", left0, PackUtil.unpackLeftByte(packedValue));
+                Assert.assertEquals("Can't unpack right byte.", right0, PackUtil.unpackRightByte(packedValue));
+            }
+        }
+    }
+
+    @Test
     public void testPackFloatsToLong() throws Exception {
         @SuppressWarnings("UnsecureRandomNumberGeneration") Random random = new Random();
         TFloatList floats = new TFloatArrayList();
