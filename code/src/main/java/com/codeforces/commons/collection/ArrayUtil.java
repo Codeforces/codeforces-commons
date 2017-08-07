@@ -21,24 +21,21 @@ public class ArrayUtil {
     @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
     @SafeVarargs
     @Nonnull
-    public static <T> T[] join(@Nonnull T[] array, @Nonnull @NonnullElements T[]... arrays) {
+    public static <T> T[] join(@Nonnull Class<T> elementClass, @Nonnull @NonnullElements T[]... arrays) {
         int arrayCount = arrays.length;
-        int joinedLength = array.length;
+        int joinedLength = 0;
 
         for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
             joinedLength += arrays[arrayIndex].length;
         }
 
-        Class<?> componentType = array.getClass().getComponentType();
-        @SuppressWarnings("unchecked") T[] joinedArray = (T[]) Array.newInstance(componentType, joinedLength);
-
-        System.arraycopy(array, 0, joinedArray, 0, array.length);
-        int joinedIndex = array.length;
+        @SuppressWarnings("unchecked") T[] joinedArray = (T[]) Array.newInstance(elementClass, joinedLength);
+        int joinedIndex = 0;
 
         for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
-            T[] otherArray = arrays[arrayIndex];
-            System.arraycopy(otherArray, 0, joinedArray, joinedIndex, otherArray.length);
-            joinedIndex += otherArray.length;
+            T[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
         }
 
         return joinedArray;
@@ -46,23 +43,21 @@ public class ArrayUtil {
 
     @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
     @Nonnull
-    public static float[] join(@Nonnull float[] array, @Nonnull @NonnullElements float[]... arrays) {
+    public static float[] join(@Nonnull @NonnullElements float[]... arrays) {
         int arrayCount = arrays.length;
-        int joinedLength = array.length;
+        int joinedLength = 0;
 
         for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
             joinedLength += arrays[arrayIndex].length;
         }
 
         float[] joinedArray = new float[joinedLength];
-
-        System.arraycopy(array, 0, joinedArray, 0, array.length);
-        int joinedIndex = array.length;
+        int joinedIndex = 0;
 
         for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
-            float[] otherArray = arrays[arrayIndex];
-            System.arraycopy(otherArray, 0, joinedArray, joinedIndex, otherArray.length);
-            joinedIndex += otherArray.length;
+            float[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
         }
 
         return joinedArray;
@@ -70,23 +65,21 @@ public class ArrayUtil {
 
     @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
     @Nonnull
-    public static double[] join(@Nonnull double[] array, @Nonnull @NonnullElements double[]... arrays) {
+    public static double[] join(@Nonnull @NonnullElements double[]... arrays) {
         int arrayCount = arrays.length;
-        int joinedLength = array.length;
+        int joinedLength = 0;
 
         for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
             joinedLength += arrays[arrayIndex].length;
         }
 
         double[] joinedArray = new double[joinedLength];
-
-        System.arraycopy(array, 0, joinedArray, 0, array.length);
-        int joinedIndex = array.length;
+        int joinedIndex = 0;
 
         for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
-            double[] otherArray = arrays[arrayIndex];
-            System.arraycopy(otherArray, 0, joinedArray, joinedIndex, otherArray.length);
-            joinedIndex += otherArray.length;
+            double[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
         }
 
         return joinedArray;
@@ -94,23 +87,21 @@ public class ArrayUtil {
 
     @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
     @Nonnull
-    public static byte[] join(@Nonnull byte[] array, @Nonnull @NonnullElements byte[]... arrays) {
+    public static byte[] join(@Nonnull @NonnullElements byte[]... arrays) {
         int arrayCount = arrays.length;
-        int joinedLength = array.length;
+        int joinedLength = 0;
 
         for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
             joinedLength += arrays[arrayIndex].length;
         }
 
         byte[] joinedArray = new byte[joinedLength];
-
-        System.arraycopy(array, 0, joinedArray, 0, array.length);
-        int joinedIndex = array.length;
+        int joinedIndex = 0;
 
         for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
-            byte[] otherArray = arrays[arrayIndex];
-            System.arraycopy(otherArray, 0, joinedArray, joinedIndex, otherArray.length);
-            joinedIndex += otherArray.length;
+            byte[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
         }
 
         return joinedArray;
@@ -118,23 +109,21 @@ public class ArrayUtil {
 
     @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
     @Nonnull
-    public static short[] join(@Nonnull short[] array, @Nonnull @NonnullElements short[]... arrays) {
+    public static short[] join(@Nonnull @NonnullElements short[]... arrays) {
         int arrayCount = arrays.length;
-        int joinedLength = array.length;
+        int joinedLength = 0;
 
         for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
             joinedLength += arrays[arrayIndex].length;
         }
 
         short[] joinedArray = new short[joinedLength];
-
-        System.arraycopy(array, 0, joinedArray, 0, array.length);
-        int joinedIndex = array.length;
+        int joinedIndex = 0;
 
         for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
-            short[] otherArray = arrays[arrayIndex];
-            System.arraycopy(otherArray, 0, joinedArray, joinedIndex, otherArray.length);
-            joinedIndex += otherArray.length;
+            short[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
         }
 
         return joinedArray;
@@ -142,23 +131,21 @@ public class ArrayUtil {
 
     @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
     @Nonnull
-    public static int[] join(@Nonnull int[] array, @Nonnull @NonnullElements int[]... arrays) {
+    public static int[] join(@Nonnull @NonnullElements int[]... arrays) {
         int arrayCount = arrays.length;
-        int joinedLength = array.length;
+        int joinedLength = 0;
 
         for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
             joinedLength += arrays[arrayIndex].length;
         }
 
         int[] joinedArray = new int[joinedLength];
-
-        System.arraycopy(array, 0, joinedArray, 0, array.length);
-        int joinedIndex = array.length;
+        int joinedIndex = 0;
 
         for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
-            int[] otherArray = arrays[arrayIndex];
-            System.arraycopy(otherArray, 0, joinedArray, joinedIndex, otherArray.length);
-            joinedIndex += otherArray.length;
+            int[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
         }
 
         return joinedArray;
@@ -166,23 +153,43 @@ public class ArrayUtil {
 
     @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
     @Nonnull
-    public static long[] join(@Nonnull long[] array, @Nonnull @NonnullElements long[]... arrays) {
+    public static long[] join(@Nonnull @NonnullElements long[]... arrays) {
         int arrayCount = arrays.length;
-        int joinedLength = array.length;
+        int joinedLength = 0;
 
         for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
             joinedLength += arrays[arrayIndex].length;
         }
 
         long[] joinedArray = new long[joinedLength];
-
-        System.arraycopy(array, 0, joinedArray, 0, array.length);
-        int joinedIndex = array.length;
+        int joinedIndex = 0;
 
         for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
-            long[] otherArray = arrays[arrayIndex];
-            System.arraycopy(otherArray, 0, joinedArray, joinedIndex, otherArray.length);
-            joinedIndex += otherArray.length;
+            long[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
+        }
+
+        return joinedArray;
+    }
+
+    @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
+    @Nonnull
+    public static char[] join(@Nonnull @NonnullElements char[]... arrays) {
+        int arrayCount = arrays.length;
+        int joinedLength = 0;
+
+        for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
+            joinedLength += arrays[arrayIndex].length;
+        }
+
+        char[] joinedArray = new char[joinedLength];
+        int joinedIndex = 0;
+
+        for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
+            char[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
         }
 
         return joinedArray;
