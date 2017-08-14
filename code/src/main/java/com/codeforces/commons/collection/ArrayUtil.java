@@ -18,6 +18,67 @@ public class ArrayUtil {
         throw new UnsupportedOperationException();
     }
 
+    @Nonnull
+    public static <T> T[] join(@Nonnull IntFunction<T[]> generator, @Nonnull @NonnullElements Collection<T[]> arrays) {
+        int joinedLength = 0;
+
+        for (T[] array : arrays) {
+            joinedLength += array.length;
+        }
+
+        T[] joinedArray = generator.apply(joinedLength);
+        int joinedIndex = 0;
+
+        for (T[] array : arrays) {
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
+        }
+
+        return joinedArray;
+    }
+
+    @Nonnull
+    public static <T> T[] join(@Nonnull Class<T> elementClass, @Nonnull @NonnullElements Collection<T[]> arrays) {
+        int joinedLength = 0;
+
+        for (T[] array : arrays) {
+            joinedLength += array.length;
+        }
+
+        @SuppressWarnings("unchecked") T[] joinedArray = (T[]) Array.newInstance(elementClass, joinedLength);
+        int joinedIndex = 0;
+
+        for (T[] array : arrays) {
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
+        }
+
+        return joinedArray;
+    }
+
+    @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
+    @SafeVarargs
+    @Nonnull
+    public static <T> T[] join(@Nonnull IntFunction<T[]> generator, @Nonnull @NonnullElements T[]... arrays) {
+        int arrayCount = arrays.length;
+        int joinedLength = 0;
+
+        for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
+            joinedLength += arrays[arrayIndex].length;
+        }
+
+        T[] joinedArray = generator.apply(joinedLength);
+        int joinedIndex = 0;
+
+        for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
+            T[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
+        }
+
+        return joinedArray;
+    }
+
     @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
     @SafeVarargs
     @Nonnull
