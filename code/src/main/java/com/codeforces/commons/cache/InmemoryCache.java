@@ -1,31 +1,20 @@
 package com.codeforces.commons.cache;
 
-import com.codeforces.commons.cache.annotation.*;
-import com.codeforces.commons.collection.CollectionUtil;
 import com.codeforces.commons.process.ReadWriteEvent;
 import com.codeforces.commons.process.ThreadUtil;
 import com.google.common.base.Preconditions;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.matcher.Matcher;
-import com.google.inject.matcher.Matchers;
-import gnu.trove.map.TObjectIntMap;
-import org.aopalliance.intercept.MethodInvocation;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.naming.ConfigurationException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.*;
-
-import static com.codeforces.commons.math.Math.min;
+import java.util.concurrent.locks.Lock;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 /**
  * Important! Any method should lock section in first case
@@ -70,18 +59,14 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         }
     });
 
-    @SuppressWarnings("unchecked")
     public static <K, V> InmemoryCache<K, V> newInstance() {
-        InmemoryCache inmemoryCache = Guice.createInjector(new InMemoryCacheModule()).getInstance(InmemoryCache.class);
+        InmemoryCache<K, V> inmemoryCache = new InmemoryCache<>();
         inmemoryCache.cacheEntryRemovalThread.setDaemon(true);
         inmemoryCache.cacheEntryRemovalThread.start();
         return inmemoryCache;
     }
 
-    /**
-     * Do not decrease visibility less than default (package) to avoid conflicts with Guice.
-     */
-    InmemoryCache() {
+    private InmemoryCache() {
     }
 
     @Contract(pure = true)
@@ -90,69 +75,70 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         return !stopBackgroundThreads.get();
     }
 
-    @CacheSectionRead
     @Override
-    public boolean contains(@CacheSection @Nonnull String section, @Nonnull K key) {
-        return get(section, key) != null;
-    }
-
-    @CacheSectionWrite
-    @Override
-    public void put(@CacheSection @Nonnull String section, @Nonnull K key, @Nonnull V value) {
-        ensureAndReturnCacheSection(section).put(key, new CacheEntry<>(value));
+    public boolean contains(@Nonnull String section, @Nonnull K key) {
+        return readLockSectionAndReturnResult(section, () -> get(section, key) != null);
     }
 
     @Override
-    public void put(
-            @CacheSection @Nonnull String section, @Nonnull K key, @Nonnull V value, long lifetimeMillis) {
+    public void put(@Nonnull String section, @Nonnull K key, @Nonnull V value) {
+        writeLockSectionAndExecute(section, () -> ensureAndReturnCacheSection(section).put(
+                key, new CacheEntry<>(value)
+        ));
+    }
+
+    @Override
+    public void put(@Nonnull String section, @Nonnull K key, @Nonnull V value, long lifetimeMillis) {
         Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
         Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = ensureAndReturnExpirationInfosSection(section);
         addCacheEntryWithLifetime(section, key, value, lifetimeMillis, cacheEntryByKey, expirationInfos);
     }
 
-    @CacheSectionWrite
     @Override
-    public void putIfAbsent(@CacheSection @Nonnull String section, @Nonnull K key, @Nonnull V value) {
-        Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
-        if (!cacheEntryByKey.containsKey(key)) {
-            cacheEntryByKey.put(key, new CacheEntry<>(value));
-        }
+    public void putIfAbsent(@Nonnull String section, @Nonnull K key, @Nonnull V value) {
+        writeLockSectionAndExecute(section, () -> {
+            Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
+            if (!cacheEntryByKey.containsKey(key)) {
+                cacheEntryByKey.put(key, new CacheEntry<>(value));
+            }
+        });
     }
 
     @Override
-    public void putIfAbsent(
-            @CacheSection @Nonnull String section, @Nonnull K key, @Nonnull V value, long lifetimeMillis) {
+    public void putIfAbsent(@Nonnull String section, @Nonnull K key, @Nonnull V value, long lifetimeMillis) {
         Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
         if (!cacheEntryByKey.containsKey(key)) {
             addCacheEntryWithLifetimeIfAbsent(section, key, value, lifetimeMillis, cacheEntryByKey);
         }
     }
 
-    @CacheSectionRead
     @Override
-    public V get(@CacheSection @Nonnull String section, @Nonnull K key) {
-        CacheEntry<V> cacheEntry = ensureAndReturnCacheSection(section).get(key);
-        return cacheEntry == null ? null : cacheEntry.getValueOrNull();
+    public V get(@Nonnull String section, @Nonnull K key) {
+        return readLockSectionAndReturnResult(section, () -> {
+            CacheEntry<V> cacheEntry = ensureAndReturnCacheSection(section).get(key);
+            return cacheEntry == null ? null : cacheEntry.getValueOrNull();
+        });
     }
 
-    @CacheSectionWrite
     @Override
-    public boolean remove(@CacheSection @Nonnull String section, @Nonnull K key) {
-        return ensureAndReturnCacheSection(section).remove(key) != null;
+    public boolean remove(@Nonnull String section, @Nonnull K key) {
+        return writeLockSectionAndReturnResult(section, () -> ensureAndReturnCacheSection(section).remove(key) != null);
     }
 
-    @CacheSectionWrite
     @Override
-    public void clearSection(@CacheSection @Nonnull String section) {
-        ensureAndReturnCacheSection(section).clear();
-        ensureAndReturnExpirationInfosSection(section).clear();
+    public void clearSection(@Nonnull String section) {
+        writeLockSectionAndExecute(section, () -> {
+            ensureAndReturnCacheSection(section).clear();
+            ensureAndReturnExpirationInfosSection(section).clear();
+        });
     }
 
-    @CacheWrite
     @Override
     public void clear() {
-        cacheEntryExpirationInfosBySection.clear();
-        cacheEntryByKeyBySection.clear();
+        writeLockCacheAndExecute(() -> {
+            cacheEntryExpirationInfosBySection.clear();
+            cacheEntryByKeyBySection.clear();
+        });
     }
 
     @Override
@@ -162,74 +148,67 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         }
     }
 
-    @SuppressWarnings("WeakerAccess")
-    Map<K, CacheEntry<V>> ensureAndReturnCacheSection(@CacheSection String section) {
+    private Map<K, CacheEntry<V>> ensureAndReturnCacheSection(String section) {
         Map<K, CacheEntry<V>> cacheEntryByKey = getCacheSection(section);
         return cacheEntryByKey == null ? createCacheSection(section) : cacheEntryByKey;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheRead
-    Map<K, CacheEntry<V>> getCacheSection(@CacheSection String section) {
-        return cacheEntryByKeyBySection.get(section);
+    private Map<K, CacheEntry<V>> getCacheSection(String section) {
+        return readLockCacheAndReturnResult(() -> cacheEntryByKeyBySection.get(section));
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheWrite
-    Map<K, CacheEntry<V>> createCacheSection(@CacheSection String section) {
-        return cacheEntryByKeyBySection.computeIfAbsent(section, __ -> new HashMap<>());
+    private Map<K, CacheEntry<V>> createCacheSection(String section) {
+        return writeLockCacheAndReturnResult(() -> cacheEntryByKeyBySection.computeIfAbsent(
+                section, __ -> new HashMap<>()
+        ));
     }
 
-    @SuppressWarnings("WeakerAccess")
-    Queue<CacheEntryExpirationInfo<K, V>> ensureAndReturnExpirationInfosSection(@CacheSection String section) {
+    private Queue<CacheEntryExpirationInfo<K, V>> ensureAndReturnExpirationInfosSection(String section) {
         Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = getExpirationInfosBySection(section);
         return expirationInfos == null ? createExpirationInfosSection(section) : expirationInfos;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheRead
-    Queue<CacheEntryExpirationInfo<K, V>> getExpirationInfosBySection(@CacheSection String section) {
-        return cacheEntryExpirationInfosBySection.get(section);
+    private Queue<CacheEntryExpirationInfo<K, V>> getExpirationInfosBySection(String section) {
+        return readLockCacheAndReturnResult(() -> cacheEntryExpirationInfosBySection.get(section));
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheWrite
-    Queue<CacheEntryExpirationInfo<K, V>> createExpirationInfosSection(@CacheSection String section) {
-        return cacheEntryExpirationInfosBySection.computeIfAbsent(section, __ -> new PriorityQueue<>());
+    private Queue<CacheEntryExpirationInfo<K, V>> createExpirationInfosSection(String section) {
+        return writeLockCacheAndReturnResult(() -> cacheEntryExpirationInfosBySection.computeIfAbsent(
+                section, __ -> new PriorityQueue<>()
+        ));
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheSectionWrite
-    void addCacheEntryWithLifetime(
-            @CacheSection String section, K key, V value, long lifetimeMillis,
+    private void addCacheEntryWithLifetime(
+            String section, K key, V value, long lifetimeMillis,
             Map<K, CacheEntry<V>> valueByKey, Queue<CacheEntryExpirationInfo<K, V>> expirationInfos) {
-        long expirationTimeMillis = System.currentTimeMillis() + lifetimeMillis;
-
-        CacheEntry<V> cacheEntry = new CacheEntry<>(value, expirationTimeMillis);
-        valueByKey.put(key, cacheEntry);
-        expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, cacheEntry, expirationTimeMillis));
-
-        cacheEntryRemovalThread.interrupt();
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    @CacheSectionWrite
-    void addCacheEntryWithLifetimeIfAbsent(
-            @CacheSection String section, K key, V value, long lifetimeMillis, Map<K, CacheEntry<V>> cacheEntryByKey) {
-        if (!cacheEntryByKey.containsKey(key)) {
-            Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = ensureAndReturnExpirationInfosSection(section);
+        writeLockSectionAndExecute(section, () -> {
             long expirationTimeMillis = System.currentTimeMillis() + lifetimeMillis;
 
             CacheEntry<V> cacheEntry = new CacheEntry<>(value, expirationTimeMillis);
-            cacheEntryByKey.put(key, cacheEntry);
+            valueByKey.put(key, cacheEntry);
             expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, cacheEntry, expirationTimeMillis));
 
             cacheEntryRemovalThread.interrupt();
-        }
+        });
     }
 
-    @SuppressWarnings("WeakerAccess")
-    final boolean hasExpirationInfos() {
+    private void addCacheEntryWithLifetimeIfAbsent(
+            String section, K key, V value, long lifetimeMillis, Map<K, CacheEntry<V>> cacheEntryByKey) {
+        writeLockSectionAndExecute(section, () -> {
+            if (!cacheEntryByKey.containsKey(key)) {
+                Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = ensureAndReturnExpirationInfosSection(section);
+                long expirationTimeMillis = System.currentTimeMillis() + lifetimeMillis;
+
+                CacheEntry<V> cacheEntry = new CacheEntry<>(value, expirationTimeMillis);
+                cacheEntryByKey.put(key, cacheEntry);
+                expirationInfos.add(new CacheEntryExpirationInfo<>(section, key, cacheEntry, expirationTimeMillis));
+
+                cacheEntryRemovalThread.interrupt();
+            }
+        });
+    }
+
+    private boolean hasExpirationInfos() {
         String[] expirationInfoSections = getExpirationInfoSections();
         int sectionIndex = expirationInfoSections.length;
 
@@ -242,15 +221,12 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         return false;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheSectionRead
-    boolean hasExpirationInfosInSection(@CacheSection String section) {
-        return !ensureAndReturnExpirationInfosSection(section).isEmpty();
+    private boolean hasExpirationInfosInSection(String section) {
+        return readLockSectionAndReturnResult(section, () -> !ensureAndReturnExpirationInfosSection(section).isEmpty());
     }
 
-    @SuppressWarnings("WeakerAccess")
     @Nullable
-    final CacheEntryExpirationInfo<K, V> getFirstExpirationInfo() {
+    private CacheEntryExpirationInfo<K, V> getFirstExpirationInfo() {
         CacheEntryExpirationInfo<K, V> firstExpirationInfo = null;
 
         String[] expirationInfoSections = getExpirationInfoSections();
@@ -269,38 +245,104 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         return firstExpirationInfo;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheSectionRead
-    CacheEntryExpirationInfo<K, V> getFirstExpirationInfoInSection(@CacheSection String section) {
-        return ensureAndReturnExpirationInfosSection(section).peek();
+    private CacheEntryExpirationInfo<K, V> getFirstExpirationInfoInSection(String section) {
+        return readLockSectionAndReturnResult(section, () -> ensureAndReturnExpirationInfosSection(section).peek());
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheRead
-    String[] getExpirationInfoSections() {
-        Set<String> sections = cacheEntryExpirationInfosBySection.keySet();
-        return sections.toArray(new String[sections.size()]);
+    private String[] getExpirationInfoSections() {
+        return readLockCacheAndReturnResult(() -> {
+            Set<String> sections = cacheEntryExpirationInfosBySection.keySet();
+            return sections.toArray(new String[sections.size()]);
+        });
     }
 
-    @SuppressWarnings("WeakerAccess")
-    @CacheSectionWrite
-    final void removeCacheEntryWithLifetimeIfNeeded(
-            @CacheSection String section, CacheEntryExpirationInfo<K, V> expirationInfo) {
-        Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
-        CacheEntry<V> cacheEntry = cacheEntryByKey.get(expirationInfo.getKey());
-        if (cacheEntry != null && cacheEntry.getExpirationTimeMillis() != -1
-                && cacheEntry.equals(expirationInfo.getEntry())) {
-            cacheEntryByKey.remove(expirationInfo.getKey());
-        }
-        ensureAndReturnExpirationInfosSection(section).poll();
+    private void removeCacheEntryWithLifetimeIfNeeded(String section, CacheEntryExpirationInfo<K, V> expirationInfo) {
+        writeLockSectionAndExecute(section, () -> {
+            Map<K, CacheEntry<V>> cacheEntryByKey = ensureAndReturnCacheSection(section);
+            CacheEntry<V> cacheEntry = cacheEntryByKey.get(expirationInfo.getKey());
+            if (cacheEntry != null && cacheEntry.getExpirationTimeMillis() != -1
+                    && cacheEntry.equals(expirationInfo.getEntry())) {
+                cacheEntryByKey.remove(expirationInfo.getKey());
+            }
+            ensureAndReturnExpirationInfosSection(section).poll();
+        });
     }
 
-    private ReadWriteEvent getSectionEvent(@CacheSection String section) {
+    private ReadWriteEvent getSectionEvent(String section) {
         return eventBySection.computeIfAbsent(section, __ -> new ReadWriteEvent());
     }
 
-    @SuppressWarnings("PackageVisibleInnerClass")
-    static final class CacheEntry<V> {
+    private void readLockSectionAndExecute(String section, Runnable invocation) {
+        lockAndExecute(invocation, getSectionEvent(section).getReadLock());
+    }
+
+    private void writeLockSectionAndExecute(String section, Runnable invocation) {
+        lockAndExecute(invocation, getSectionEvent(section).getWriteLock());
+    }
+
+    private <T> T readLockSectionAndReturnResult(String section, Supplier<T> invocation) {
+        return lockAndReturnResult(invocation, getSectionEvent(section).getReadLock());
+    }
+
+    private <T> T writeLockSectionAndReturnResult(String section, Supplier<T> invocation) {
+        return lockAndReturnResult(invocation, getSectionEvent(section).getWriteLock());
+    }
+
+    private boolean readLockSectionAndReturnResult(String section, BooleanSupplier invocation) {
+        return lockAndReturnResult(invocation, getSectionEvent(section).getReadLock());
+    }
+
+    private boolean writeLockSectionAndReturnResult(String section, BooleanSupplier invocation) {
+        return lockAndReturnResult(invocation, getSectionEvent(section).getWriteLock());
+    }
+
+    private void readLockCacheAndExecute(Runnable invocation) {
+        lockAndExecute(invocation, cacheEvent.getReadLock());
+    }
+
+    private void writeLockCacheAndExecute(Runnable invocation) {
+        lockAndExecute(invocation, cacheEvent.getWriteLock());
+    }
+
+    private <T> T readLockCacheAndReturnResult(Supplier<T> invocation) {
+        return lockAndReturnResult(invocation, cacheEvent.getReadLock());
+    }
+
+    private <T> T writeLockCacheAndReturnResult(Supplier<T> invocation) {
+        return lockAndReturnResult(invocation, cacheEvent.getWriteLock());
+    }
+
+    private static void lockAndExecute(Runnable invocation, Lock lock) {
+        lock.lock();
+
+        try {
+            invocation.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private static <T> T lockAndReturnResult(Supplier<T> invocation, Lock lock) {
+        lock.lock();
+
+        try {
+            return invocation.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private static boolean lockAndReturnResult(BooleanSupplier invocation, Lock lock) {
+        lock.lock();
+
+        try {
+            return invocation.getAsBoolean();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private static final class CacheEntry<V> {
         private final V value;
 
         /**
@@ -334,8 +376,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         }
     }
 
-    @SuppressWarnings("PackageVisibleInnerClass")
-    static final class CacheEntryExpirationInfo<K, V> implements Comparable<CacheEntryExpirationInfo<K, V>> {
+    private static final class CacheEntryExpirationInfo<K, V> implements Comparable<CacheEntryExpirationInfo<K, V>> {
         private final String section;
         private final K key;
         private final CacheEntry<V> entry;
@@ -396,120 +437,6 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
             result = 32323 * result + section.hashCode();
             result = 32323 * result + key.hashCode();
             return result;
-        }
-    }
-
-    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
-    private static final class InMemoryCacheModule extends AbstractModule {
-        private static final TObjectIntMap<Method> sectionParameterIndexByMethod = CollectionUtil.newTObjectIntMap();
-        private static final ReadWriteLock sectionParameterIndexesLock = new ReentrantReadWriteLock();
-
-        @SuppressWarnings("OverlyLongMethod")
-        @Override
-        protected void configure() {
-            Matcher<Object> classMatcher = Matchers.only(InmemoryCache.class);
-
-            bindInterceptor(classMatcher, Matchers.annotatedWith(CacheSectionRead.class), invocation -> {
-                String section = getSectionParameterValue(invocation);
-                InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
-
-                return proceedLocked(invocation, inmemoryCache.getSectionEvent(section).getReadLock());
-            });
-
-            bindInterceptor(classMatcher, Matchers.annotatedWith(CacheRead.class), invocation -> {
-                InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
-
-                return proceedLocked(invocation, inmemoryCache.cacheEvent.getReadLock());
-            });
-
-            bindInterceptor(classMatcher, Matchers.annotatedWith(CacheSectionWrite.class), invocation -> {
-                String section = getSectionParameterValue(invocation);
-                InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
-
-                return proceedLocked(invocation, inmemoryCache.getSectionEvent(section).getWriteLock());
-            });
-
-            bindInterceptor(classMatcher, Matchers.annotatedWith(CacheWrite.class), invocation -> {
-                InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
-
-                return proceedLocked(invocation, inmemoryCache.cacheEvent.getWriteLock());
-            });
-        }
-
-        private static Object proceedLocked(MethodInvocation invocation, Lock lock) throws Throwable {
-            lock.lock();
-
-            try {
-                return invocation.proceed();
-            } finally {
-                lock.unlock();
-            }
-        }
-
-        private static String getSectionParameterValue(MethodInvocation invocation) throws ConfigurationException {
-            int sectionParameterIndex = getSectionParameterIndex(invocation.getMethod());
-
-            if (sectionParameterIndex == -1) {
-                String message = String.format(
-                        "Method '%s' has no parameter annotated with '@%s'.", invocation.getMethod(), CacheSection.class
-                );
-                logger.fatal(message);
-                throw new ConfigurationException(message);
-            }
-
-            return (String) invocation.getArguments()[sectionParameterIndex];
-        }
-
-        @SuppressWarnings("ForLoopWithMissingComponent")
-        private static int getSectionParameterIndex(Method method) {
-            int sectionParameterIndex;
-
-            Lock readLock = sectionParameterIndexesLock.readLock();
-            readLock.lock();
-            try {
-                sectionParameterIndex = sectionParameterIndexByMethod.get(method);
-            } finally {
-                readLock.unlock();
-            }
-
-            if (sectionParameterIndex == sectionParameterIndexByMethod.getNoEntryValue()) {
-                Class<?>[] parameterTypes = method.getParameterTypes();
-                Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-                sectionParameterIndex = -1;
-
-                int parameterIndex = min(parameterTypes.length, parameterAnnotations.length);
-
-                while (--parameterIndex >= 0) {
-                    if (parameterTypes[parameterIndex] != String.class) {
-                        continue;
-                    }
-
-                    Annotation[] annotations = parameterAnnotations[parameterIndex];
-                    boolean sectionAnnotation = false;
-
-                    for (int annotationIndex = annotations.length; --annotationIndex >= 0; ) {
-                        if (annotations[annotationIndex].annotationType() == CacheSection.class) {
-                            sectionAnnotation = true;
-                            break;
-                        }
-                    }
-
-                    if (sectionAnnotation) {
-                        sectionParameterIndex = parameterIndex;
-                        break;
-                    }
-                }
-
-                Lock writeLock = sectionParameterIndexesLock.writeLock();
-                writeLock.lock();
-                try {
-                    sectionParameterIndexByMethod.put(method, sectionParameterIndex);
-                } finally {
-                    writeLock.unlock();
-                }
-            }
-
-            return sectionParameterIndex;
         }
     }
 }

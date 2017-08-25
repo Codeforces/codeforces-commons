@@ -3,6 +3,7 @@ package com.codeforces.commons.cache;
 import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.time.TimeUtil;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.Assert;
 
 import javax.annotation.Nonnull;
@@ -32,8 +33,6 @@ final class CacheTestUtil {
                 checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
             }
         });
-
-        System.gc();
 
         determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues (after warm up)", () -> {
             for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
@@ -78,8 +77,6 @@ final class CacheTestUtil {
         if (unexpectedThrowable.get() != null) {
             throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
         }
-
-        System.gc();
 
         determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues (after warm up)", () -> executeConcurrentStoringOfValues(
                 cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
@@ -239,18 +236,21 @@ final class CacheTestUtil {
     }
 
     public static CachePath[] getCachePaths(int sectionCount, int keyPerSectionCount, int totalKeyCount) {
+        @SuppressWarnings("UnsecureRandomNumberGeneration") Random random = new Random();
+        byte[] buffer = new byte[16];
+
         Map<String, List<String>> keysBySection = new HashMap<>(sectionCount);
 
         for (int sectionIndex = 0; sectionIndex < sectionCount; ++sectionIndex) {
             String section;
             do {
-                section = RandomUtil.getRandomToken();
+                section = getRandomToken(random, buffer);
             } while (keysBySection.containsKey(section));
 
             Set<String> keys = new HashSet<>(keyPerSectionCount);
 
             while (keys.size() < keyPerSectionCount) {
-                keys.add(RandomUtil.getRandomToken());
+                keys.add(getRandomToken(random, buffer));
             }
 
             keysBySection.put(section, new ArrayList<>(keys));
@@ -271,14 +271,22 @@ final class CacheTestUtil {
         return cachePaths.toArray(new CachePath[totalKeyCount]);
     }
 
-    public static void determineOperationTime(String operationName, Runnable operation) {
+    @Nonnull
+    private static String getRandomToken(@Nonnull Random random, @Nonnull byte[] buffer) {
+        random.nextBytes(buffer);
+        return Hex.encodeHexString(buffer);
+    }
+
+    public static void determineOperationTime(@Nonnull String operationName, @Nonnull Runnable operation) {
+        System.gc();
+        ThreadUtil.sleep(1L);
         System.gc();
         long startTime = System.nanoTime();
         operation.run();
         long finishTime = System.nanoTime();
         System.out.printf(
                 "Operation '%s' takes %.3f ms.%n",
-                operationName, (finishTime - startTime) / 1000000.0
+                operationName, (finishTime - startTime) / 1_000_000.0D
         );
         System.out.flush();
     }

@@ -11,7 +11,7 @@ import org.junit.Test;
 @SuppressWarnings({"JUnitTestMethodWithNoAssertions"})
 public class InmemoryCacheTest {
     private static final int THREAD_COUNT = 10 * Runtime.getRuntime().availableProcessors();
-    private static final int SLEEPING_THREAD_COUNT = 100 * Runtime.getRuntime().availableProcessors();
+    private static final int SLEEPING_THREAD_COUNT = 1000;
 
     private static final int SECTION_COUNT = 50;
     private static final int KEY_PER_SECTION_COUNT = 50;
