@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 29.12.12
+ * Date: 29.12.12
  */
 @SuppressWarnings({"CallToSystemGC", "ThrowableResultOfMethodCallIgnored", "ErrorNotRethrown"})
 final class CacheTestUtil {
@@ -99,7 +99,12 @@ final class CacheTestUtil {
         AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
         determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValuesWithLifetime", () -> {
-            ExecutorService executorService = Executors.newFixedThreadPool(sleepingThreadCount, ThreadUtil.getCustomPoolThreadFactory(thread -> thread.setUncaughtExceptionHandler((t, e) -> unexpectedThrowable.set(e))));
+            ExecutorService executorService = Executors.newFixedThreadPool(
+                    sleepingThreadCount,
+                    ThreadUtil.getCustomPoolThreadFactory(
+                            thread -> thread.setUncaughtExceptionHandler((t, e) -> unexpectedThrowable.set(e))
+                    )
+            );
 
             AtomicInteger pathIndexCounter = new AtomicInteger();
 

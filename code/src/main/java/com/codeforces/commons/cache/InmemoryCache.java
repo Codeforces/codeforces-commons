@@ -1,13 +1,15 @@
 package com.codeforces.commons.cache;
 
 import com.codeforces.commons.cache.annotation.*;
+import com.codeforces.commons.collection.CollectionUtil;
 import com.codeforces.commons.process.ReadWriteEvent;
 import com.codeforces.commons.process.ThreadUtil;
 import com.google.common.base.Preconditions;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.matcher.Matcher;
 import com.google.inject.matcher.Matchers;
-import org.aopalliance.intercept.MethodInterceptor;
+import gnu.trove.map.TObjectIntMap;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
@@ -21,16 +23,16 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.*;
+
+import static com.codeforces.commons.math.Math.min;
 
 /**
  * Important! Any method should lock section in first case
  * and only then lock cache (if both locks are needed) to avoid deadlocks.
  *
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 29.03.2012
+ * Date: 29.03.2012
  */
 public class InmemoryCache<K, V> extends Cache<K, V> {
     private static final Logger logger = Logger.getLogger(InmemoryCache.class);
@@ -49,9 +51,10 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
                 if (hasExpirationInfos()) {
                     CacheEntryExpirationInfo<K, V> expirationInfo = Preconditions.checkNotNull(getFirstExpirationInfo());
                     long currentTimeMillis = System.currentTimeMillis();
+                    long expirationTimeMillis = expirationInfo.getExpirationTimeMillis();
 
-                    if (currentTimeMillis < expirationInfo.getExpirationTimeMillis()) {
-                        ThreadUtil.sleep(expirationInfo.getExpirationTimeMillis() - currentTimeMillis);
+                    if (currentTimeMillis < expirationTimeMillis) {
+                        ThreadUtil.sleep(expirationTimeMillis - currentTimeMillis);
                     } else {
                         removeCacheEntryWithLifetimeIfNeeded(expirationInfo.getSection(), expirationInfo);
                     }
@@ -129,12 +132,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     @Override
     public V get(@CacheSection @Nonnull String section, @Nonnull K key) {
         CacheEntry<V> cacheEntry = ensureAndReturnCacheSection(section).get(key);
-        if (cacheEntry == null || cacheEntry.getExpirationTimeMillis() != -1
-                && cacheEntry.getExpirationTimeMillis() < System.currentTimeMillis()) {
-            return null;
-        } else {
-            return cacheEntry.getValue();
-        }
+        return cacheEntry == null ? null : cacheEntry.getValueOrNull();
     }
 
     @CacheSectionWrite
@@ -167,11 +165,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     @SuppressWarnings("WeakerAccess")
     Map<K, CacheEntry<V>> ensureAndReturnCacheSection(@CacheSection String section) {
         Map<K, CacheEntry<V>> cacheEntryByKey = getCacheSection(section);
-        if (cacheEntryByKey == null) {
-            return createCacheSection(section);
-        } else {
-            return cacheEntryByKey;
-        }
+        return cacheEntryByKey == null ? createCacheSection(section) : cacheEntryByKey;
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -189,11 +183,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     @SuppressWarnings("WeakerAccess")
     Queue<CacheEntryExpirationInfo<K, V>> ensureAndReturnExpirationInfosSection(@CacheSection String section) {
         Queue<CacheEntryExpirationInfo<K, V>> expirationInfos = getExpirationInfosBySection(section);
-        if (expirationInfos == null) {
-            return createExpirationInfosSection(section);
-        } else {
-            return expirationInfos;
-        }
+        return expirationInfos == null ? createExpirationInfosSection(section) : expirationInfos;
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -241,9 +231,9 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     @SuppressWarnings("WeakerAccess")
     final boolean hasExpirationInfos() {
         String[] expirationInfoSections = getExpirationInfoSections();
-        int sectionsCount = expirationInfoSections.length;
+        int sectionIndex = expirationInfoSections.length;
 
-        for (int sectionIndex = 0; sectionIndex < sectionsCount; ++sectionIndex) {
+        while (--sectionIndex >= 0) {
             if (hasExpirationInfosInSection(expirationInfoSections[sectionIndex])) {
                 return true;
             }
@@ -306,14 +296,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     }
 
     private ReadWriteEvent getSectionEvent(@CacheSection String section) {
-        ReadWriteEvent sectionEvent = eventBySection.get(section);
-
-        if (sectionEvent == null) {
-            eventBySection.putIfAbsent(section, new ReadWriteEvent());
-            sectionEvent = eventBySection.get(section);
-        }
-
-        return sectionEvent;
+        return eventBySection.computeIfAbsent(section, __ -> new ReadWriteEvent());
     }
 
     @SuppressWarnings("PackageVisibleInnerClass")
@@ -334,12 +317,20 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
             this.expirationTimeMillis = expirationTimeMillis;
         }
 
+        @Contract(pure = true)
         public V getValue() {
             return value;
         }
 
+        @Contract(pure = true)
         public long getExpirationTimeMillis() {
             return expirationTimeMillis;
+        }
+
+        @Nullable
+        public V getValueOrNull() {
+            @SuppressWarnings("LocalVariableHidesMemberVariable") long expirationTimeMillis = this.expirationTimeMillis;
+            return expirationTimeMillis == -1 || expirationTimeMillis >= System.currentTimeMillis() ? value : null;
         }
     }
 
@@ -377,15 +368,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         @Contract(pure = true)
         @Override
         public int compareTo(@Nonnull CacheEntryExpirationInfo<K, V> o) {
-            if (expirationTimeMillis > o.expirationTimeMillis) {
-                return 1;
-            }
-
-            if (expirationTimeMillis < o.expirationTimeMillis) {
-                return -1;
-            }
-
-            return 0;
+            return Long.compare(expirationTimeMillis, o.expirationTimeMillis);
         }
 
         @Override
@@ -418,103 +401,55 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
 
     @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
     private static final class InMemoryCacheModule extends AbstractModule {
-        private static final Map<Method, Annotation[][]> parameterAnnotationsByMethod = new HashMap<>();
-        private static final ReadWriteLock parameterAnnotationsLock = new ReentrantReadWriteLock();
+        private static final TObjectIntMap<Method> sectionParameterIndexByMethod = CollectionUtil.newTObjectIntMap();
+        private static final ReadWriteLock sectionParameterIndexesLock = new ReentrantReadWriteLock();
 
         @SuppressWarnings("OverlyLongMethod")
         @Override
         protected void configure() {
-            bindInterceptor(
-                    Matchers.only(InmemoryCache.class), Matchers.annotatedWith(CacheSectionRead.class),
-                    (MethodInterceptor) invocation -> {
-                        String section = getSectionParameterValue(invocation);
-                        InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
-                        ReadWriteEvent sectionEvent = inmemoryCache.getSectionEvent(section);
+            Matcher<Object> classMatcher = Matchers.only(InmemoryCache.class);
 
-                        Lock sectionReadLock = sectionEvent.getReadLock();
-                        sectionReadLock.lock();
+            bindInterceptor(classMatcher, Matchers.annotatedWith(CacheSectionRead.class), invocation -> {
+                String section = getSectionParameterValue(invocation);
+                InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
 
-                        try {
-                            return invocation.proceed();
-                        } finally {
-                            sectionReadLock.unlock();
-                        }
-                    }
-            );
+                return proceedLocked(invocation, inmemoryCache.getSectionEvent(section).getReadLock());
+            });
 
-            bindInterceptor(
-                    Matchers.only(InmemoryCache.class), Matchers.annotatedWith(CacheRead.class),
-                    (MethodInterceptor) invocation -> {
-                        InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
-                        Lock cacheReadLock = inmemoryCache.cacheEvent.getReadLock();
-                        cacheReadLock.lock();
+            bindInterceptor(classMatcher, Matchers.annotatedWith(CacheRead.class), invocation -> {
+                InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
 
-                        try {
-                            return invocation.proceed();
-                        } finally {
-                            cacheReadLock.unlock();
-                        }
-                    }
-            );
+                return proceedLocked(invocation, inmemoryCache.cacheEvent.getReadLock());
+            });
 
-            bindInterceptor(
-                    Matchers.only(InmemoryCache.class), Matchers.annotatedWith(CacheSectionWrite.class),
-                    (MethodInterceptor) invocation -> {
-                        String section = getSectionParameterValue(invocation);
-                        InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
-                        ReadWriteEvent sectionEvent = inmemoryCache.getSectionEvent(section);
+            bindInterceptor(classMatcher, Matchers.annotatedWith(CacheSectionWrite.class), invocation -> {
+                String section = getSectionParameterValue(invocation);
+                InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
 
-                        Lock sectionWriteLock = sectionEvent.getWriteLock();
-                        sectionWriteLock.lock();
+                return proceedLocked(invocation, inmemoryCache.getSectionEvent(section).getWriteLock());
+            });
 
-                        try {
-                            return invocation.proceed();
-                        } finally {
-                            sectionWriteLock.unlock();
-                        }
-                    }
-            );
+            bindInterceptor(classMatcher, Matchers.annotatedWith(CacheWrite.class), invocation -> {
+                InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
 
-            bindInterceptor(
-                    Matchers.only(InmemoryCache.class), Matchers.annotatedWith(CacheWrite.class),
-                    (MethodInterceptor) invocation -> {
-                        InmemoryCache inmemoryCache = (InmemoryCache) invocation.getThis();
-                        Lock cacheWriteLock = inmemoryCache.cacheEvent.getWriteLock();
-                        cacheWriteLock.lock();
+                return proceedLocked(invocation, inmemoryCache.cacheEvent.getWriteLock());
+            });
+        }
 
-                        try {
-                            return invocation.proceed();
-                        } finally {
-                            cacheWriteLock.unlock();
-                        }
-                    }
-            );
+        private static Object proceedLocked(MethodInvocation invocation, Lock lock) throws Throwable {
+            lock.lock();
+
+            try {
+                return invocation.proceed();
+            } finally {
+                lock.unlock();
+            }
         }
 
         private static String getSectionParameterValue(MethodInvocation invocation) throws ConfigurationException {
-            Annotation[][] parameterAnnotations = getParameterAnnotations(invocation.getMethod());
-            int parameterCount = parameterAnnotations.length;
-            Integer sectionParameterIndex = null;
+            int sectionParameterIndex = getSectionParameterIndex(invocation.getMethod());
 
-            for (int parameterIndex = 0; parameterIndex < parameterCount; ++parameterIndex) {
-                Annotation[] annotations = parameterAnnotations[parameterIndex];
-                int annotationCount = annotations.length;
-                boolean sectionAnnotation = false;
-
-                for (int annotationIndex = 0; annotationIndex < annotationCount; ++annotationIndex) {
-                    if (annotations[annotationIndex].annotationType() == CacheSection.class) {
-                        sectionAnnotation = true;
-                        break;
-                    }
-                }
-
-                if (sectionAnnotation) {
-                    sectionParameterIndex = parameterIndex;
-                    break;
-                }
-            }
-
-            if (sectionParameterIndex == null) {
+            if (sectionParameterIndex == -1) {
                 String message = String.format(
                         "Method '%s' has no parameter annotated with '@%s'.", invocation.getMethod(), CacheSection.class
                 );
@@ -525,30 +460,56 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
             return (String) invocation.getArguments()[sectionParameterIndex];
         }
 
-        private static Annotation[][] getParameterAnnotations(Method method) {
-            Annotation[][] parameterAnnotations;
+        @SuppressWarnings("ForLoopWithMissingComponent")
+        private static int getSectionParameterIndex(Method method) {
+            int sectionParameterIndex;
 
-            Lock readLock = parameterAnnotationsLock.readLock();
+            Lock readLock = sectionParameterIndexesLock.readLock();
             readLock.lock();
             try {
-                parameterAnnotations = parameterAnnotationsByMethod.get(method);
+                sectionParameterIndex = sectionParameterIndexByMethod.get(method);
             } finally {
                 readLock.unlock();
             }
 
-            if (parameterAnnotations == null) {
-                parameterAnnotations = method.getParameterAnnotations();
+            if (sectionParameterIndex == sectionParameterIndexByMethod.getNoEntryValue()) {
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+                sectionParameterIndex = -1;
 
-                Lock writeLock = parameterAnnotationsLock.writeLock();
+                int parameterIndex = min(parameterTypes.length, parameterAnnotations.length);
+
+                while (--parameterIndex >= 0) {
+                    if (parameterTypes[parameterIndex] != String.class) {
+                        continue;
+                    }
+
+                    Annotation[] annotations = parameterAnnotations[parameterIndex];
+                    boolean sectionAnnotation = false;
+
+                    for (int annotationIndex = annotations.length; --annotationIndex >= 0; ) {
+                        if (annotations[annotationIndex].annotationType() == CacheSection.class) {
+                            sectionAnnotation = true;
+                            break;
+                        }
+                    }
+
+                    if (sectionAnnotation) {
+                        sectionParameterIndex = parameterIndex;
+                        break;
+                    }
+                }
+
+                Lock writeLock = sectionParameterIndexesLock.writeLock();
                 writeLock.lock();
                 try {
-                    parameterAnnotationsByMethod.put(method, parameterAnnotations);
+                    sectionParameterIndexByMethod.put(method, sectionParameterIndex);
                 } finally {
                     writeLock.unlock();
                 }
             }
 
-            return parameterAnnotations;
+            return sectionParameterIndex;
         }
     }
 }
