@@ -12,9 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 
 /**
  * @author Mike Mirzayanov
@@ -141,6 +139,30 @@ public class IoUtil {
 
     public static long copy(InputStream inputStream, OutputStream outputStream) throws IOException {
         return copy(inputStream, outputStream, true, false);
+    }
+
+    public static boolean contentEquals(@Nonnull InputStream inputA, @Nonnull InputStream inputB) throws IOException {
+        if (inputA.equals(inputB)) {
+            return true;
+        }
+
+        if (!(inputA instanceof BufferedInputStream)) {
+            inputA = new BufferedInputStream(inputA, BUFFER_SIZE);
+        }
+
+        if (!(inputB instanceof BufferedInputStream)) {
+            inputB = new BufferedInputStream(inputB, BUFFER_SIZE);
+        }
+
+        int value;
+
+        while ((value = inputA.read()) != IOUtils.EOF) {
+            if (value != inputB.read()) {
+                return false;
+            }
+        }
+
+        return inputB.read() == IOUtils.EOF;
     }
 
     public static void closeQuietly(@Nullable AutoCloseable closeable) {

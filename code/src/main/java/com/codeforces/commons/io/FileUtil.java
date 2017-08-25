@@ -9,7 +9,6 @@ import com.google.common.base.Preconditions;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Contract;
 
@@ -730,47 +729,52 @@ public class FileUtil {
             return true;
         }
 
-        if (fileA.isFile() && fileB.isFile()) {
-            InputStream inputStreamA = null;
-            InputStream inputStreamB = null;
+        if (fileA.isFile()) {
+            if (fileB.isFile()) {
+                InputStream inputStreamA = null;
+                InputStream inputStreamB = null;
 
-            try {
-                return fileA.length() == fileB.length() && IOUtils.contentEquals(
-                        inputStreamA = fileA instanceof TFile
-                                ? new TFileInputStream(fileA)
-                                : new FileInputStream(fileA),
-                        inputStreamB = fileB instanceof TFile
-                                ? new TFileInputStream(fileB)
-                                : new FileInputStream(fileB)
-                );
-            } finally {
-                IoUtil.closeQuietly(inputStreamA, inputStreamB);
+                try {
+                    return fileA.length() == fileB.length() && IoUtil.contentEquals(
+                            inputStreamA = fileA instanceof TFile
+                                    ? new TFileInputStream(fileA)
+                                    : new FileInputStream(fileA),
+                            inputStreamB = fileB instanceof TFile
+                                    ? new TFileInputStream(fileB)
+                                    : new FileInputStream(fileB)
+                    );
+                } finally {
+                    IoUtil.closeQuietly(inputStreamA, inputStreamB);
+                }
+            } else {
+                return false;
             }
         }
 
-        if (fileA.isDirectory() && fileB.isDirectory()) {
-            File[] childrenA = fileA.listFiles();
-            int childACount = ArrayUtils.getLength(childrenA);
+        if (fileA.isDirectory()) {
+            if (fileB.isDirectory()) {
+                File[] childrenA = fileA.listFiles();
+                int childACount = childrenA == null ? 0 : childrenA.length;
 
-            if (childACount != ArrayUtils.getLength(fileB.listFiles())) {
+                if (childACount != ArrayUtils.getLength(fileB.listFiles())) {
+                    return false;
+                }
+
+                for (int childIndex = 0; childIndex < childACount; ++childIndex) {
+                    File childA = childrenA[childIndex];
+                    File childB = fileB instanceof TFile
+                            ? new TFile(fileB, childA.getName())
+                            : new File(fileB, childA.getName());
+
+                    if (!internalEqualsOrSameContent(childA, childB)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            } else {
                 return false;
             }
-
-            boolean equals = true;
-
-            for (int childIndex = 0; childIndex < childACount; ++childIndex) {
-                @SuppressWarnings("ConstantConditions") File childA = childrenA[childIndex];
-                File childB = fileB instanceof TFile
-                        ? new TFile(fileB, childA.getName())
-                        : new File(fileB, childA.getName());
-
-                if (!internalEqualsOrSameContent(childA, childB)) {
-                    equals = false;
-                    break;
-                }
-            }
-
-            return equals;
         }
 
         return false;
