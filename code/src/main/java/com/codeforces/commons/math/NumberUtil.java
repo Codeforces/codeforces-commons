@@ -552,7 +552,7 @@ public final class NumberUtil {
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
-    @Contract("null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false")
+    @Contract(value = "null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false", pure = true)
     public static boolean nearlyEquals(@Nullable Float numberA, @Nullable Float numberB, float epsilon) {
         if (numberA == null) {
             return numberB == null;
@@ -575,7 +575,7 @@ public final class NumberUtil {
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
-    @Contract("null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false")
+    @Contract(value = "null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false", pure = true)
     public static boolean nearlyEquals(@Nullable Double numberA, @Nullable Double numberB, double epsilon) {
         if (numberA == null) {
             return numberB == null;
