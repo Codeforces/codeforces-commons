@@ -6,8 +6,7 @@ import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.math3.util.MathArrays;
 import org.jetbrains.annotations.Contract;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.*;
 
 import static com.codeforces.commons.math.Math.*;
 
@@ -150,7 +149,7 @@ public class Vector2D extends DoublePair {
     }
 
     @Nonnull
-    public Vector2D normalize(double epsilon) {
+    public Vector2D normalize(@Nonnegative double epsilon) {
         double length = getLength();
         if (length <= epsilon) {
             throw new IllegalStateException("Can't normalize zero-length vector.");
@@ -171,7 +170,7 @@ public class Vector2D extends DoublePair {
     }
 
     @Nonnull
-    public Vector2D setAngle(double angle, double epsilon) {
+    public Vector2D setAngle(double angle, @Nonnegative double epsilon) {
         double length = getLength();
         if (length <= epsilon) {
             throw new IllegalStateException("Can't set angle of zero-length vector.");
@@ -194,12 +193,13 @@ public class Vector2D extends DoublePair {
         );
     }
 
+    @Nonnegative
     public double getLength() {
         return hypot(getX(), getY());
     }
 
     @Nonnull
-    public Vector2D setLength(double length, double epsilon) {
+    public Vector2D setLength(@Nonnegative double length, @Nonnegative double epsilon) {
         if (length <= epsilon) {
             setX(0.0D);
             setY(0.0D);
@@ -215,16 +215,17 @@ public class Vector2D extends DoublePair {
     }
 
     @Nonnull
-    public Vector2D setLength(double length) {
+    public Vector2D setLength(@Nonnegative double length) {
         return setLength(length, DEFAULT_EPSILON);
     }
 
+    @Nonnegative
     public double getSquaredLength() {
         return getX() * getX() + getY() * getY();
     }
 
     @Nonnull
-    public Vector2D setSquaredLength(double squaredLength, double epsilon) {
+    public Vector2D setSquaredLength(@Nonnegative double squaredLength, @Nonnegative double epsilon) {
         if (squaredLength <= epsilon) {
             setX(0.0D);
             setY(0.0D);
@@ -240,7 +241,7 @@ public class Vector2D extends DoublePair {
     }
 
     @Nonnull
-    public Vector2D setSquaredLength(double squaredLength) {
+    public Vector2D setSquaredLength(@Nonnegative double squaredLength) {
         return setSquaredLength(squaredLength, DEFAULT_EPSILON);
     }
 
@@ -257,7 +258,7 @@ public class Vector2D extends DoublePair {
     }
 
     @Contract("null, _ -> false")
-    public boolean nearlyEquals(@Nullable Vector2D vector, double epsilon) {
+    public boolean nearlyEquals(@Nullable Vector2D vector, @Nonnegative double epsilon) {
         return vector != null && nearlyEquals(vector.getX(), vector.getY(), epsilon);
     }
 
@@ -266,7 +267,7 @@ public class Vector2D extends DoublePair {
         return nearlyEquals(vector, DEFAULT_EPSILON);
     }
 
-    public boolean nearlyEquals(double x, double y, double epsilon) {
+    public boolean nearlyEquals(double x, double y, @Nonnegative double epsilon) {
         return NumberUtil.nearlyEquals(getX(), x, epsilon) && NumberUtil.nearlyEquals(getY(), y, epsilon);
     }
 

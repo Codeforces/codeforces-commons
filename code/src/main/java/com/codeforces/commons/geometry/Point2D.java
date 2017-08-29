@@ -5,8 +5,7 @@ import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
 import org.jetbrains.annotations.Contract;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.*;
 
 import static com.codeforces.commons.math.Math.*;
 
@@ -76,18 +75,22 @@ public class Point2D extends DoublePair {
         return new Vector2D(getX() - point.getX(), getY() - point.getY());
     }
 
+    @Nonnegative
     public double getDistanceTo(@Nonnull Point2D point) {
         return hypot(getX() - point.getX(), getY() - point.getY());
     }
 
+    @Nonnegative
     public double getDistanceTo(double x, double y) {
         return hypot(getX() - x, getY() - y);
     }
 
+    @Nonnegative
     public double getSquaredDistanceTo(@Nonnull Point2D point) {
         return sumSqr(getX() - point.getX(), getY() - point.getY());
     }
 
+    @Nonnegative
     public double getSquaredDistanceTo(double x, double y) {
         return sumSqr(getX() - x, getY() - y);
     }
@@ -99,7 +102,7 @@ public class Point2D extends DoublePair {
     }
 
     @Contract("null, _ -> false")
-    public boolean nearlyEquals(@Nullable Point2D point, double epsilon) {
+    public boolean nearlyEquals(@Nullable Point2D point, @Nonnegative double epsilon) {
         return point != null && nearlyEquals(point.getX(), point.getY(), epsilon);
     }
 
@@ -108,7 +111,7 @@ public class Point2D extends DoublePair {
         return nearlyEquals(point, DEFAULT_EPSILON);
     }
 
-    public boolean nearlyEquals(double x, double y, double epsilon) {
+    public boolean nearlyEquals(double x, double y, @Nonnegative double epsilon) {
         return NumberUtil.nearlyEquals(getX(), x, epsilon) && NumberUtil.nearlyEquals(getY(), y, epsilon);
     }
 
