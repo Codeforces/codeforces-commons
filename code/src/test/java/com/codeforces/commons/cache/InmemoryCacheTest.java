@@ -25,7 +25,7 @@ public class InmemoryCacheTest {
     @Test
     public void testStoringOfValues() throws Exception {
         CacheTestUtil.testStoringOfValues(
-                InmemoryCacheTest.class, new InmemoryByteCache(),
+                InmemoryCacheTest.class, InmemoryCache.newInstance(),
                 SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT, VALUE_LENGTH
         );
     }
@@ -33,7 +33,7 @@ public class InmemoryCacheTest {
     @Test
     public void testOverridingOfValuesWithLifetime() throws Exception {
         CacheTestUtil.testOverridingOfValuesWithLifetime(
-                InmemoryCacheTest.class, new InmemoryByteCache(),
+                InmemoryCacheTest.class, InmemoryCache.newInstance(),
                 VALUE_LENGTH
         );
     }
@@ -41,7 +41,7 @@ public class InmemoryCacheTest {
     @Test
     public void testConcurrentStoringOfValues() throws Exception {
         CacheTestUtil.testConcurrentStoringOfValues(
-                InmemoryCacheTest.class, new InmemoryByteCache(),
+                InmemoryCacheTest.class, InmemoryCache.newInstance(),
                 SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT, VALUE_LENGTH, THREAD_COUNT
         );
     }
@@ -50,20 +50,20 @@ public class InmemoryCacheTest {
     public void testConcurrentStoringOfValuesWithLifetime() throws Exception {
         try {
             CacheTestUtil.testConcurrentStoringOfValuesWithLifetime(
-                    InmemoryCacheTest.class, new InmemoryByteCache(),
+                    InmemoryCacheTest.class, InmemoryCache.newInstance(),
                     SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT, VALUE_LENGTH,
                     SLEEPING_THREAD_COUNT, VALUE_LIFETIME_MILLIS, VALUE_CHECK_INTERVAL_MILLIS
             );
         } catch (AssertionError ignoredA) {
             try {
                 CacheTestUtil.testConcurrentStoringOfValuesWithLifetime(
-                        InmemoryCacheTest.class, new InmemoryByteCache(),
+                        InmemoryCacheTest.class, InmemoryCache.newInstance(),
                         SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT, VALUE_LENGTH,
                         SLEEPING_THREAD_COUNT, VALUE_LIFETIME_MILLIS * 2L, VALUE_CHECK_INTERVAL_MILLIS * 2L
                 );
             } catch (AssertionError ignoredB) {
                 CacheTestUtil.testConcurrentStoringOfValuesWithLifetime(
-                        InmemoryCacheTest.class, new InmemoryByteCache(),
+                        InmemoryCacheTest.class, InmemoryCache.newInstance(),
                         SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT, VALUE_LENGTH,
                         SLEEPING_THREAD_COUNT, VALUE_LIFETIME_MILLIS * 4L, VALUE_CHECK_INTERVAL_MILLIS * 4L
                 );

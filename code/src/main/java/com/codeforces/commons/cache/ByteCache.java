@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
  * Valid characters are: 'a'..'z', 'A'..'Z', '0'..'9', ',', '-', '+', '#', '_', '~'.
  *
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 14.02.2011
+ * Date: 14.02.2011
  */
 @SuppressWarnings("ConstantConditions")
 public abstract class ByteCache extends Cache<String, byte[]> {
@@ -173,12 +173,15 @@ public abstract class ByteCache extends Cache<String, byte[]> {
                 || c == ',' || c == '#' || c == '$' || c == '_' || c == '~';
     }
 
+    @SuppressWarnings("ForLoopWithMissingComponent")
     protected static void ensureCacheSectionName(@Nonnull String section) {
         if (StringUtil.isBlank(section)) {
             throw new IllegalArgumentException("Argument 'section' can't be blank.");
         }
 
-        for (char c : section.toCharArray()) {
+        for (int i = section.length(); --i >= 0; ) {
+            char c = section.charAt(i);
+
             if (!isValidChar(c)) {
                 throw new IllegalArgumentException(String.format(
                         "Argument 'section' (value='%s') contains forbidden character (code=%d).",
@@ -188,12 +191,15 @@ public abstract class ByteCache extends Cache<String, byte[]> {
         }
     }
 
+    @SuppressWarnings("ForLoopWithMissingComponent")
     protected static void ensureCacheKeyName(@Nonnull String key) {
         if (StringUtil.isBlank(key)) {
             throw new IllegalArgumentException("Argument 'key' can't be blank.");
         }
 
-        for (char c : key.toCharArray()) {
+        for (int i = key.length(); --i >= 0; ) {
+            char c = key.charAt(i);
+
             if (!isValidChar(c)) {
                 throw new IllegalArgumentException(String.format(
                         "Argument 'key' (value='%s') contains forbidden character '%c' (code=%d).",

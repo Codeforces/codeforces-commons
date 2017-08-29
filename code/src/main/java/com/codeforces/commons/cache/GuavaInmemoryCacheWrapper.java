@@ -29,6 +29,7 @@ public class GuavaInmemoryCacheWrapper<K, V> extends Cache<K, V> {
         this(lifetimeMillis, false);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public GuavaInmemoryCacheWrapper(long lifetimeMillis, boolean useSoftReferences) {
         this.lifetimeMillis = lifetimeMillis;
 
@@ -124,13 +125,14 @@ public class GuavaInmemoryCacheWrapper<K, V> extends Cache<K, V> {
         private final K key;
         private final int hashCode;
 
+        @SuppressWarnings("ConstantConditions")
         private CacheKeyWrapper(@Nonnull String section, @Nonnull K key) {
             if (StringUtil.isEmpty(section)) {
-                throw new IllegalArgumentException("Argument 'section' can't be 'null' or empty.");
+                throw new IllegalArgumentException("Argument 'section' can't be empty.");
             }
 
-            if (StringUtil.isEmpty(section)) {
-                throw new IllegalArgumentException("Argument 'key' can't be 'null' or empty.");
+            if (key == null || key instanceof String && ((String) key).isEmpty()) {
+                throw new IllegalArgumentException("Argument 'key' can't be neither null nor empty string.");
             }
 
             this.section = section;
