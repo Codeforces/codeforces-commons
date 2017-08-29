@@ -13,11 +13,12 @@ import static com.codeforces.commons.math.Math.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 22.07.2013
+ * Date: 22.07.2013
  */
+@SuppressWarnings("WeakerAccess")
 public class Vector2D extends DoublePair {
     public static final double DEFAULT_EPSILON = Line2D.DEFAULT_EPSILON;
-    public static final Vector2D[] EMPTY_VECTOR_ARRAY = {};
+    public static final Vector2D[] EMPTY_VECTOR_ARRAY = new Vector2D[0];
 
     public Vector2D(double x, double y) {
         super(x, y);
@@ -149,14 +150,20 @@ public class Vector2D extends DoublePair {
     }
 
     @Nonnull
-    public Vector2D normalize() {
+    public Vector2D normalize(double epsilon) {
         double length = getLength();
-        if (length == 0.0D) {
-            throw new IllegalStateException("Can't set angle of zero-width vector.");
+        if (length <= epsilon) {
+            throw new IllegalStateException("Can't normalize zero-length vector.");
         }
+
         setX(getX() / length);
         setY(getY() / length);
         return this;
+    }
+
+    @Nonnull
+    public Vector2D normalize() {
+        return normalize(DEFAULT_EPSILON);
     }
 
     public double getAngle() {
@@ -164,14 +171,20 @@ public class Vector2D extends DoublePair {
     }
 
     @Nonnull
-    public Vector2D setAngle(double angle) {
+    public Vector2D setAngle(double angle, double epsilon) {
         double length = getLength();
-        if (length == 0.0D) {
-            throw new IllegalStateException("Can't set angle of zero-width vector.");
+        if (length <= epsilon) {
+            throw new IllegalStateException("Can't set angle of zero-length vector.");
         }
+
         setX(cos(angle) * length);
         setY(sin(angle) * length);
         return this;
+    }
+
+    @Nonnull
+    public Vector2D setAngle(double angle) {
+        return setAngle(angle, DEFAULT_EPSILON);
     }
 
     public double getAngle(@Nonnull Vector2D vector) {
@@ -186,12 +199,24 @@ public class Vector2D extends DoublePair {
     }
 
     @Nonnull
-    public Vector2D setLength(double length) {
-        double currentLength = getLength();
-        if (currentLength == 0.0D) {
-            throw new IllegalStateException("Can't resize zero-width vector.");
+    public Vector2D setLength(double length, double epsilon) {
+        if (length <= epsilon) {
+            setX(0.0D);
+            setY(0.0D);
+            return this;
         }
+
+        double currentLength = getLength();
+        if (currentLength <= epsilon) {
+            throw new IllegalStateException("Can't resize zero-length vector.");
+        }
+
         return multiply(length / currentLength);
+    }
+
+    @Nonnull
+    public Vector2D setLength(double length) {
+        return setLength(length, DEFAULT_EPSILON);
     }
 
     public double getSquaredLength() {
@@ -199,12 +224,24 @@ public class Vector2D extends DoublePair {
     }
 
     @Nonnull
-    public Vector2D setSquaredLength(double squaredLength) {
-        double currentSquaredLength = getSquaredLength();
-        if (currentSquaredLength == 0.0D) {
-            throw new IllegalStateException("Can't resize zero-width vector.");
+    public Vector2D setSquaredLength(double squaredLength, double epsilon) {
+        if (squaredLength <= epsilon) {
+            setX(0.0D);
+            setY(0.0D);
+            return this;
         }
+
+        double currentSquaredLength = getSquaredLength();
+        if (currentSquaredLength <= epsilon) {
+            throw new IllegalStateException("Can't resize zero-length vector.");
+        }
+
         return multiply(sqrt(squaredLength / currentSquaredLength));
+    }
+
+    @Nonnull
+    public Vector2D setSquaredLength(double squaredLength) {
+        return setSquaredLength(squaredLength, DEFAULT_EPSILON);
     }
 
     @Contract(value = "-> !null", pure = true)
@@ -221,9 +258,7 @@ public class Vector2D extends DoublePair {
 
     @Contract("null, _ -> false")
     public boolean nearlyEquals(@Nullable Vector2D vector, double epsilon) {
-        return vector != null
-                && NumberUtil.nearlyEquals(getX(), vector.getX(), epsilon)
-                && NumberUtil.nearlyEquals(getY(), vector.getY(), epsilon);
+        return vector != null && nearlyEquals(vector.getX(), vector.getY(), epsilon);
     }
 
     @Contract("null -> false")
@@ -232,8 +267,7 @@ public class Vector2D extends DoublePair {
     }
 
     public boolean nearlyEquals(double x, double y, double epsilon) {
-        return NumberUtil.nearlyEquals(getX(), x, epsilon)
-                && NumberUtil.nearlyEquals(getY(), y, epsilon);
+        return NumberUtil.nearlyEquals(getX(), x, epsilon) && NumberUtil.nearlyEquals(getY(), y, epsilon);
     }
 
     public boolean nearlyEquals(double x, double y) {

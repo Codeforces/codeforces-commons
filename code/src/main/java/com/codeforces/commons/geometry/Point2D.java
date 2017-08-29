@@ -8,13 +8,13 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static com.codeforces.commons.math.Math.hypot;
-import static com.codeforces.commons.math.Math.sumSqr;
+import static com.codeforces.commons.math.Math.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 22.07.2013
+ * Date: 22.07.2013
  */
+@SuppressWarnings("WeakerAccess")
 public class Point2D extends DoublePair {
     public static final double DEFAULT_EPSILON = Line2D.DEFAULT_EPSILON;
     public static final Point2D[] EMPTY_POINT_ARRAY = {};
@@ -100,9 +100,7 @@ public class Point2D extends DoublePair {
 
     @Contract("null, _ -> false")
     public boolean nearlyEquals(@Nullable Point2D point, double epsilon) {
-        return point != null
-                && NumberUtil.nearlyEquals(getX(), point.getX(), epsilon)
-                && NumberUtil.nearlyEquals(getY(), point.getY(), epsilon);
+        return point != null && nearlyEquals(point.getX(), point.getY(), epsilon);
     }
 
     @Contract("null -> false")
@@ -111,8 +109,7 @@ public class Point2D extends DoublePair {
     }
 
     public boolean nearlyEquals(double x, double y, double epsilon) {
-        return NumberUtil.nearlyEquals(getX(), x, epsilon)
-                && NumberUtil.nearlyEquals(getY(), y, epsilon);
+        return NumberUtil.nearlyEquals(getX(), x, epsilon) && NumberUtil.nearlyEquals(getY(), y, epsilon);
     }
 
     public boolean nearlyEquals(double x, double y) {
