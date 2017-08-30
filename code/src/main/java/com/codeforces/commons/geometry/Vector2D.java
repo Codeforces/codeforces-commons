@@ -73,9 +73,20 @@ public class Vector2D extends DoublePair {
         return this;
     }
 
+    /**
+     * @deprecated Use {@link #addTo(Point2D) addTo(point)}. Note that the behaviour of these methods may differ.
+     * The {@link #addTo(Point2D) addTo(point)} method adds this vector to the {@link Point2D point} itself,
+     * while current method creates a new instance of the {@link Point2D point}.
+     */
+    @Deprecated
     @Nonnull
     public Point2D add(@Nonnull Point2D point) {
         return new Point2D(point.getX() + getX(), point.getY() + getY());
+    }
+
+    @Nonnull
+    public Point2D addTo(@Nonnull Point2D point) {
+        return point.add(this);
     }
 
     @Nonnull
