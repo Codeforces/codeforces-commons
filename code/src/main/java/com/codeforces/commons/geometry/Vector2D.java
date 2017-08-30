@@ -74,6 +74,8 @@ public class Vector2D extends DoublePair {
     }
 
     /**
+     * @param point a point to add this vector
+     * @return the new point that is sum of provided point and this vector
      * @deprecated Use {@link #addTo(Point2D) addTo(point)}. Note that the behaviour of these methods may differ.
      * The {@link #addTo(Point2D) addTo(point)} method adds this vector to the {@link Point2D point} itself,
      * while current method creates a new instance of the {@link Point2D point}.

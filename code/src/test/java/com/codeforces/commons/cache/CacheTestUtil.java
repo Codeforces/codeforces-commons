@@ -28,17 +28,29 @@ final class CacheTestUtil {
             int sectionCount, int keyPerSectionCount, int totalKeyCount, int valueLength) {
         CachePath[] cachePaths = getCachePaths(sectionCount, keyPerSectionCount, totalKeyCount);
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues", () -> {
-            for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
-                checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
-            }
-        });
+        for (int i = 0; i < 5; ++i) {
+            String operationName;
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testStoringOfValues (after warm up)", () -> {
-            for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
-                checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
+            switch (i) {
+                case 0:
+                    operationName = cacheTestClass.getSimpleName() + ".testStoringOfValues";
+                    break;
+                case 1:
+                    operationName = cacheTestClass.getSimpleName() + ".testStoringOfValues (after warm up)";
+                    break;
+                default:
+                    operationName = String.format(
+                            "%s.testStoringOfValues (after warm up %d)", cacheTestClass.getSimpleName(), i
+                    );
+                    break;
             }
-        });
+
+            determineOperationTime(operationName, () -> {
+                for (int pathIndex = 0; pathIndex < totalKeyCount; ++pathIndex) {
+                    checkStoringOneValue(cache, cachePaths[pathIndex], valueLength);
+                }
+            });
+        }
     }
 
     public static void testOverridingOfValuesWithLifetime(
@@ -70,20 +82,30 @@ final class CacheTestUtil {
         AtomicReference<AssertionError> assertionError = new AtomicReference<>();
         AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues", () -> executeConcurrentStoringOfValues(
-                cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
-        ));
+        for (int i = 0; i < 5; ++i) {
+            String operationName;
 
-        if (unexpectedThrowable.get() != null) {
-            throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
-        }
+            switch (i) {
+                case 0:
+                    operationName = cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues";
+                    break;
+                case 1:
+                    operationName = cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues (after warm up)";
+                    break;
+                default:
+                    operationName = String.format(
+                            "%s.testConcurrentStoringOfValues (after warm up %d)", cacheTestClass.getSimpleName(), i
+                    );
+                    break;
+            }
 
-        determineOperationTime(cacheTestClass.getSimpleName() + ".testConcurrentStoringOfValues (after warm up)", () -> executeConcurrentStoringOfValues(
-                cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
-        ));
+            determineOperationTime(operationName, () -> executeConcurrentStoringOfValues(
+                    cache, cachePaths, assertionError, unexpectedThrowable, totalKeyCount, valueLength, threadCount
+            ));
 
-        if (unexpectedThrowable.get() != null) {
-            throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+            if (unexpectedThrowable.get() != null) {
+                throw new AssertionError("Got unexpected exception in thread pool.", unexpectedThrowable.get());
+            }
         }
     }
 
