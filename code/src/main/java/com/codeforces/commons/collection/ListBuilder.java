@@ -1,10 +1,13 @@
 package com.codeforces.commons.collection;
 
+import com.google.common.base.Preconditions;
+
+import javax.annotation.Nonnegative;
 import java.util.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 27.12.13
+ * Date: 27.12.13
  */
 @SuppressWarnings({"ReturnOfThis", "ReturnOfCollectionOrArrayField", "AssignmentToCollectionOrArrayFieldFromParameter"})
 public class ListBuilder<E> {
@@ -51,6 +54,26 @@ public class ListBuilder<E> {
                 this.list.add(element);
             }
         }
+        return this;
+    }
+
+    public ListBuilder<E> addMany(E element, @Nonnegative int count) {
+        if (count == 0) {
+            return this;
+        }
+
+        Preconditions.checkArgument(count > 0, "The count %s is negative.");
+
+        if (list instanceof ArrayList) {
+            ((ArrayList) list).ensureCapacity(list.size() + count);
+        }
+
+        int i = count;
+
+        while (--i >= 0) {
+            list.add(element);
+        }
+
         return this;
     }
 

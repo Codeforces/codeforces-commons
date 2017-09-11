@@ -57,13 +57,13 @@ public class GuavaInmemoryCacheWrapperTest {
         } catch (AssertionError ignoredA) {
             try {
                 CacheTestUtil.testConcurrentStoringOfValuesWithLifetime(
-                        GuavaInmemoryCacheWrapperTest.class, new GuavaInmemoryCacheWrapper<>(VALUE_LIFETIME_MILLIS),
+                        GuavaInmemoryCacheWrapperTest.class, new GuavaInmemoryCacheWrapper<>(VALUE_LIFETIME_MILLIS * 2L),
                         SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT, VALUE_LENGTH,
                         SLEEPING_THREAD_COUNT, VALUE_LIFETIME_MILLIS * 2L, VALUE_CHECK_INTERVAL_MILLIS * 2L
                 );
             } catch (AssertionError ignoredB) {
                 CacheTestUtil.testConcurrentStoringOfValuesWithLifetime(
-                        GuavaInmemoryCacheWrapperTest.class, new GuavaInmemoryCacheWrapper<>(VALUE_LIFETIME_MILLIS),
+                        GuavaInmemoryCacheWrapperTest.class, new GuavaInmemoryCacheWrapper<>(VALUE_LIFETIME_MILLIS * 4L),
                         SECTION_COUNT, KEY_PER_SECTION_COUNT, TOTAL_KEY_COUNT, VALUE_LENGTH,
                         SLEEPING_THREAD_COUNT, VALUE_LIFETIME_MILLIS * 4L, VALUE_CHECK_INTERVAL_MILLIS * 4L
                 );
