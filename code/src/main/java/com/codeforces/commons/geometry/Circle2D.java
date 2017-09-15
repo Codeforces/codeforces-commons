@@ -7,16 +7,15 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
-import static com.codeforces.commons.math.Math.abs;
-import static com.codeforces.commons.math.Math.sqrt;
+import static com.codeforces.commons.math.Math.*;
 
 /**
  * x^2 + y^2 + ax + by + c = 0
  *
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 30.06.2015
+ * Date: 30.06.2015
  */
-@SuppressWarnings("StandardVariableNames")
+@SuppressWarnings({"StandardVariableNames", "WeakerAccess"})
 public class Circle2D {
     public static final double DEFAULT_EPSILON = Line2D.DEFAULT_EPSILON;
     public static final Circle2D[] EMPTY_CIRCLE_ARRAY = {};
@@ -98,6 +97,7 @@ public class Circle2D {
 
     @Nonnull
     public double[] getXs(double y, @Nonnegative double epsilon) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable") double a = this.a;
         double d = a * a - 4.0D * (y * y + b * y + c);
 
         if (d < -epsilon) {
@@ -105,12 +105,12 @@ public class Circle2D {
         }
 
         if (abs(d) <= epsilon) {
-            return new double[]{-a / 2.0D};
+            return new double[] {-a / 2.0D};
         }
 
         double sqrtD = sqrt(d);
 
-        return new double[]{(-sqrtD - a) / 2.0D, (sqrtD - a) / 2.0D};
+        return new double[] {(-sqrtD - a) / 2.0D, (sqrtD - a) / 2.0D};
     }
 
     @Nonnull
@@ -120,6 +120,7 @@ public class Circle2D {
 
     @Nonnull
     public double[] getYs(double x, @Nonnegative double epsilon) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable") double b = this.b;
         double d = b * b - 4.0D * (x * x + a * x + c);
 
         if (d < -epsilon) {
@@ -127,12 +128,12 @@ public class Circle2D {
         }
 
         if (abs(d) <= epsilon) {
-            return new double[]{-b / 2.0D};
+            return new double[] {-b / 2.0D};
         }
 
         double sqrtD = sqrt(d);
 
-        return new double[]{(-sqrtD - b) / 2.0D, (sqrtD - b) / 2.0D};
+        return new double[] {(-sqrtD - b) / 2.0D, (sqrtD - b) / 2.0D};
     }
 
     @Nonnull
