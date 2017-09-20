@@ -4,6 +4,8 @@ import com.codeforces.commons.annotation.NonnullElements;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 
@@ -152,6 +154,7 @@ public class QuadTree<T> {
         return findNearest(x, y, root, left, top, right, bottom, matcher);
     }
 
+    // Equal to call of findNearest(..., Predicate<T> matcher) with (value -> true), but copied for performance reason
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
     @Nullable
     private T findNearest(
@@ -471,6 +474,195 @@ public class QuadTree<T> {
         }
     }
 
+    @Nonnull
+    public List<T> findAllNearby(@Nonnull T value, double squaredDistance) {
+        return findAllNearby(xExtractor.applyAsDouble(value), yExtractor.applyAsDouble(value), squaredDistance);
+    }
+
+    @Nonnull
+    public List<T> findAllNearby(double x, double y, double squaredDistance) {
+        List<T> values = new ArrayList<>();
+        findAllNearby(x, y, squaredDistance, values, root, left, top, right, bottom);
+        return values;
+    }
+
+    @Nonnull
+    public List<T> findAllNearby(@Nonnull T value, double squaredDistance, @Nonnull Predicate<T> matcher) {
+        return findAllNearby(xExtractor.applyAsDouble(value), yExtractor.applyAsDouble(value), squaredDistance, matcher);
+    }
+
+    @Nonnull
+    public List<T> findAllNearby(double x, double y, double squaredDistance, @Nonnull Predicate<T> matcher) {
+        List<T> values = new ArrayList<>();
+        findAllNearby(x, y, squaredDistance, values, root, left, top, right, bottom, matcher);
+        return values;
+    }
+
+    // Equal to call of findAllNearby(..., Predicate<T> matcher) with (value -> true), but copied for performance reason
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
+    private void findAllNearby(
+            double x, double y, double squaredDistance, List<T> values, @Nonnull Node<T> node,
+            double left, double top, double right, double bottom
+    ) {
+        if (node.value != null) {
+            if (getSquaredDistanceTo(node.value, x, y) <= squaredDistance) {
+                values.add(node.value);
+            }
+            return;
+        }
+
+        if (!node.hasValueBelow) {
+            return;
+        }
+
+        double centerX = (left + right) / 2.0D;
+        double centerY = (top + bottom) / 2.0D;
+
+        if (x < centerX) {
+            if (y < centerY) {
+                findAllNearby(x, y, squaredDistance, values, node.leftTop, left, top, centerX, centerY);
+
+                if (squaredDistance + epsilon >= sqr(centerX - x)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightTop, centerX, top, right, centerY);
+                }
+
+                if (squaredDistance + epsilon >= sqr(centerY - y)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftBottom, left, centerY, centerX, bottom);
+                }
+
+                if (squaredDistance + epsilon >= sumSqr(centerX - x, centerY - y)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightBottom, centerX, centerY, right, bottom);
+                }
+            } else {
+                findAllNearby(x, y, squaredDistance, values, node.leftBottom, left, centerY, centerX, bottom);
+
+                if (squaredDistance + epsilon >= sqr(centerX - x)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightBottom, centerX, centerY, right, bottom);
+                }
+
+                if (squaredDistance + epsilon > sqr(y - centerY)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftTop, left, top, centerX, centerY);
+                }
+
+                if (squaredDistance + epsilon >= sumSqr(centerX - x, y - centerY)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightTop, centerX, top, right, centerY);
+                }
+            }
+        } else {
+            if (y < centerY) {
+                findAllNearby(x, y, squaredDistance, values, node.rightTop, centerX, top, right, centerY);
+
+                if (squaredDistance + epsilon > sqr(x - centerX)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftTop, left, top, centerX, centerY);
+                }
+
+                if (squaredDistance + epsilon >= sqr(centerY - y)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightBottom, centerX, centerY, right, bottom);
+                }
+
+                if (squaredDistance + epsilon >= sumSqr(x - centerX, centerY - y)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftBottom, left, centerY, centerX, bottom);
+                }
+            } else {
+                findAllNearby(x, y, squaredDistance, values, node.rightBottom, centerX, centerY, right, bottom);
+
+                if (squaredDistance + epsilon > sqr(x - centerX)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftBottom, left, centerY, centerX, bottom);
+                }
+
+                if (squaredDistance + epsilon > sqr(y - centerY)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightTop, centerX, top, right, centerY);
+                }
+
+                if (squaredDistance + epsilon > sumSqr(x - centerX, y - centerY)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftTop, left, top, centerX, centerY);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
+    private void findAllNearby(
+            double x, double y, double squaredDistance, List<T> values, @Nonnull Node<T> node,
+            double left, double top, double right, double bottom, @Nonnull Predicate<T> matcher
+    ) {
+        if (node.value != null) {
+            if (getSquaredDistanceTo(node.value, x, y, matcher) <= squaredDistance) {
+                values.add(node.value);
+            }
+            return;
+        }
+
+        if (!node.hasValueBelow) {
+            return;
+        }
+
+        double centerX = (left + right) / 2.0D;
+        double centerY = (top + bottom) / 2.0D;
+
+        if (x < centerX) {
+            if (y < centerY) {
+                findAllNearby(x, y, squaredDistance, values, node.leftTop, left, top, centerX, centerY, matcher);
+
+                if (squaredDistance + epsilon >= sqr(centerX - x)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightTop, centerX, top, right, centerY, matcher);
+                }
+
+                if (squaredDistance + epsilon >= sqr(centerY - y)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftBottom, left, centerY, centerX, bottom, matcher);
+                }
+
+                if (squaredDistance + epsilon >= sumSqr(centerX - x, centerY - y)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightBottom, centerX, centerY, right, bottom, matcher);
+                }
+            } else {
+                findAllNearby(x, y, squaredDistance, values, node.leftBottom, left, centerY, centerX, bottom, matcher);
+
+                if (squaredDistance + epsilon >= sqr(centerX - x)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightBottom, centerX, centerY, right, bottom, matcher);
+                }
+
+                if (squaredDistance + epsilon > sqr(y - centerY)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftTop, left, top, centerX, centerY, matcher);
+                }
+
+                if (squaredDistance + epsilon >= sumSqr(centerX - x, y - centerY)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightTop, centerX, top, right, centerY, matcher);
+                }
+            }
+        } else {
+            if (y < centerY) {
+                findAllNearby(x, y, squaredDistance, values, node.rightTop, centerX, top, right, centerY, matcher);
+
+                if (squaredDistance + epsilon > sqr(x - centerX)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftTop, left, top, centerX, centerY, matcher);
+                }
+
+                if (squaredDistance + epsilon >= sqr(centerY - y)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightBottom, centerX, centerY, right, bottom, matcher);
+                }
+
+                if (squaredDistance + epsilon >= sumSqr(x - centerX, centerY - y)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftBottom, left, centerY, centerX, bottom, matcher);
+                }
+            } else {
+                findAllNearby(x, y, squaredDistance, values, node.rightBottom, centerX, centerY, right, bottom, matcher);
+
+                if (squaredDistance + epsilon > sqr(x - centerX)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftBottom, left, centerY, centerX, bottom, matcher);
+                }
+
+                if (squaredDistance + epsilon > sqr(y - centerY)) {
+                    findAllNearby(x, y, squaredDistance, values, node.rightTop, centerX, top, right, centerY, matcher);
+                }
+
+                if (squaredDistance + epsilon > sumSqr(x - centerX, y - centerY)) {
+                    findAllNearby(x, y, squaredDistance, values, node.leftTop, left, top, centerX, centerY, matcher);
+                }
+            }
+        }
+    }
+
     public boolean hasNearby(@Nonnull T value, double squaredDistance) {
         return hasNearby(xExtractor.applyAsDouble(value), yExtractor.applyAsDouble(value), squaredDistance);
     }
@@ -487,6 +679,7 @@ public class QuadTree<T> {
         return hasNearby(x, y, squaredDistance, root, left, top, right, bottom, matcher);
     }
 
+    // Equal to call of hasNearby(..., Predicate<T> matcher) with (value -> true), but copied for performance reason
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
     private boolean hasNearby(
             double x, double y, double squaredDistance, @Nonnull Node<T> node,
