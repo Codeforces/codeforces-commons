@@ -16,6 +16,7 @@ import static gnu.trove.impl.Constants.*;
 /**
  * @author Edvard Davtyan (homo_sapiens@xakep.ru)
  */
+@SuppressWarnings("ForLoopWithMissingComponent")
 public class CollectionUtil {
     private static final Class unmodifiableCollectionClass = Collections.unmodifiableCollection(new ArrayList<>()).getClass();
 
@@ -92,7 +93,6 @@ public class CollectionUtil {
         return result.toString();
     }
 
-    @SuppressWarnings("ForLoopWithMissingComponent")
     public static <T1, T2> List<T2> convert(List<T1> list, Function<T1, T2> converter) {
         int count = list.size();
         List<T2> newList = new ArrayList<>(count);
@@ -111,7 +111,6 @@ public class CollectionUtil {
         return newList;
     }
 
-    @SuppressWarnings("ForLoopWithMissingComponent")
     public static <T1, T2> List<T2> convert(Collection<T1> collection, Function<T1, T2> converter) {
         int count = collection.size();
         List<T2> newCollection = new ArrayList<>(count);
@@ -130,7 +129,7 @@ public class CollectionUtil {
         Map<K2, T2> newMap = new LinkedHashMap<>(count);
 
         Iterator<Map.Entry<K1, T1>> iterator = map.entrySet().iterator();
-        for (int i = 0; i < count; ++i) {
+        for (int i = count; --i >= 0; ) {
             Map.Entry<K1, T1> entry = iterator.next();
             newMap.put(keyConverter.apply(entry.getKey()), valueConverter.apply(entry.getValue()));
         }
@@ -153,7 +152,7 @@ public class CollectionUtil {
             }
         } else {
             Iterator<T1> iterator = list.iterator();
-            for (int i = 0; i < count; ++i) {
+            for (int i = count; --i >= 0; ) {
                 T1 value = iterator.next();
                 try {
                     newList.add(converter.apply(value));
@@ -171,7 +170,7 @@ public class CollectionUtil {
         Collection<T2> newCollection = new ArrayList<>(count);
 
         Iterator<T1> iterator = collection.iterator();
-        for (int i = 0; i < count; ++i) {
+        for (int i = count; --i >= 0; ) {
             T1 value = iterator.next();
             try {
                 newCollection.add(converter.apply(value));
@@ -189,7 +188,7 @@ public class CollectionUtil {
         Map<K2, T2> newMap = new LinkedHashMap<>(count);
 
         Iterator<Map.Entry<K1, T1>> iterator = map.entrySet().iterator();
-        for (int i = 0; i < count; ++i) {
+        for (int i = count; --i >= 0; ) {
             Map.Entry<K1, T1> entry = iterator.next();
             try {
                 newMap.put(keyConverter.apply(entry.getKey()), valueConverter.apply(entry.getValue()));
