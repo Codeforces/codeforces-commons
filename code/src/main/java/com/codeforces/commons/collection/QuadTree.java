@@ -318,7 +318,7 @@ public class QuadTree<T> {
             double left, double top, double right, double bottom, @Nonnull Predicate<T> matcher
     ) {
         if (node.value != null) {
-            return node.value;
+            return matcher.test(node.value) ? node.value : null;
         }
 
         if (!node.hasValueBelow) {
