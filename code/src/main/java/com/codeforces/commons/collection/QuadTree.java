@@ -370,11 +370,11 @@ public class QuadTree<T> {
         if (x < centerX) {
             if (y < centerY) {
                 T nearestValue = findNearest(x, y, node.leftTop, left, top, centerX, centerY, matcher);
-                double nearestSquaredDistance = getSquaredDistanceTo(nearestValue, x, y, matcher);
+                double nearestSquaredDistance = getSquaredDistanceTo(nearestValue, x, y);
 
                 if (nearestSquaredDistance + epsilon >= sqr(centerX - x)) {
                     T otherValue = findNearest(x, y, node.rightTop, centerX, top, right, centerY, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -384,7 +384,7 @@ public class QuadTree<T> {
 
                 if (nearestSquaredDistance + epsilon >= sqr(centerY - y)) {
                     T otherValue = findNearest(x, y, node.leftBottom, left, centerY, centerX, bottom, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -394,7 +394,7 @@ public class QuadTree<T> {
 
                 if (nearestSquaredDistance + epsilon >= sumSqr(centerX - x, centerY - y)) {
                     T otherValue = findNearest(x, y, node.rightBottom, centerX, centerY, right, bottom, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -404,11 +404,11 @@ public class QuadTree<T> {
                 return nearestValue;
             } else {
                 T nearestValue = findNearest(x, y, node.leftBottom, left, centerY, centerX, bottom, matcher);
-                double nearestSquaredDistance = getSquaredDistanceTo(nearestValue, x, y, matcher);
+                double nearestSquaredDistance = getSquaredDistanceTo(nearestValue, x, y);
 
                 if (nearestSquaredDistance + epsilon >= sqr(centerX - x)) {
                     T otherValue = findNearest(x, y, node.rightBottom, centerX, centerY, right, bottom, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -418,7 +418,7 @@ public class QuadTree<T> {
 
                 if (nearestSquaredDistance + epsilon > sqr(y - centerY)) {
                     T otherValue = findNearest(x, y, node.leftTop, left, top, centerX, centerY, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -428,7 +428,7 @@ public class QuadTree<T> {
 
                 if (nearestSquaredDistance + epsilon >= sumSqr(centerX - x, y - centerY)) {
                     T otherValue = findNearest(x, y, node.rightTop, centerX, top, right, centerY, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -440,11 +440,11 @@ public class QuadTree<T> {
         } else {
             if (y < centerY) {
                 T nearestValue = findNearest(x, y, node.rightTop, centerX, top, right, centerY, matcher);
-                double nearestSquaredDistance = getSquaredDistanceTo(nearestValue, x, y, matcher);
+                double nearestSquaredDistance = getSquaredDistanceTo(nearestValue, x, y);
 
                 if (nearestSquaredDistance + epsilon > sqr(x - centerX)) {
                     T otherValue = findNearest(x, y, node.leftTop, left, top, centerX, centerY, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -454,7 +454,7 @@ public class QuadTree<T> {
 
                 if (nearestSquaredDistance + epsilon >= sqr(centerY - y)) {
                     T otherValue = findNearest(x, y, node.rightBottom, centerX, centerY, right, bottom, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -464,7 +464,7 @@ public class QuadTree<T> {
 
                 if (nearestSquaredDistance + epsilon >= sumSqr(x - centerX, centerY - y)) {
                     T otherValue = findNearest(x, y, node.leftBottom, left, centerY, centerX, bottom, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -474,11 +474,11 @@ public class QuadTree<T> {
                 return nearestValue;
             } else {
                 T nearestValue = findNearest(x, y, node.rightBottom, centerX, centerY, right, bottom, matcher);
-                double nearestSquaredDistance = getSquaredDistanceTo(nearestValue, x, y, matcher);
+                double nearestSquaredDistance = getSquaredDistanceTo(nearestValue, x, y);
 
                 if (nearestSquaredDistance + epsilon > sqr(x - centerX)) {
                     T otherValue = findNearest(x, y, node.leftBottom, left, centerY, centerX, bottom, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -488,7 +488,7 @@ public class QuadTree<T> {
 
                 if (nearestSquaredDistance + epsilon > sqr(y - centerY)) {
                     T otherValue = findNearest(x, y, node.rightTop, centerX, top, right, centerY, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -498,7 +498,7 @@ public class QuadTree<T> {
 
                 if (nearestSquaredDistance + epsilon > sumSqr(x - centerX, y - centerY)) {
                     T otherValue = findNearest(x, y, node.leftTop, left, top, centerX, centerY, matcher);
-                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y, matcher);
+                    double otherSquaredDistance = getSquaredDistanceTo(otherValue, x, y);
 
                     if (otherSquaredDistance < nearestSquaredDistance) {
                         nearestValue = otherValue;
@@ -623,7 +623,7 @@ public class QuadTree<T> {
             double left, double top, double right, double bottom, @Nonnull Predicate<T> matcher
     ) {
         if (node.value != null) {
-            if (getSquaredDistanceTo(node.value, x, y, matcher) <= squaredDistance) {
+            if (getSquaredDistanceTo(node.value, x, y) <= squaredDistance && matcher.test(node.value)) {
                 values.add(node.value);
             }
             return;
@@ -841,7 +841,7 @@ public class QuadTree<T> {
             double left, double top, double right, double bottom, @Nonnull Predicate<T> matcher
     ) {
         if (node.value != null) {
-            return getSquaredDistanceTo(node.value, x, y, matcher) <= squaredDistance;
+            return getSquaredDistanceTo(node.value, x, y) <= squaredDistance && matcher.test(node.value);
         }
 
         if (!node.hasValueBelow) {
@@ -973,12 +973,6 @@ public class QuadTree<T> {
 
     private double getSquaredDistanceTo(@Nullable T value, double x, double y) {
         return value == null ? Double.POSITIVE_INFINITY : sumSqr(
-                xExtractor.applyAsDouble(value) - x, yExtractor.applyAsDouble(value) - y
-        );
-    }
-
-    private double getSquaredDistanceTo(@Nullable T value, double x, double y, @Nonnull Predicate<T> matcher) {
-        return value == null || !matcher.test(value) ? Double.POSITIVE_INFINITY : sumSqr(
                 xExtractor.applyAsDouble(value) - x, yExtractor.applyAsDouble(value) - y
         );
     }
