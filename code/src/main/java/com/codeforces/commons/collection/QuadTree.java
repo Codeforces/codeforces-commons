@@ -1,9 +1,9 @@
 package com.codeforces.commons.collection;
 
 import com.codeforces.commons.annotation.NonnullElements;
+import com.google.common.base.Preconditions;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -32,14 +32,19 @@ public class QuadTree<T> {
     private final double right;
     private final double bottom;
 
+    @Nonnegative
     private final double epsilon;
 
     public QuadTree(
             @Nonnull ToDoubleFunction<T> xExtractor, @Nonnull ToDoubleFunction<T> yExtractor,
-            double left, double top, double right, double bottom, double epsilon
+            double left, double top, double right, double bottom, @Nonnegative double epsilon
     ) {
-        this.xExtractor = xExtractor;
-        this.yExtractor = yExtractor;
+        Preconditions.checkArgument(Double.isFinite(left) && Double.isFinite(right) && left < right);
+        Preconditions.checkArgument(Double.isFinite(top) && Double.isFinite(bottom) && top < bottom);
+        Preconditions.checkArgument(Double.isFinite(epsilon) && epsilon >= 0.0D);
+
+        this.xExtractor = Preconditions.checkNotNull(xExtractor);
+        this.yExtractor = Preconditions.checkNotNull(yExtractor);
 
         this.left = left;
         this.top = top;
@@ -56,13 +61,44 @@ public class QuadTree<T> {
         this(xExtractor, yExtractor, left, top, right, bottom, DEFAULT_EPSILON);
     }
 
+    @Nonnull
+    public ToDoubleFunction<T> getXExtractor() {
+        return xExtractor;
+    }
+
+    @Nonnull
+    public ToDoubleFunction<T> getYExtractor() {
+        return yExtractor;
+    }
+
+    public double getLeft() {
+        return left;
+    }
+
+    public double getTop() {
+        return top;
+    }
+
+    public double getRight() {
+        return right;
+    }
+
+    public double getBottom() {
+        return bottom;
+    }
+
+    @Nonnegative
+    public double getEpsilon() {
+        return epsilon;
+    }
+
     public void add(@Nonnull T value) {
         double x = xExtractor.applyAsDouble(value);
         double y = yExtractor.applyAsDouble(value);
 
-        if (x < left || y < top || x > right || y > bottom) {
+        if (!Double.isFinite(x) || !Double.isFinite(y) || x < left || y < top || x > right || y > bottom) {
             throw new IllegalArgumentException(String.format(
-                    "The point (%s, %s) is outside of bounding box (%s, %s, %s, %s).",
+                    "The point (x=%s, y=%s) is outside of the bounding box (left=%s, top=%s, right=%s, bottom=%s).",
                     x, y, left, top, right, bottom
             ));
         }
@@ -99,7 +135,7 @@ public class QuadTree<T> {
             double currentX = xExtractor.applyAsDouble(currentValue);
             double currentY = yExtractor.applyAsDouble(currentValue);
 
-            if (Double.compare(x, currentX) == 0 && Double.compare(y, currentY) == 0) {
+            if (abs(x - currentX) <= epsilon && abs(y - currentY) <= epsilon) {
                 return;
             }
 
