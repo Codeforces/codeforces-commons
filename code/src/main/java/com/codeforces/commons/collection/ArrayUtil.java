@@ -526,7 +526,7 @@ public class ArrayUtil {
         }
     }
 
-    public static <T> T[] sort(T[] array) {
+    public static <T extends Comparable<T>> T[] sort(T[] array) {
         Arrays.sort(array);
         return array;
     }
