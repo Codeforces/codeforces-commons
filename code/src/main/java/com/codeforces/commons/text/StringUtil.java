@@ -12,10 +12,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
-import org.apache.commons.lang3.text.translate.EntityArrays;
-import org.apache.commons.lang3.text.translate.JavaUnicodeEscaper;
-import org.apache.commons.lang3.text.translate.LookupTranslator;
+import org.apache.commons.lang3.text.translate.*;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -25,23 +22,18 @@ import javax.crypto.spec.SecretKeySpec;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.lang.reflect.Array;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.*;
 import java.util.regex.Pattern;
 
-import static com.codeforces.commons.math.Math.max;
-import static com.codeforces.commons.math.Math.min;
+import static com.codeforces.commons.math.Math.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 10.07.2013
+ * Date: 10.07.2013
  */
 @SuppressWarnings({"WeakerAccess", "ForLoopWithMissingComponent"})
 public final class StringUtil {
@@ -52,7 +44,7 @@ public final class StringUtil {
     private static final ReadWriteLock toStringConverterByClassMapLock = new ReentrantReadWriteLock();
 
     private static final CharSequenceTranslator ESCAPE_JAVA_RETAIN_CYRILLIC = new LookupTranslator(
-            new String[][]{{"\"", "\\\""}, {"\\", "\\\\"}}
+            new String[][] {{"\"", "\\\""}, {"\\", "\\\\"}}
     ).with(
             new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())
     ).with(
@@ -545,7 +537,7 @@ public final class StringUtil {
         }
 
         if (parts == null) {
-            return new String[]{s};
+            return new String[] {s};
         }
 
         if (count == parts.length) {
@@ -558,11 +550,11 @@ public final class StringUtil {
 
         if (count == parts.length) {
             return parts;
-        } else {
-            String[] tempParts = new String[count];
-            System.arraycopy(parts, 0, tempParts, 0, count);
-            return tempParts;
         }
+
+        String[] tempParts = new String[count];
+        System.arraycopy(parts, 0, tempParts, 0, count);
+        return tempParts;
     }
 
     @Contract(value = "null, _, _ -> null; !null, _, _ -> !null", pure = true)

@@ -1,8 +1,10 @@
 package com.codeforces.commons.collection;
 
 import com.codeforces.commons.annotation.NonnullElements;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Contract;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Array;
 import java.util.*;
@@ -19,7 +21,7 @@ public class ArrayUtil {
     }
 
     @Nonnull
-    public static <T> T[] join(@Nonnull IntFunction<T[]> generator, @Nonnull @NonnullElements Collection<T[]> arrays) {
+    public static <T> T[] join(@Nonnull IntFunction<T[]> generator, @Nonnull @NonnullElements Iterable<T[]> arrays) {
         int joinedLength = 0;
 
         for (T[] array : arrays) {
@@ -38,7 +40,7 @@ public class ArrayUtil {
     }
 
     @Nonnull
-    public static <T> T[] join(@Nonnull Class<T> elementClass, @Nonnull @NonnullElements Collection<T[]> arrays) {
+    public static <T> T[] join(@Nonnull Class<T> elementClass, @Nonnull @NonnullElements Iterable<T[]> arrays) {
         int joinedLength = 0;
 
         for (T[] array : arrays) {
@@ -256,6 +258,170 @@ public class ArrayUtil {
         return joinedArray;
     }
 
+    @SuppressWarnings({"ForLoopWithMissingComponent", "OverloadedVarargsMethod"})
+    @Nonnull
+    public static String[] join(@Nonnull @NonnullElements String[]... arrays) {
+        int arrayCount = arrays.length;
+        int joinedLength = 0;
+
+        for (int arrayIndex = arrayCount; --arrayIndex >= 0; ) {
+            joinedLength += arrays[arrayIndex].length;
+        }
+
+        String[] joinedArray = new String[joinedLength];
+        int joinedIndex = 0;
+
+        for (int arrayIndex = 0; arrayIndex < arrayCount; ++arrayIndex) {
+            String[] array = arrays[arrayIndex];
+            System.arraycopy(array, 0, joinedArray, joinedIndex, array.length);
+            joinedIndex += array.length;
+        }
+
+        return joinedArray;
+    }
+
+    @Nonnull
+    public static <T> T[] trim(@Nonnull T[] array, @Nonnegative int length) {
+        if (array.length == length) {
+            return array;
+        }
+
+        @SuppressWarnings("unchecked") T[] prefix = (T[]) Array.newInstance(array.getClass().getComponentType(), length);
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static <T> T[] trim(@Nonnull T[] array, @Nonnegative int length, @Nonnull IntFunction<T[]> generator) {
+        if (array.length == length) {
+            return array;
+        }
+
+        T[] prefix = generator.apply(length);
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static float[] trim(@Nonnull float[] array, @Nonnegative int length) {
+        if (length == 0) {
+            return ArrayUtils.EMPTY_FLOAT_ARRAY;
+        }
+
+        if (array.length == length) {
+            return array;
+        }
+
+        float[] prefix = new float[length];
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static double[] trim(@Nonnull double[] array, @Nonnegative int length) {
+        if (length == 0) {
+            return ArrayUtils.EMPTY_DOUBLE_ARRAY;
+        }
+
+        if (array.length == length) {
+            return array;
+        }
+
+        double[] prefix = new double[length];
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static byte[] trim(@Nonnull byte[] array, @Nonnegative int length) {
+        if (length == 0) {
+            return ArrayUtils.EMPTY_BYTE_ARRAY;
+        }
+
+        if (array.length == length) {
+            return array;
+        }
+
+        byte[] prefix = new byte[length];
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static short[] trim(@Nonnull short[] array, @Nonnegative int length) {
+        if (length == 0) {
+            return ArrayUtils.EMPTY_SHORT_ARRAY;
+        }
+
+        if (array.length == length) {
+            return array;
+        }
+
+        short[] prefix = new short[length];
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static int[] trim(@Nonnull int[] array, @Nonnegative int length) {
+        if (length == 0) {
+            return ArrayUtils.EMPTY_INT_ARRAY;
+        }
+
+        if (array.length == length) {
+            return array;
+        }
+
+        int[] prefix = new int[length];
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static long[] trim(@Nonnull long[] array, @Nonnegative int length) {
+        if (length == 0) {
+            return ArrayUtils.EMPTY_LONG_ARRAY;
+        }
+
+        if (array.length == length) {
+            return array;
+        }
+
+        long[] prefix = new long[length];
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static char[] trim(@Nonnull char[] array, @Nonnegative int length) {
+        if (length == 0) {
+            return ArrayUtils.EMPTY_CHAR_ARRAY;
+        }
+
+        if (array.length == length) {
+            return array;
+        }
+
+        char[] prefix = new char[length];
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
+    @Nonnull
+    public static String[] trim(@Nonnull String[] array, @Nonnegative int length) {
+        if (length == 0) {
+            return ArrayUtils.EMPTY_STRING_ARRAY;
+        }
+
+        if (array.length == length) {
+            return array;
+        }
+
+        String[] prefix = new String[length];
+        System.arraycopy(array, 0, prefix, 0, length);
+        return prefix;
+    }
+
     public static <T> void shuffle(T[] array, Random random) {
         int count;
         if (array != null && (count = array.length) > 1) {
@@ -347,6 +513,19 @@ public class ArrayUtil {
         }
     }
 
+    public static void shuffle(char[] array, Random random) {
+        int count;
+        if (array != null && (count = array.length) > 1) {
+            int index = count;
+            while (--index > 0) {
+                int newIndex = random.nextInt(index + 1);
+                char temp = array[index];
+                array[index] = array[newIndex];
+                array[newIndex] = temp;
+            }
+        }
+    }
+
     public static <T> T[] sort(T[] array) {
         Arrays.sort(array);
         return array;
@@ -383,6 +562,11 @@ public class ArrayUtil {
     }
 
     public static long[] sort(long[] array) {
+        Arrays.sort(array);
+        return array;
+    }
+
+    public static char[] sort(char[] array) {
         Arrays.sort(array);
         return array;
     }
