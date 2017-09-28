@@ -11,7 +11,7 @@ Add dependency description to Maven's pom.xml:
     <dependency>
         <groupId>com.codeforces</groupId>
         <artifactId>commons</artifactId>
-        <version>2.2-SNAPSHOT</version>
+        <version>2.3-SNAPSHOT</version>
     </dependency>
     ...
 </dependencies>
