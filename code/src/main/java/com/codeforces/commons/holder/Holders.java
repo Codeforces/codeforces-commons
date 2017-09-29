@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 07.03.13
  */
+@SuppressWarnings("WeakerAccess")
 public class Holders {
     private Holders() {
         throw new UnsupportedOperationException();

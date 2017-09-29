@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 07.03.13
+ * Date: 07.03.13
  */
 public interface Writable<T> {
     @Contract("null -> null; !null -> !null")
