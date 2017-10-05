@@ -1,17 +1,14 @@
 package com.codeforces.commons.io.http;
 
 import com.codeforces.commons.exception.ExceptionUtil;
-import com.codeforces.commons.io.FileUtil;
-import com.codeforces.commons.io.IoUtil;
-import com.codeforces.commons.io.LimitedByteArrayOutputStream;
-import com.codeforces.commons.io.MimeUtil;
+import com.codeforces.commons.io.*;
 import com.codeforces.commons.math.NumberUtil;
+import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
 import fi.iki.elonen.NanoHTTPD;
 import junit.framework.TestCase;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.InputStreamEntity;
@@ -26,9 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -49,7 +44,7 @@ public class HttpUtilTest extends TestCase {
     private static final int LARGE_RESPONSE_SIZE = 100000;
 
     private static final String POST_DATA = "Trololo Трололо №\"!?#@'`/\\,.()&^%$*<> ёыъьяю ™šœ "
-            + RandomStringUtils.randomAlphanumeric(LARGE_RESPONSE_SIZE);
+            + RandomUtil.getRandomAlphanumeric(LARGE_RESPONSE_SIZE);
 
     private static final boolean VERBOSE = false;
 
@@ -536,7 +531,6 @@ public class HttpUtilTest extends TestCase {
         return String.format("Expected response length: %d. %s.", expectedLength, response);
     }
 
-
     private static void println(String line) {
         System.out.println(line);
         System.out.flush();
@@ -695,7 +689,7 @@ public class HttpUtilTest extends TestCase {
 
         @Nonnull
         private static String getRandomString(int length) {
-            return RandomStringUtils.randomAlphanumeric(length);
+            return RandomUtil.getRandomAlphanumeric(length);
         }
     }
 }

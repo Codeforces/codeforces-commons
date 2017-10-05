@@ -9,17 +9,12 @@ import de.schlichtherle.truezip.file.TFile;
 import junit.framework.TestCase;
 import org.junit.Assert;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 16.09.11
+ * Date: 16.09.11
  */
 @SuppressWarnings({"OverlyLongMethod", "CallToPrintStackTrace", "JUnitTestMethodWithNoAssertions"})
 public class ZipUtilTest extends TestCase {
@@ -55,7 +50,7 @@ public class ZipUtilTest extends TestCase {
         File unpackedDirFromFile = null;
         File copiedDirFromFile = null;
         try {
-            String randomToken = RandomUtil.getRandomToken();
+            String randomToken = RandomUtil.getRandomHexToken();
             fileDir = FileUtil.createTemporaryDirectory("test-zip-files-" + randomToken);
             fileCopyDir = FileUtil.createTemporaryDirectory("test-zip-files-copy-" + randomToken);
             archiveDir = FileUtil.createTemporaryDirectory("test-zip-archive-" + randomToken);
@@ -137,7 +132,7 @@ public class ZipUtilTest extends TestCase {
         File fileDir = null;
         File archiveDir = null;
         try {
-            String randomToken = RandomUtil.getRandomToken();
+            String randomToken = RandomUtil.getRandomHexToken();
             fileDir = FileUtil.createTemporaryDirectory("test-zip-files-" + randomToken);
             archiveDir = FileUtil.createTemporaryDirectory("test-zip-archive-" + randomToken);
 
@@ -213,7 +208,7 @@ public class ZipUtilTest extends TestCase {
     public void testIsCorrectZipFileAndGetBytesInLoopAndMultipleThreads() throws Exception {
         File tempDir = null;
         try {
-            String randomToken = RandomUtil.getRandomToken();
+            String randomToken = RandomUtil.getRandomHexToken();
             tempDir = FileUtil.createTemporaryDirectory("test-is-correct-zip-file-" + randomToken);
 
             File emptyArchive = new File(tempDir, "empty.zip");

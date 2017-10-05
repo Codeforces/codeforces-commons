@@ -1,5 +1,6 @@
 package com.codeforces.commons.text;
 
+import com.codeforces.commons.collection.MapBuilder;
 import com.codeforces.commons.holder.Holders;
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
@@ -12,7 +13,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.text.translate.*;
+import org.apache.commons.text.translate.*;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -44,9 +45,9 @@ public final class StringUtil {
     private static final ReadWriteLock toStringConverterByClassMapLock = new ReentrantReadWriteLock();
 
     private static final CharSequenceTranslator ESCAPE_JAVA_RETAIN_CYRILLIC = new LookupTranslator(
-            new String[][] {{"\"", "\\\""}, {"\\", "\\\\"}}
+            new MapBuilder<CharSequence, CharSequence>().put("\"", "\\\"").put("\\", "\\\\").buildUnmodifiable()
     ).with(
-            new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())
+            new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE)
     ).with(
             JavaUnicodeEscaper.below(32)
     ).with(

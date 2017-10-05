@@ -535,7 +535,7 @@ public class UnsafeFileUtil {
      */
     @Nonnull
     public static File createTemporaryDirectory(String prefix, File parentDirectory) throws IOException {
-        File temporaryDirectory = new File(parentDirectory, prefix + '-' + RandomUtil.getRandomToken());
+        File temporaryDirectory = new File(parentDirectory, prefix + '-' + RandomUtil.getRandomHexToken());
         ensureDirectoryExists(temporaryDirectory);
         return new TemporaryDirectory(temporaryDirectory.getAbsolutePath());
     }
@@ -611,7 +611,7 @@ public class UnsafeFileUtil {
 
     @Nonnull
     private static File internalCreateTempFile(String prefix) {
-        return new File(getTemporaryDirFromResources(), prefix + '-' + RandomUtil.getRandomToken());
+        return new File(getTemporaryDirFromResources(), prefix + '-' + RandomUtil.getRandomHexToken());
     }
 
     private static void scanForList(File directoryOrFile, List<File> files) {

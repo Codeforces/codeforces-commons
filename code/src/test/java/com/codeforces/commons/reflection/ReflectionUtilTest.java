@@ -9,7 +9,7 @@ import java.util.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 16.01.14
+ * Date: 16.01.14
  */
 @SuppressWarnings({"AccessingNonPublicFieldOfAnotherObject", "ProtectedField", "OverlyLongMethod"})
 public class ReflectionUtilTest extends TestCase {
@@ -134,7 +134,7 @@ public class ReflectionUtilTest extends TestCase {
         b.setId(RandomUtil.getRandomLong());
         b.setSize(RandomUtil.getRandomInt(10));
         if (RandomUtil.getRandomInt(2) == 0) {
-            b.setName(RandomUtil.getRandomToken());
+            b.setName(RandomUtil.getRandomHexToken());
         }
         b.setVolume(RandomUtil.getRandomLong() * 1.0 / RandomUtil.getRandomLong());
         if (RandomUtil.getRandomInt(2) == 0) {
@@ -268,7 +268,6 @@ public class ReflectionUtilTest extends TestCase {
             if (Double.compare(a.volume, volume) != 0) return false;
             if (name != null ? !name.equals(a.name) : a.name != null) return false;
             return type == a.type;
-
         }
 
         @Override
@@ -297,7 +296,6 @@ public class ReflectionUtilTest extends TestCase {
         public void setNestedInstance(AA nestedInstance) {
             this.nestedInstance = nestedInstance;
         }
-
 
         public char getLetter() {
             return letter;
@@ -345,7 +343,6 @@ public class ReflectionUtilTest extends TestCase {
             return result;
         }
     }
-
 
     public static class B extends A {
         private char letter;

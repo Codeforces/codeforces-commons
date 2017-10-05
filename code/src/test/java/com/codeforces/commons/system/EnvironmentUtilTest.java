@@ -6,7 +6,7 @@ import org.junit.Test;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 06.10.2016
+ * Date: 06.10.2016
  */
 @SuppressWarnings({"CallToSystemGetenv", "MessageMissingOnJUnitAssertion"})
 public class EnvironmentUtilTest {
@@ -28,8 +28,12 @@ public class EnvironmentUtilTest {
                 "abc" + System.getenv("PATH") + " def",
                 EnvironmentUtil.expandNxStyleSystemVariables("abc$PATH def")
         );
-        Assert.assertEquals("a", EnvironmentUtil.expandNxStyleSystemVariables("a$PATH" + RandomUtil.getRandomToken()));
-        Assert.assertEquals("", EnvironmentUtil.expandNxStyleSystemVariables("$PATH" + RandomUtil.getRandomToken()));
+        Assert.assertEquals(
+                "a", EnvironmentUtil.expandNxStyleSystemVariables("a$PATH" + RandomUtil.getRandomHexToken())
+        );
+        Assert.assertEquals(
+                "", EnvironmentUtil.expandNxStyleSystemVariables("$PATH" + RandomUtil.getRandomHexToken())
+        );
         Assert.assertEquals("\\$PATHcabaca", EnvironmentUtil.expandNxStyleSystemVariables("\\$PATHcabaca"));
         Assert.assertEquals("a\\$PATHcabaca", EnvironmentUtil.expandNxStyleSystemVariables("a\\$PATHcabaca"));
         Assert.assertEquals("'$PATH'", EnvironmentUtil.expandNxStyleSystemVariables("'$PATH'"));

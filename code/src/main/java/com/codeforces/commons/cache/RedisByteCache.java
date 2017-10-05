@@ -3,7 +3,6 @@ package com.codeforces.commons.cache;
 import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.time.TimeUtil;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.xerial.snappy.Snappy;
 import redis.clients.jedis.Jedis;
@@ -212,7 +211,7 @@ public class RedisByteCache extends ByteCache {
 
         long sumd = 0;
         for (int i = 0; i < 100; i++) {
-            String key = RandomStringUtils.randomAlphanumeric(10);
+            String key = RandomUtil.getRandomAlphanumeric(10);
             byte[] value = RandomUtil.getRandomBytes(1024 * 1024 * 8);
             long from = System.currentTimeMillis();
             byteCache.put("a", key, value);
