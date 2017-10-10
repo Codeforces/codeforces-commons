@@ -1,5 +1,6 @@
 package com.codeforces.commons.collection;
 
+import com.google.common.collect.*;
 import gnu.trove.map.*;
 import gnu.trove.map.hash.*;
 import gnu.trove.set.*;
@@ -224,7 +225,9 @@ public class CollectionUtil {
 
         return collectionClass == unmodifiableCollectionClass || collectionClass == unmodifiableRandomAccessListClass
                 || collectionClass == unmodifiableListClass || collectionClass == unmodifiableSetClass
-                || collectionClass == unmodifiableNavigableSetClass || collectionClass == unmodifiableSortedSetClass;
+                || collectionClass == unmodifiableNavigableSetClass || collectionClass == unmodifiableSortedSetClass
+                || ImmutableList.class.isAssignableFrom(collectionClass)
+                || ImmutableSet.class.isAssignableFrom(collectionClass);
     }
 
     @Contract("null -> false")
@@ -235,7 +238,8 @@ public class CollectionUtil {
 
         Class listClass = list.getClass();
 
-        return listClass == unmodifiableRandomAccessListClass || listClass == unmodifiableListClass;
+        return listClass == unmodifiableRandomAccessListClass || listClass == unmodifiableListClass
+                || ImmutableList.class.isAssignableFrom(listClass);
     }
 
     @Contract("null -> false")
@@ -247,7 +251,7 @@ public class CollectionUtil {
         Class setClass = set.getClass();
 
         return setClass == unmodifiableSetClass || setClass == unmodifiableNavigableSetClass
-                || setClass == unmodifiableSortedSetClass;
+                || setClass == unmodifiableSortedSetClass || ImmutableSet.class.isAssignableFrom(setClass);
     }
 
     @Contract("null -> false")
@@ -259,7 +263,7 @@ public class CollectionUtil {
         Class mapClass = map.getClass();
 
         return mapClass == unmodifiableMapClass || mapClass == unmodifiableNavigableMapClass
-                || mapClass == unmodifiableSortedMapClass;
+                || mapClass == unmodifiableSortedMapClass || ImmutableMap.class.isAssignableFrom(mapClass);
     }
 
     @Nonnull
