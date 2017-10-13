@@ -1,10 +1,10 @@
 package com.codeforces.commons.lang;
 
-import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.function.*;
 
 /**
@@ -20,7 +20,7 @@ public class ObjectUtil {
     @Contract("null, null -> fail")
     @Nonnull
     public static <T> T toNotNull(@Nullable T value, @Nullable T nullReplacement) {
-        return value == null ? Preconditions.checkNotNull(nullReplacement) : value;
+        return value == null ? Objects.requireNonNull(nullReplacement) : value;
     }
 
     @Contract("null, null, null -> fail")
@@ -32,7 +32,7 @@ public class ObjectUtil {
     @Contract("null, null -> fail")
     @Nonnull
     public static <T> T toNotNull(@Nullable T value, @Nonnull Supplier<T> nullReplacement) {
-        return value == null ? Preconditions.checkNotNull(nullReplacement.get()) : value;
+        return value == null ? Objects.requireNonNull(nullReplacement.get()) : value;
     }
 
     @Contract("null, null, _ -> fail")

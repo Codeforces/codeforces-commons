@@ -7,7 +7,6 @@ import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.pair.*;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.reflection.ReflectionUtil;
-import com.google.common.base.Preconditions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -1021,8 +1020,8 @@ public final class StringUtil {
             result.append(itemSeparator);
         }
 
-        Preconditions.checkNotNull(previousNumber);
-        Preconditions.checkNotNull(intervalStart);
+        Objects.requireNonNull(previousNumber);
+        Objects.requireNonNull(intervalStart);
 
         if (previousNumber > intervalStart) {
             result.append(intervalStart).append(intervalSeparator).append(previousNumber);

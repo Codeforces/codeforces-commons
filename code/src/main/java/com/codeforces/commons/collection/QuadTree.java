@@ -4,8 +4,7 @@ import com.codeforces.commons.annotation.NonnullElements;
 import com.google.common.base.Preconditions;
 
 import javax.annotation.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 
@@ -43,8 +42,8 @@ public class QuadTree<T> {
         Preconditions.checkArgument(Double.isFinite(top) && Double.isFinite(bottom) && top < bottom);
         Preconditions.checkArgument(Double.isFinite(epsilon) && epsilon >= 0.0D);
 
-        this.xExtractor = Preconditions.checkNotNull(xExtractor);
-        this.yExtractor = Preconditions.checkNotNull(yExtractor);
+        this.xExtractor = Objects.requireNonNull(xExtractor);
+        this.yExtractor = Objects.requireNonNull(yExtractor);
 
         this.left = left;
         this.top = top;

@@ -8,21 +8,20 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.zip.DataFormatException;
 
 import static com.codeforces.commons.compress.ZipUtil.MAXIMAL_COMPRESSION_LEVEL;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 14.02.11
+ * Date: 14.02.11
  */
 public class FileSystemByteCache extends ByteCache {
     private static final Logger logger = Logger.getLogger(FileSystemByteCache.class);
@@ -49,7 +48,7 @@ public class FileSystemByteCache extends ByteCache {
 
     public FileSystemByteCache(
             @Nonnull File directory, boolean useCompression, boolean validateOnCreate, @Nonnegative long minFreeSpace) {
-        Preconditions.checkNotNull(directory, "Argument 'directory' is null.");
+        Objects.requireNonNull(directory, "Argument 'directory' is null.");
         Preconditions.checkArgument(minFreeSpace >= 0, String.format(
                 "Argument 'minFreeSpace' must be a nonnegative long integer, but got %d.", minFreeSpace
         ));

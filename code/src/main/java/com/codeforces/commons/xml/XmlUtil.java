@@ -4,7 +4,6 @@ import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.w3c.dom.*;
@@ -13,24 +12,19 @@ import org.xml.sax.InputSource;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 14.09.11
+ * Date: 14.09.11
  */
 public final class XmlUtil {
     private static final Lock factoryLock = new ReentrantLock();
@@ -53,7 +47,7 @@ public final class XmlUtil {
      */
     public static <T> T extractFromXml(@Nonnull File xmlFile, String xPath, Class<T> clazz)
             throws IOException {
-        return Preconditions.checkNotNull(FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
+        return Objects.requireNonNull(FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
             @Nonnull
             @Override
             public T run() throws IOException {
@@ -82,7 +76,7 @@ public final class XmlUtil {
     @Nonnull
     public static <T> T extractFromXml(InputStream xmlInputStream, String xPath, Class<T> clazz)
             throws IOException {
-        return Preconditions.checkNotNull(FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
+        return Objects.requireNonNull(FileUtil.executeIoOperation(new ThreadUtil.Operation<T>() {
             @Nonnull
             @Override
             public T run() throws IOException {

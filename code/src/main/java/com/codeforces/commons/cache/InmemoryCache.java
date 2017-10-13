@@ -2,7 +2,6 @@ package com.codeforces.commons.cache;
 
 import com.codeforces.commons.process.ReadWriteEvent;
 import com.codeforces.commons.process.ThreadUtil;
-import com.google.common.base.Preconditions;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 
@@ -38,7 +37,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         while (!stopBackgroundThreads.get()) {
             try {
                 if (hasExpirationInfos()) {
-                    CacheEntryExpirationInfo<K, V> expirationInfo = Preconditions.checkNotNull(getFirstExpirationInfo());
+                    CacheEntryExpirationInfo<K, V> expirationInfo = Objects.requireNonNull(getFirstExpirationInfo());
                     long currentTimeMillis = System.currentTimeMillis();
                     long expirationTimeMillis = expirationInfo.getExpirationTimeMillis();
 

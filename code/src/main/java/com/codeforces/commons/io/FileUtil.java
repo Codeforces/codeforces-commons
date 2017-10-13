@@ -5,7 +5,6 @@ import com.codeforces.commons.io.internal.UnsafeFileUtil;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
-import com.google.common.base.Preconditions;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -85,7 +84,7 @@ public class FileUtil {
      */
     @Nonnull
     public static String sha1(File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.sha1Hex(file)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.sha1Hex(file)));
     }
 
     /**
@@ -126,7 +125,7 @@ public class FileUtil {
      */
     @Nonnull
     public static File ensureFileExists(File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.ensureFileExists(file)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.ensureFileExists(file)));
     }
 
     /**
@@ -138,7 +137,7 @@ public class FileUtil {
      */
     @Nonnull
     public static File ensureDirectoryExists(File directory) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.ensureDirectoryExists(directory)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.ensureDirectoryExists(directory)));
     }
 
     /**
@@ -269,7 +268,7 @@ public class FileUtil {
      */
     @Nonnull
     public static String readFile(File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.readFile(file)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.readFile(file)));
     }
 
     /**
@@ -405,7 +404,7 @@ public class FileUtil {
      */
     @Nonnull
     public static byte[] getBytes(File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.getBytes(file)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.getBytes(file)));
     }
 
     /**
@@ -429,7 +428,7 @@ public class FileUtil {
      */
     @Nonnull
     public static FirstBytes getFirstBytes(File file) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
+        return Objects.requireNonNull(executeIoOperation(new ThreadUtil.Operation<FirstBytes>() {
             @Nonnull
             @Override
             public FirstBytes run() throws IOException {
@@ -449,7 +448,7 @@ public class FileUtil {
      */
     @Nonnull
     public static FirstBytes getFirstBytes(File file, long maxSize) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.getFirstBytes(file, maxSize)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.getFirstBytes(file, maxSize)));
     }
 
     /**
@@ -461,7 +460,7 @@ public class FileUtil {
      */
     @Nonnull
     public static File createTemporaryDirectory(String prefix) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.createTemporaryDirectory(prefix)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.createTemporaryDirectory(prefix)));
     }
 
     /**
@@ -474,7 +473,7 @@ public class FileUtil {
      */
     @Nonnull
     public static File createTemporaryDirectory(String prefix, File parentDirectory) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.createTemporaryDirectory(prefix, parentDirectory)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.createTemporaryDirectory(prefix, parentDirectory)));
     }
 
     /**
@@ -566,7 +565,7 @@ public class FileUtil {
      */
     @Nonnull
     public static File getTemporaryDirectory() throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(UnsafeFileUtil::getTemporaryDirectory));
+        return Objects.requireNonNull(executeIoOperation(UnsafeFileUtil::getTemporaryDirectory));
     }
 
     /**
@@ -577,17 +576,17 @@ public class FileUtil {
      */
     @Nonnull
     public static List<File> list(@Nonnull File directory) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.list(directory)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.list(directory)));
     }
 
     @Nonnull
     public static List<String> listRelativePaths(@Nonnull File directory, @Nullable FileFilter filter,
                                                  boolean recursive) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.listRelativePaths(directory, filter, recursive)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.listRelativePaths(directory, filter, recursive)));
     }
 
     public static long getDirectorySize(File directory) throws IOException {
-        return Preconditions.checkNotNull(executeIoOperation(() -> UnsafeFileUtil.getDirectorySize(directory)));
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.getDirectorySize(directory)));
     }
 
     public static File hideFile(File file) throws IOException {

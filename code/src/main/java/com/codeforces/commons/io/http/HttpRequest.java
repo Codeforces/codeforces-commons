@@ -62,6 +62,7 @@ public final class HttpRequest {
 
     private long maxSizeBytes = FileUtil.BYTES_PER_GB;
 
+    @Nonnull
     public static HttpRequest create(String url, Object... parameters) {
         return new HttpRequest(url, parameters);
     }
@@ -71,10 +72,12 @@ public final class HttpRequest {
         appendParameters(parameters);
     }
 
+    @Contract(pure = true)
     public String getUrl() {
         return url;
     }
 
+    @Nonnull
     public Map<String, List<String>> getParametersByNameMap() {
         return getDeepUnmodifiableMap(parametersByName);
     }
@@ -304,8 +307,7 @@ public final class HttpRequest {
     }
 
     public HttpRequest setMethod(HttpMethod method) {
-        Preconditions.checkNotNull(method, "Argument 'method' is null.");
-        this.method = method;
+        this.method = Objects.requireNonNull(method, "Argument 'method' is null.");
         return this;
     }
 
@@ -337,7 +339,7 @@ public final class HttpRequest {
 
     public HttpRequest setRetryPolicy(int maxRetryCount, @Nonnull HttpResponseChecker responseChecker) {
         Preconditions.checkArgument(maxRetryCount > 0, "Argument 'maxRetryCount' is zero or negative.");
-        Preconditions.checkNotNull(responseChecker, "Argument 'responseChecker' is null.");
+        Objects.requireNonNull(responseChecker, "Argument 'responseChecker' is null.");
         this.maxRetryCount = maxRetryCount;
         this.responseChecker = responseChecker;
         return this;
@@ -346,8 +348,8 @@ public final class HttpRequest {
     public HttpRequest setRetryPolicy(int maxRetryCount, @Nonnull HttpResponseChecker responseChecker,
                                       @Nonnull ThreadUtil.ExecutionStrategy retryStrategy) {
         Preconditions.checkArgument(maxRetryCount > 0, "Argument 'maxRetryCount' is zero or negative.");
-        Preconditions.checkNotNull(responseChecker, "Argument 'responseChecker' is null.");
-        Preconditions.checkNotNull(retryStrategy, "Argument 'retryStrategy' is null.");
+        Objects.requireNonNull(responseChecker, "Argument 'responseChecker' is null.");
+        Objects.requireNonNull(retryStrategy, "Argument 'retryStrategy' is null.");
         this.maxRetryCount = maxRetryCount;
         this.responseChecker = responseChecker;
         this.retryStrategy = retryStrategy;
@@ -783,6 +785,7 @@ public final class HttpRequest {
         }
     }
 
+    @Nonnull
     static <K, V> Map<K, List<V>> getDeepUnmodifiableMap(Map<K, List<V>> map) {
         Map<K, List<V>> copy = new LinkedHashMap<>(map);
         for (Map.Entry<K, List<V>> entry : copy.entrySet()) {
