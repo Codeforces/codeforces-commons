@@ -1,6 +1,7 @@
 package com.codeforces.commons.lang;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.*;
 
 /**
@@ -24,6 +25,12 @@ public final class Flow {
         }
     }
 
+    public static void ifTrue(@Nonnull AtomicBoolean condition, @Nonnull Runnable action) {
+        if (condition.get()) {
+            action.run();
+        }
+    }
+
     public static void ifFalse(boolean condition, @Nonnull Runnable action) {
         if (!condition) {
             action.run();
@@ -36,6 +43,12 @@ public final class Flow {
         }
     }
 
+    public static void ifFalse(@Nonnull AtomicBoolean condition, @Nonnull Runnable action) {
+        if (!condition.get()) {
+            action.run();
+        }
+    }
+
     public static void ifElse(boolean condition, @Nonnull Runnable trueAction, @Nonnull Runnable falseAction) {
         (condition ? trueAction : falseAction).run();
     }
@@ -43,6 +56,11 @@ public final class Flow {
     public static void ifElse(
             @Nonnull BooleanSupplier condition, @Nonnull Runnable trueAction, @Nonnull Runnable falseAction) {
         (condition.getAsBoolean() ? trueAction : falseAction).run();
+    }
+
+    public static void ifElse(
+            @Nonnull AtomicBoolean condition, @Nonnull Runnable trueAction, @Nonnull Runnable falseAction) {
+        (condition.get() ? trueAction : falseAction).run();
     }
 
     public static <T> void forLoop(
