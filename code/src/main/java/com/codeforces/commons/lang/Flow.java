@@ -53,28 +53,33 @@ public final class Flow {
         (condition ? trueAction : falseAction).run();
     }
 
-    public static void ifElse(
-            @Nonnull BooleanSupplier condition, @Nonnull Runnable trueAction, @Nonnull Runnable falseAction) {
+    public static void ifElse(@Nonnull BooleanSupplier condition,
+                              @Nonnull Runnable trueAction, @Nonnull Runnable falseAction) {
         (condition.getAsBoolean() ? trueAction : falseAction).run();
     }
 
-    public static void ifElse(
-            @Nonnull AtomicBoolean condition, @Nonnull Runnable trueAction, @Nonnull Runnable falseAction) {
+    public static void ifElse(@Nonnull AtomicBoolean condition,
+                              @Nonnull Runnable trueAction, @Nonnull Runnable falseAction) {
         (condition.get() ? trueAction : falseAction).run();
     }
 
-    public static <T> void forLoop(
-            @Nonnull Supplier<T> initialValue, @Nonnull Predicate<T> condition, @Nonnull UnaryOperator<T> valueUpdate,
-            @Nonnull Consumer<T> action) {
+    public static <T> void forLoop(@Nonnull Supplier<T> initialValue, @Nonnull Predicate<T> condition,
+                                   @Nonnull UnaryOperator<T> valueUpdate, @Nonnull Consumer<T> action) {
         for (T value = initialValue.get(); condition.test(value); value = valueUpdate.apply(value)) {
             action.accept(value);
         }
     }
 
-    public static void forIntLoop(
-            @Nonnull IntSupplier initialValue, @Nonnull IntPredicate condition, @Nonnull IntUnaryOperator valueUpdate,
-            @Nonnull IntConsumer action) {
+    public static void forInt(@Nonnull IntSupplier initialValue, @Nonnull IntPredicate condition,
+                              @Nonnull IntUnaryOperator valueUpdate, @Nonnull IntConsumer action) {
         for (int value = initialValue.getAsInt(); condition.test(value); value = valueUpdate.applyAsInt(value)) {
+            action.accept(value);
+        }
+    }
+
+    public static void forLong(@Nonnull LongSupplier initialValue, @Nonnull LongPredicate condition,
+                               @Nonnull LongUnaryOperator valueUpdate, @Nonnull LongConsumer action) {
+        for (long value = initialValue.getAsLong(); condition.test(value); value = valueUpdate.applyAsLong(value)) {
             action.accept(value);
         }
     }
