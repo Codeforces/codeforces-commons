@@ -44,40 +44,13 @@ public final class RandomUtil {
 
     /**
      * Generates random hex-string of length 32 which is used as a session token.
-     * Equal to {@code {@link #getRandomToken(int) getRandomToken(32)}}.
-     *
-     * @return randomToken random {@code string}
-     * @deprecated Use {@link #getRandomHexToken()}
-     */
-    @Deprecated
-    public static String getRandomToken() {
-        return Hex.encodeHexString(getRandomBytes(16));
-    }
-
-    /**
-     * Generates random hex-string of specific length.
-     *
-     * @param length hex-string length, should be divisible by 2
-     * @return randomToken random {@code string}
-     * @deprecated Use {@link #getRandomHex(int)}
-     */
-    @Deprecated
-    public static String getRandomToken(@Nonnegative int length) {
-        if (length < 0 || length % 2 != 0) {
-            throw new IllegalArgumentException("Argument 'length' is negative or not divisible by 2.");
-        }
-
-        return Hex.encodeHexString(getRandomBytes(length / 2));
-    }
-
-    /**
-     * Generates random hex-string of length 32 which is commonly used as a session token.
      * Equal to {@code {@link #getRandomHex(int) getRandomHex(32)}}.
      *
-     * @return random hex-token
+     * @return randomToken random {@code string}
      */
-    public static String getRandomHexToken() {
-        return getRandomHex(32);
+    @Nonnull
+    public static String getRandomToken() {
+        return Hex.encodeHexString(getRandomBytesUnchecked(16));
     }
 
     /**
@@ -86,6 +59,7 @@ public final class RandomUtil {
      * @param length non-negative length
      * @return random hex-string
      */
+    @Nonnull
     public static String getRandomHex(@Nonnegative int length) {
         if (length < 0) {
             throw new IllegalArgumentException("Argument 'length' must be a non-negative integer.");
@@ -102,6 +76,7 @@ public final class RandomUtil {
      * @param length non-negative length
      * @return random alphabetic-string
      */
+    @Nonnull
     public static String getRandomAlphabetic(@Nonnegative int length) {
         if (length < 0) {
             throw new IllegalArgumentException("Argument 'length' must be a non-negative integer.");
@@ -116,6 +91,7 @@ public final class RandomUtil {
      * @param length non-negative length
      * @return random numeric-string
      */
+    @Nonnull
     public static String getRandomNumeric(@Nonnegative int length) {
         if (length < 0) {
             throw new IllegalArgumentException("Argument 'length' must be a non-negative integer.");
@@ -130,6 +106,7 @@ public final class RandomUtil {
      * @param length non-negative length
      * @return random alphanumeric-string
      */
+    @Nonnull
     public static String getRandomAlphanumeric(@Nonnegative int length) {
         if (length < 0) {
             throw new IllegalArgumentException("Argument 'length' must be a non-negative integer.");
@@ -158,6 +135,7 @@ public final class RandomUtil {
         return random.nextInt(n);
     }
 
+    @Nonnull
     public static byte[] getRandomBytes(@Nonnegative int length) {
         if (length < 0) {
             throw new IllegalArgumentException("Argument 'length' must be a non-negative integer.");
@@ -166,12 +144,14 @@ public final class RandomUtil {
         return length == 0 ? ArrayUtils.EMPTY_BYTE_ARRAY : getRandomBytesUnchecked(length);
     }
 
+    @Nonnull
     private static byte[] getRandomBytesUnchecked(@Nonnegative int length) {
         byte[] bytes = new byte[length];
         random.nextBytes(bytes);
         return bytes;
     }
 
+    @Nonnull
     private static String getRandomStringUnchecked(@Nonnull char[] characterSet, @Nonnegative int length) {
         Random random = RandomUtil.random;
         int setLength = characterSet.length;
