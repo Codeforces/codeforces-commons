@@ -50,7 +50,7 @@ public class ZipUtilTest extends TestCase {
         File unpackedDirFromFile = null;
         File copiedDirFromFile = null;
         try {
-            String randomToken = RandomUtil.getRandomHexToken();
+            String randomToken = RandomUtil.getRandomToken();
             fileDir = FileUtil.createTemporaryDirectory("test-zip-files-" + randomToken);
             fileCopyDir = FileUtil.createTemporaryDirectory("test-zip-files-copy-" + randomToken);
             archiveDir = FileUtil.createTemporaryDirectory("test-zip-archive-" + randomToken);
@@ -132,7 +132,7 @@ public class ZipUtilTest extends TestCase {
         File fileDir = null;
         File archiveDir = null;
         try {
-            String randomToken = RandomUtil.getRandomHexToken();
+            String randomToken = RandomUtil.getRandomToken();
             fileDir = FileUtil.createTemporaryDirectory("test-zip-files-" + randomToken);
             archiveDir = FileUtil.createTemporaryDirectory("test-zip-archive-" + randomToken);
 
@@ -208,7 +208,7 @@ public class ZipUtilTest extends TestCase {
     public void testIsCorrectZipFileAndGetBytesInLoopAndMultipleThreads() throws Exception {
         File tempDir = null;
         try {
-            String randomToken = RandomUtil.getRandomHexToken();
+            String randomToken = RandomUtil.getRandomToken();
             tempDir = FileUtil.createTemporaryDirectory("test-is-correct-zip-file-" + randomToken);
 
             File emptyArchive = new File(tempDir, "empty.zip");

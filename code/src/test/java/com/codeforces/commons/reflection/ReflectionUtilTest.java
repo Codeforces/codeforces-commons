@@ -134,7 +134,7 @@ public class ReflectionUtilTest extends TestCase {
         b.setId(RandomUtil.getRandomLong());
         b.setSize(RandomUtil.getRandomInt(10));
         if (RandomUtil.getRandomInt(2) == 0) {
-            b.setName(RandomUtil.getRandomHexToken());
+            b.setName(RandomUtil.getRandomToken());
         }
         b.setVolume(RandomUtil.getRandomLong() * 1.0 / RandomUtil.getRandomLong());
         if (RandomUtil.getRandomInt(2) == 0) {

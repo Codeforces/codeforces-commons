@@ -29,10 +29,10 @@ public class EnvironmentUtilTest {
                 EnvironmentUtil.expandNxStyleSystemVariables("abc$PATH def")
         );
         Assert.assertEquals(
-                "a", EnvironmentUtil.expandNxStyleSystemVariables("a$PATH" + RandomUtil.getRandomHexToken())
+                "a", EnvironmentUtil.expandNxStyleSystemVariables("a$PATH" + RandomUtil.getRandomToken())
         );
         Assert.assertEquals(
-                "", EnvironmentUtil.expandNxStyleSystemVariables("$PATH" + RandomUtil.getRandomHexToken())
+                "", EnvironmentUtil.expandNxStyleSystemVariables("$PATH" + RandomUtil.getRandomToken())
         );
         Assert.assertEquals("\\$PATHcabaca", EnvironmentUtil.expandNxStyleSystemVariables("\\$PATHcabaca"));
         Assert.assertEquals("a\\$PATHcabaca", EnvironmentUtil.expandNxStyleSystemVariables("a\\$PATHcabaca"));
