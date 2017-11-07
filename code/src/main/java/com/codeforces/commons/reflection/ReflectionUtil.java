@@ -171,12 +171,15 @@ public class ReflectionUtil {
 
     @Nonnull
     public static Map<String, List<Field>> getFieldsByNameMap(@Nonnull Class clazz) {
-        return fieldsByNameByClass.computeIfAbsent(clazz, __ -> {
-            Map<String, List<Field>> fieldsByName = new LinkedHashMap<>();
+        Map<String, List<Field>> fieldsByName = fieldsByNameByClass.get(clazz);
 
-            ObjectUtil.ifNotNull(clazz.getSuperclass(), superclass -> fieldsByName.putAll(
-                    getFieldsByNameMap(superclass)
-            ));
+        if (fieldsByName == null) {
+            fieldsByName = new LinkedHashMap<>();
+
+            Class superclass = clazz.getSuperclass();
+            if (superclass != null) {
+                fieldsByName.putAll(getFieldsByNameMap(superclass));
+            }
 
             for (Field field : clazz.getDeclaredFields()) {
                 if (field.isEnumConstant() || Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
@@ -202,8 +205,11 @@ public class ReflectionUtil {
                 fieldsByName.put(fieldName, Collections.unmodifiableList(fields));
             }
 
-            return Collections.unmodifiableMap(fieldsByName);
-        });
+            fieldsByNameByClass.putIfAbsent(clazz, Collections.unmodifiableMap(fieldsByName));
+            return fieldsByNameByClass.get(clazz);
+        } else {
+            return fieldsByName;
+        }
     }
 
     private static boolean throwsOnlyRuntimeExceptions(@Nonnull Method method) {
