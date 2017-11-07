@@ -1,24 +1,24 @@
 package com.codeforces.commons.reflection;
 
+import com.codeforces.commons.lang.ObjectUtil;
 import com.codeforces.commons.text.StringUtil;
 import net.sf.cglib.reflect.FastClass;
 import net.sf.cglib.reflect.FastMethod;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 16.01.14
+ * Date: 16.01.14
  */
+@SuppressWarnings("WeakerAccess")
 public class ReflectionUtil {
     private static final ConcurrentMap<Class<?>, Map<String, List<Field>>> fieldsByNameByClass
             = new ConcurrentHashMap<>();
@@ -171,15 +171,12 @@ public class ReflectionUtil {
 
     @Nonnull
     public static Map<String, List<Field>> getFieldsByNameMap(@Nonnull Class clazz) {
-        Map<String, List<Field>> fieldsByName = fieldsByNameByClass.get(clazz);
+        return fieldsByNameByClass.computeIfAbsent(clazz, __ -> {
+            Map<String, List<Field>> fieldsByName = new LinkedHashMap<>();
 
-        if (fieldsByName == null) {
-            fieldsByName = new LinkedHashMap<>();
-
-            Class superclass = clazz.getSuperclass();
-            if (superclass != null) {
-                fieldsByName.putAll(getFieldsByNameMap(superclass));
-            }
+            ObjectUtil.ifNotNull(clazz.getSuperclass(), superclass -> fieldsByName.putAll(
+                    getFieldsByNameMap(superclass)
+            ));
 
             for (Field field : clazz.getDeclaredFields()) {
                 if (field.isEnumConstant() || Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) {
@@ -205,11 +202,8 @@ public class ReflectionUtil {
                 fieldsByName.put(fieldName, Collections.unmodifiableList(fields));
             }
 
-            fieldsByNameByClass.putIfAbsent(clazz, Collections.unmodifiableMap(fieldsByName));
-            return fieldsByNameByClass.get(clazz);
-        } else {
-            return fieldsByName;
-        }
+            return Collections.unmodifiableMap(fieldsByName);
+        });
     }
 
     private static boolean throwsOnlyRuntimeExceptions(@Nonnull Method method) {
@@ -335,6 +329,7 @@ public class ReflectionUtil {
         return result;
     }
 
+    @Nullable
     private static String getGetterProperty(Method method) {
         if (method.getParameterTypes().length > 0 || method.getDeclaringClass() == Object.class) {
             return null;
@@ -351,6 +346,7 @@ public class ReflectionUtil {
         return null;
     }
 
+    @Nullable
     private static String getSetterProperty(Method method) {
         if (method.getParameterTypes().length != 1 || method.getDeclaringClass() == Object.class) {
             return null;
@@ -364,8 +360,9 @@ public class ReflectionUtil {
         return null;
     }
 
+    @SuppressWarnings({"OverlyLongMethod", "OverlyNestedMethod"})
     public static void copyProperties(Object source, Object target) {
-        if (source == target) {
+        if (ObjectUtil.referenceEquals(source, target)) {
             return;
         }
 
@@ -384,75 +381,79 @@ public class ReflectionUtil {
             FastMethod getter = getterEntry.getValue();
             FastMethod setter = targetSetters.get(getterEntry.getKey());
 
-            if (setter != null) {
-                Class<?> getterReturnsClass = getter.getReturnType();
-                Class<?> setterExpectsClass = setter.getParameterTypes()[0];
+            if (setter == null) {
+                continue;
+            }
 
-                Object value;
+            Class<?> getterReturnsClass = getter.getReturnType();
+            Class<?> setterExpectsClass = setter.getParameterTypes()[0];
+
+            Object value;
+            try {
+                value = getter.invoke(source, ArrayUtils.EMPTY_OBJECT_ARRAY);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(String.format(
+                        "Can't get property '%s' from %s.", getterEntry.getKey(), source.getClass()
+                ), e);
+            }
+
+            if (setterExpectsClass.isAssignableFrom(getterReturnsClass)) {
                 try {
-                    value = getter.invoke(source, new Object[]{});
+                    setter.invoke(target, new Object[] {value});
                 } catch (InvocationTargetException e) {
-                    throw new RuntimeException("Can't get property '" + getterEntry.getKey()
-                            + "' from " + source.getClass() + ".", e);
+                    throw new RuntimeException(String.format(
+                            "Can't copy assignable property '%s' from %s to %s.",
+                            getterEntry.getKey(), source.getClass(), target.getClass()
+                    ), e);
                 }
+                continue;
+            }
 
-                if (setterExpectsClass.isAssignableFrom(getterReturnsClass)) {
-                    try {
-                        setter.invoke(target, new Object[]{value});
-                    } catch (InvocationTargetException e) {
-                        throw new RuntimeException("Can't copy assignable property '" + getterEntry.getKey()
-                                + "' from " + source.getClass() + " to " + target.getClass() + ".", e);
-                    }
-                    continue;
+            if (setterExpectsClass.isAssignableFrom(String.class)) {
+                try {
+                    setter.invoke(target, new Object[] {ObjectUtil.mapNotNull(value, Object::toString)});
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(String.format(
+                            "Can't copy assignable property '%s' from %s to string assignable property of %s.",
+                            getterEntry.getKey(), source.getClass(), target.getClass()
+                    ), e);
                 }
+                continue;
+            }
 
-                if (setterExpectsClass.isAssignableFrom(String.class)) {
-                    try {
-                        if (value == null) {
-                            setter.invoke(target, new Object[]{null});
-                        } else {
-                            setter.invoke(target, new Object[]{value.toString()});
-                        }
-                    } catch (InvocationTargetException e) {
-                        throw new RuntimeException("Can't copy assignable property '" + getterEntry.getKey()
-                                + "' from " + source.getClass()
-                                + " to string assignable property of " + target.getClass() + ".", e);
-                    }
-                    continue;
-                }
-
-                if (setterExpectsClass.isEnum()) {
-                    try {
-                        if (value == null) {
-                            setter.invoke(target, new Object[]{null});
-                        } else {
-                            String valueString = value.toString();
-                            Object[] constants = setterExpectsClass.getEnumConstants();
-                            for (Object constant : constants) {
-                                if (constant.toString().equals(valueString)) {
-                                    setter.invoke(target, new Object[]{constant});
-                                    break;
-                                }
+            if (setterExpectsClass.isEnum()) {
+                try {
+                    if (value == null) {
+                        setter.invoke(target, new Object[] {null});
+                    } else {
+                        String valueString = value.toString();
+                        Object[] constants = setterExpectsClass.getEnumConstants();
+                        for (Object constant : constants) {
+                            if (constant.toString().equals(valueString)) {
+                                setter.invoke(target, new Object[] {constant});
+                                break;
                             }
                         }
-                    } catch (InvocationTargetException e) {
-                        throw new RuntimeException("Can't copy enum property '" + getterEntry.getKey()
-                                + "' from " + source.getClass()
-                                + " to " + target.getClass() + ".", e);
                     }
-                    continue;
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(String.format(
+                            "Can't copy enum property '%s' from %s to %s.",
+                            getterEntry.getKey(), source.getClass(), target.getClass()
+                    ), e);
                 }
+                continue;
+            }
 
-                if (value != null) {
-                    try {
-                        Object valueCopy = setterExpectsClass.newInstance();
-                        copyProperties(value, valueCopy);
-                        setter.invoke(target, new Object[]{valueCopy});
-                    } catch (Exception e) {
-                        throw new RuntimeException("Can't copy object property '" + getterEntry.getKey()
-                                + "' from " + source.getClass()
-                                + " to " + target.getClass() + ".", e);
-                    }
+            if (value != null) {
+                try {
+                    Object valueCopy = setterExpectsClass.getConstructor().newInstance();
+                    copyProperties(value, valueCopy);
+                    setter.invoke(target, new Object[] {valueCopy});
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format(
+                            "Can't copy object property '%s' from %s to %s.",
+                            getterEntry.getKey(), source.getClass(), target.getClass()
+                    ), e);
                 }
             }
         }
