@@ -451,6 +451,11 @@ public class FileUtil {
         return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.getFirstBytes(file, maxSize)));
     }
 
+    @Nonnull
+    public static InputStream getInputStream(File file) throws IOException {
+        return Objects.requireNonNull(executeIoOperation(() -> UnsafeFileUtil.getInputStream(file)));
+    }
+
     /**
      * Creates temporary directory with auto-generated name with specific prefix.
      *

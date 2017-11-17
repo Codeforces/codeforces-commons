@@ -7,6 +7,7 @@ import com.codeforces.commons.lang.ObjectUtil;
 import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.google.common.primitives.Ints;
+import com.google.errorprone.annotations.MustBeClosed;
 import de.schlichtherle.truezip.file.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -20,8 +21,9 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import static com.codeforces.commons.math.Math.max;
 
 /**
  * @author Mike Mirzayanov
@@ -439,16 +441,16 @@ public class UnsafeFileUtil {
 
                     TFile enclosingArchive = trueZipFile.getEnclArchive();
                     if (enclosingArchive != null && new File(enclosingArchive.getAbsolutePath()).isFile()) {
-                        return ZipUtil.getZipEntryBytes(enclosingArchive, trueZipFile.getEnclEntryName());
+                        return ZipUtil.getZipEntryBytes(
+                                enclosingArchive, Objects.requireNonNull(trueZipFile.getEnclEntryName())
+                        );
                     }
                 }
             } finally {
                 TVFS.umount(trueZipFile);
             }
-        } else {
-            if (file.isFile()) {
-                return forceGetBytesFromExistingRegularFile(file);
-            }
+        } else if (file.isFile()) {
+            return forceGetBytesFromExistingRegularFile(file);
         }
 
         throw new FileNotFoundException("'" + file + "' is not file.");
@@ -509,6 +511,46 @@ public class UnsafeFileUtil {
         }
     }
 
+    @MustBeClosed
+    @Nonnull
+    public static InputStream getInputStream(File file) throws IOException {
+        if (file instanceof TFile) {
+            TFile trueZipFile = (TFile) file;
+
+            try {
+                if (trueZipFile.isFile()) {
+                    long size = file.length();
+                    InputStream stream = new TFileInputStream(file);
+                    byte[] bytes = new byte[Ints.checkedCast(size)];
+                    IOUtils.read(stream, bytes);
+                    stream.close();
+                    return new ByteArrayInputStream(bytes);
+                }
+
+                if (trueZipFile.isArchive()) {
+                    TVFS.umount(trueZipFile);
+                    file = new File(file.getAbsolutePath());
+                    if (file.isFile()) {
+                        return new ByteArrayInputStream(forceGetBytesFromExistingRegularFile(file));
+                    }
+
+                    TFile enclosingArchive = trueZipFile.getEnclArchive();
+                    if (enclosingArchive != null && new File(enclosingArchive.getAbsolutePath()).isFile()) {
+                        return new ByteArrayInputStream(ZipUtil.getZipEntryBytes(
+                                enclosingArchive, Objects.requireNonNull(trueZipFile.getEnclEntryName())
+                        ));
+                    }
+                }
+            } finally {
+                TVFS.umount(trueZipFile);
+            }
+        } else if (file.isFile()) {
+            return new BufferedInputStream(new FileInputStream(file), IoUtil.BUFFER_SIZE);
+        }
+
+        throw new FileNotFoundException("'" + file + "' is not file.");
+    }
+
     /**
      * Creates temporary directory with auto-generated name with specific prefix.
      *
@@ -548,12 +590,8 @@ public class UnsafeFileUtil {
     @Nonnull
     public static String getNameAndExt(@Nonnull File file) {
         String path = file.getPath();
-        int lastSep = Math.max(path.lastIndexOf(DOS_FILE_SEPARATOR), path.lastIndexOf(UNIX_FILE_SEPARATOR));
-        if (lastSep == -1) {
-            return path;
-        } else {
-            return path.substring(lastSep + 1);
-        }
+        int lastSep = max(path.lastIndexOf(DOS_FILE_SEPARATOR), path.lastIndexOf(UNIX_FILE_SEPARATOR));
+        return lastSep == -1 ? path : path.substring(lastSep + 1);
     }
 
     /**
@@ -563,12 +601,8 @@ public class UnsafeFileUtil {
     @Nonnull
     public static String getPrefixPath(@Nonnull File file) {
         String path = file.getPath();
-        int lastSep = Math.max(path.lastIndexOf(DOS_FILE_SEPARATOR), path.lastIndexOf(UNIX_FILE_SEPARATOR));
-        if (lastSep == -1) {
-            return "";
-        } else {
-            return path.substring(0, lastSep + 1);
-        }
+        int lastSep = max(path.lastIndexOf(DOS_FILE_SEPARATOR), path.lastIndexOf(UNIX_FILE_SEPARATOR));
+        return lastSep == -1 ? "" : path.substring(0, lastSep + 1);
     }
 
     /**
@@ -579,11 +613,7 @@ public class UnsafeFileUtil {
     public static String getName(@Nonnull File file) {
         String nameAndExt = getNameAndExt(file);
         int dotIndex = nameAndExt.lastIndexOf('.');
-        if (dotIndex == -1) {
-            return nameAndExt;
-        } else {
-            return nameAndExt.substring(0, dotIndex);
-        }
+        return dotIndex == -1 ? nameAndExt : nameAndExt.substring(0, dotIndex);
     }
 
     /**
@@ -593,11 +623,7 @@ public class UnsafeFileUtil {
     public static String getExt(File file) {
         String nameAndExt = getNameAndExt(file);
         int dotIndex = nameAndExt.lastIndexOf('.');
-        if (dotIndex == -1) {
-            return "";
-        } else {
-            return nameAndExt.substring(dotIndex).toLowerCase();
-        }
+        return dotIndex == -1 ? "" : nameAndExt.substring(dotIndex).toLowerCase();
     }
 
     /**

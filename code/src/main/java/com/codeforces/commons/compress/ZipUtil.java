@@ -1,15 +1,10 @@
 package com.codeforces.commons.compress;
 
-import com.codeforces.commons.io.CountingOutputStream;
-import com.codeforces.commons.io.FileUtil;
-import com.codeforces.commons.io.IoUtil;
+import com.codeforces.commons.io.*;
 import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import com.google.common.primitives.Ints;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.file.TFileOutputStream;
-import de.schlichtherle.truezip.file.TVFS;
+import de.schlichtherle.truezip.file.*;
 import de.schlichtherle.truezip.fs.FsSyncException;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -18,6 +13,7 @@ import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOCase;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Contract;
@@ -27,9 +23,7 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.zip.*;
 
 import static com.codeforces.commons.math.Math.max;
@@ -388,7 +382,7 @@ public final class ZipUtil {
             ));
         }
 
-        if (!StringUtil.isEmpty(prefix)) {
+        if (StringUtil.isNotEmpty(prefix)) {
             zipOutputStream.putNextEntry(new ZipEntry(prefix));
             zipOutputStream.closeEntry();
         }
@@ -403,7 +397,15 @@ public final class ZipUtil {
             if (file.isFile() && (!ignoreHiddenFiles || !file.isHidden())) {
                 String path = prefix + file.getName();
                 zipOutputStream.putNextEntry(new ZipEntry(path));
-                zipOutputStream.write(FileUtil.getBytes(file));
+
+                if (file.length() > FileUtil.BYTES_PER_GB) {
+                    try (InputStream inputStream = FileUtil.getInputStream(file)) {
+                        IOUtils.copyLarge(inputStream, zipOutputStream, new byte[IoUtil.BUFFER_SIZE]);
+                    }
+                } else {
+                    zipOutputStream.write(FileUtil.getBytes(file));
+                }
+
                 zipOutputStream.closeEntry();
             }
         }
@@ -795,14 +797,15 @@ public final class ZipUtil {
      * @see String#format(String, Object...)
      */
     @SuppressWarnings("OverlyLongMethod")
+    @Nonnull
     public static FileUtil.FirstBytes formatZipArchiveContentForView(
             File zipFile, int maxLength, int maxEntryLineCount, int maxEntryLineLength,
             @Nullable String entryListHeaderPattern, @Nullable String entryListItemPattern,
             @Nullable String entryListItemSeparatorPattern, @Nullable String entryListCloserPattern,
             @Nullable String entryContentHeaderPattern, @Nullable String entryContentLinePattern,
             @Nullable String entryContentLineSeparatorPattern, @Nullable String entryContentCloserPattern,
-            @Nullable String binaryEntryContentPlaceholderPattern, @Nullable String emptyZipFilePlaceholderPattern)
-            throws IOException {
+            @Nullable String binaryEntryContentPlaceholderPattern, @Nullable String emptyZipFilePlaceholderPattern
+    ) throws IOException {
         entryListHeaderPattern = StringUtil.nullToDefault(entryListHeaderPattern, "ZIP-file entries {\n");
         entryListItemPattern = StringUtil.nullToDefault(entryListItemPattern, "    %3$03d. %1$s (%2$d B)");
         entryListItemSeparatorPattern = StringUtil.nullToDefault(entryListItemSeparatorPattern, "\n");
@@ -844,9 +847,7 @@ public final class ZipUtil {
                 ));
             }
 
-            Collections.sort(fileHeaders, (headerA, headerB) -> ((FileHeader) headerA).getFileName().compareTo(
-                    ((FileHeader) headerB).getFileName()
-            ));
+            fileHeaders.sort(Comparator.comparing(header -> ((FileHeader) header).getFileName()));
 
             for (int headerIndex = 0; headerIndex < headerCount; ++headerIndex) {
                 FileHeader header = (FileHeader) fileHeaders.get(headerIndex);
