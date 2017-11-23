@@ -1,7 +1,7 @@
 package com.codeforces.commons.xml;
 
-import com.codeforces.commons.io.FileUtil;
-import com.codeforces.commons.io.IoUtil;
+import com.codeforces.commons.io.ByteArrayOutputStream;
+import com.codeforces.commons.io.*;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.lang3.StringUtils;

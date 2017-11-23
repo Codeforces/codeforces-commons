@@ -1,6 +1,7 @@
 package com.codeforces.commons.io.http;
 
 import com.codeforces.commons.exception.ExceptionUtil;
+import com.codeforces.commons.io.ByteArrayOutputStream;
 import com.codeforces.commons.io.*;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.math.RandomUtil;
