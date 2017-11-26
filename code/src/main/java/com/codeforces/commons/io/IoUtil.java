@@ -1,6 +1,5 @@
 package com.codeforces.commons.io;
 
-import com.codeforces.commons.math.NumberUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
@@ -20,7 +19,7 @@ import java.security.*;
  */
 @SuppressWarnings("WeakerAccess")
 public class IoUtil {
-    public static final int BUFFER_SIZE = NumberUtil.toInt(FileUtil.BYTES_PER_MB);
+    public static final int BUFFER_SIZE = (int) FileUtil.BYTES_PER_MB;
 
     private IoUtil() {
         throw new UnsupportedOperationException();

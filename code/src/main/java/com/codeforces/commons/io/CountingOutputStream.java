@@ -1,5 +1,6 @@
 package com.codeforces.commons.io;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,16 +9,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 07.04.14
+ * Date: 07.04.14
  */
-@SuppressWarnings("RefusedBequest")
+@SuppressWarnings({"RefusedBequest", "MethodDoesntCallSuperMethod"})
 public class CountingOutputStream extends OutputStream {
-    @SuppressWarnings("Convert2Lambda")
-    private static final WriteEvent EMPTY_WRITE_EVENT = new WriteEvent() {
-        @Override
-        public void onWrite(long writtenByteCount, long totalWrittenByteCount) {
-            // No operations.
-        }
+    private static final WriteEvent EMPTY_WRITE_EVENT = (writtenByteCount, totalWrittenByteCount) -> {
+        // No operations.
     };
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -25,23 +22,24 @@ public class CountingOutputStream extends OutputStream {
     private final OutputStream outputStream;
     private final WriteEvent writeEvent;
 
-    public CountingOutputStream(OutputStream outputStream, WriteEvent writeEvent) {
+    @SuppressWarnings("WeakerAccess")
+    public CountingOutputStream(@Nonnull OutputStream outputStream, @Nonnull WriteEvent writeEvent) {
         this.outputStream = outputStream;
         this.writeEvent = writeEvent;
     }
 
-    public CountingOutputStream(OutputStream outputStream) {
+    public CountingOutputStream(@Nonnull OutputStream outputStream) {
         this(outputStream, EMPTY_WRITE_EVENT);
     }
 
     @Override
-    public void write(int byteValue) throws IOException {
+    public void write(int value) throws IOException {
         if (lock.isHeldByCurrentThread()) {
-            outputStream.write(byteValue);
+            outputStream.write(value);
         } else {
             lock.lock();
             try {
-                outputStream.write(byteValue);
+                outputStream.write(value);
                 writeEvent.onWrite(1L, totalWrittenByteCount.incrementAndGet());
             } finally {
                 lock.unlock();
@@ -66,14 +64,14 @@ public class CountingOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(@Nonnull byte[] bytes, int offset, int count) throws IOException {
+    public void write(@Nonnull byte[] bytes, @Nonnegative int offset, @Nonnegative int length) throws IOException {
         if (lock.isHeldByCurrentThread()) {
-            outputStream.write(bytes, offset, count);
+            outputStream.write(bytes, offset, length);
         } else {
             lock.lock();
             try {
-                outputStream.write(bytes, offset, count);
-                writeEvent.onWrite(count, totalWrittenByteCount.addAndGet(count));
+                outputStream.write(bytes, offset, length);
+                writeEvent.onWrite(length, totalWrittenByteCount.addAndGet(length));
             } finally {
                 lock.unlock();
             }

@@ -1,5 +1,8 @@
 package com.codeforces.commons.io;
 
+import org.jetbrains.annotations.Contract;
+
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,14 +13,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 07.04.14
  */
-@SuppressWarnings("RefusedBequest")
+@SuppressWarnings({"RefusedBequest", "MethodDoesntCallSuperMethod"})
 public final class CountingInputStream extends InputStream {
-    @SuppressWarnings("Convert2Lambda")
-    private static final ReadEvent EMPTY_READ_EVENT = new ReadEvent() {
-        @Override
-        public void onRead(long readByteCount, long totalReadByteCount) {
-            // No operations.
-        }
+    private static final ReadEvent EMPTY_READ_EVENT = (readByteCount, totalReadByteCount) -> {
+        // No operations.
     };
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -25,12 +24,12 @@ public final class CountingInputStream extends InputStream {
     private final InputStream inputStream;
     private final ReadEvent readEvent;
 
-    public CountingInputStream(InputStream inputStream, ReadEvent readEvent) {
+    public CountingInputStream(@Nonnull InputStream inputStream, @Nonnull ReadEvent readEvent) {
         this.inputStream = inputStream;
         this.readEvent = readEvent;
     }
 
-    public CountingInputStream(InputStream inputStream) {
+    public CountingInputStream(@Nonnull InputStream inputStream) {
         this(inputStream, EMPTY_READ_EVENT);
     }
 
@@ -71,13 +70,13 @@ public final class CountingInputStream extends InputStream {
     }
 
     @Override
-    public int read(@Nonnull byte[] bytes, int offset, int count) throws IOException {
+    public int read(@Nonnull byte[] bytes, @Nonnegative int offset, @Nonnegative int length) throws IOException {
         if (lock.isHeldByCurrentThread()) {
-            return inputStream.read(bytes, offset, count);
+            return inputStream.read(bytes, offset, length);
         } else {
             lock.lock();
             try {
-                int readByteCount = inputStream.read(bytes, offset, count);
+                int readByteCount = inputStream.read(bytes, offset, length);
                 if (readByteCount > 0) {
                     readEvent.onRead(readByteCount, totalReadByteCount.addAndGet(readByteCount));
                 }
@@ -126,6 +125,7 @@ public final class CountingInputStream extends InputStream {
         }
     }
 
+    @Contract(pure = true)
     public long getTotalReadByteCount() {
         return totalReadByteCount.get();
     }

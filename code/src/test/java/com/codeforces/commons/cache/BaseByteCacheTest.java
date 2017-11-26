@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 29.12.12
+ * Date: 29.12.12
  */
 @SuppressWarnings({"JUnitTestMethodWithNoAssertions", "ThrowableResultOfMethodCallIgnored", "ErrorNotRethrown"})
 public abstract class BaseByteCacheTest extends TestCase {
@@ -48,7 +48,7 @@ public abstract class BaseByteCacheTest extends TestCase {
             ByteCache cache = newByteCache(tempDir);
             BlockingQueue<CachePath> cachePaths = getCachePaths();
 
-            CacheTestUtil.determineOperationTime("BaseByteCacheTest.testStoringOfValues", () -> {
+            CacheTestUtil.determineOperationTime(getClass().getSimpleName() + ".testStoringOfValues", () -> {
                 for (int pathIndex = 0; pathIndex < TOTAL_KEY_COUNT; ++pathIndex) {
                     checkStoringOneValue(cache, cachePaths.poll());
                 }
@@ -69,7 +69,7 @@ public abstract class BaseByteCacheTest extends TestCase {
             AtomicReference<AssertionError> assertionError = new AtomicReference<>();
             AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-            CacheTestUtil.determineOperationTime("BaseByteCacheTest.testConcurrentStoringOfValues", () -> {
+            CacheTestUtil.determineOperationTime(getClass().getSimpleName() + ".testConcurrentStoringOfValues", () -> {
                 ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(
                         thread -> thread.setUncaughtExceptionHandler(
                                 (t, e) -> unexpectedThrowable.set(e)
@@ -143,7 +143,7 @@ public abstract class BaseByteCacheTest extends TestCase {
             AtomicReference<AssertionError> assertionError = new AtomicReference<>();
             AtomicReference<Throwable> unexpectedThrowable = new AtomicReference<>();
 
-            CacheTestUtil.determineOperationTime("BaseByteCacheTest.testConcurrentStoringOfValuesWithLifetime", () -> {
+            CacheTestUtil.determineOperationTime(getClass().getSimpleName() + ".testConcurrentStoringOfValuesWithLifetime", () -> {
                 ExecutorService executorService = Executors.newFixedThreadPool(SLEEPING_THREAD_COUNT, ThreadUtil.getCustomPoolThreadFactory(
                         thread -> thread.setUncaughtExceptionHandler(
                                 (t, e) -> unexpectedThrowable.set(e)
@@ -257,7 +257,7 @@ public abstract class BaseByteCacheTest extends TestCase {
                 }
                 String section = sections.get(random.nextInt(sections.size()));
                 String key = keys.get(random.nextInt(keys.size()));
-                String sectionKey = section + (char)(1) + key;
+                String sectionKey = section + (char) (1) + key;
 
                 if (random.nextBoolean()) {
                     byte[] value = cache.get(section, key);

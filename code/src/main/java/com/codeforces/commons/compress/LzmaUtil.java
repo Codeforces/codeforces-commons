@@ -1,12 +1,10 @@
 package com.codeforces.commons.compress;
 
+import com.codeforces.commons.io.ByteArrayOutputStream;
 import lzma.sdk.lzma.Decoder;
 import lzma.sdk.lzma.Encoder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * @author Mike Mirzayanov
@@ -36,7 +34,6 @@ public class LzmaUtil {
 
         encoder.code(in, out, -1, -1, null);
 
-        out.close();
         in.close();
 
         return out.toByteArray();
@@ -71,7 +68,6 @@ public class LzmaUtil {
             throw new IOException("Error in data stream.");
         }
 
-        out.close();
         in.close();
 
         return out.toByteArray();

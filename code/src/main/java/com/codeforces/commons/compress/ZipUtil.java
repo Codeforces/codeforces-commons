@@ -1,9 +1,9 @@
 package com.codeforces.commons.compress;
 
+import com.codeforces.commons.io.ByteArrayOutputStream;
 import com.codeforces.commons.io.*;
 import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
-import com.google.common.primitives.Ints;
 import de.schlichtherle.truezip.file.*;
 import de.schlichtherle.truezip.fs.FsSyncException;
 import net.lingala.zip4j.core.ZipFile;
@@ -41,7 +41,7 @@ public final class ZipUtil {
     private static final long MAX_ZIP_ENTRY_SIZE = FileUtil.BYTES_PER_GB;
     private static final long MAX_ZIP_ENTRY_COUNT = 100_000L;
 
-    private static final int DEFAULT_BUFFER_SIZE = Ints.checkedCast(FileUtil.BYTES_PER_MB);
+    private static final int DEFAULT_BUFFER_SIZE = IoUtil.BUFFER_SIZE;
 
     private ZipUtil() {
         throw new UnsupportedOperationException();
@@ -69,20 +69,17 @@ public final class ZipUtil {
     }
 
     public static byte[] compress(byte[] bytes, int level) {
-        Deflater compressor = new Deflater();
-        compressor.setLevel(level);
-        compressor.setInput(bytes);
-        compressor.finish();
+        Deflater deflater = new Deflater();
+        deflater.setLevel(level);
+        deflater.setInput(bytes);
+        deflater.finish();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(bytes.length);
-
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 
-        while (!compressor.finished()) {
-            outputStream.write(buffer, 0, compressor.deflate(buffer));
+        while (!deflater.finished()) {
+            outputStream.write(buffer, 0, deflater.deflate(buffer));
         }
-
-        IoUtil.closeQuietly(outputStream);
 
         return outputStream.toByteArray();
     }
@@ -92,17 +89,17 @@ public final class ZipUtil {
             return bytes;
         }
 
-        Inflater decompressor = new Inflater();
-        decompressor.setInput(bytes);
+        Inflater inflater = new Inflater();
+        inflater.setInput(bytes);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 
-        while (!decompressor.finished()) {
-            outputStream.write(buffer, 0, decompressor.inflate(buffer));
+        while (!inflater.finished()) {
+            outputStream.write(buffer, 0, inflater.inflate(buffer));
         }
 
-        decompressor.end();
+        inflater.end();
         return outputStream.toByteArray();
     }
 
