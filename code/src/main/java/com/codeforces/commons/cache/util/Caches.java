@@ -36,4 +36,8 @@ public final class Caches {
     public static ByteCache newLoggingByteCache(ByteCache cache) {
         return LoggingByteCache.newInstance(cache);
     }
+
+    public static ByteCache newSynchronizedByteCache(ByteCache cache) {
+        return new SynchronizedByteCache(cache);
+    }
 }
