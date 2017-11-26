@@ -12,8 +12,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Mike Mirzayanov
  */
 class SynchronizedByteCache extends ByteCache {
-    private static final Logger logger = Logger.getLogger(SynchronizedByteCache.class);
-
     private final ByteCache cache;
     private final Lock lock = new ReentrantLock();
 
