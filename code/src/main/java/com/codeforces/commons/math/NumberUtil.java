@@ -598,6 +598,36 @@ public final class NumberUtil {
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
+    @Contract(pure = true)
+    public static boolean nearlyEquals(float numberA, float numberB, float epsilon) {
+        if (Float.compare(numberA, numberB) == 0) {
+            return true;
+        }
+
+        if (Float.isInfinite(numberA) || Float.isNaN(numberA)
+                || Float.isInfinite(numberB) || Float.isNaN(numberB)) {
+            return false;
+        }
+
+        return abs(numberA - numberB) <= epsilon;
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Contract(pure = true)
+    public static boolean nearlyEquals(double numberA, double numberB, double epsilon) {
+        if (Double.compare(numberA, numberB) == 0) {
+            return true;
+        }
+
+        if (Double.isInfinite(numberA) || Double.isNaN(numberA)
+                || Double.isInfinite(numberB) || Double.isNaN(numberB)) {
+            return false;
+        }
+
+        return abs(numberA - numberB) <= epsilon;
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
     @Contract(value = "null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false", pure = true)
     public static boolean roundEquals(@Nullable Float numberA, @Nullable Float numberB, float factor) {
         if (numberA == null) {
@@ -632,6 +662,36 @@ public final class NumberUtil {
         }
 
         if (numberA.equals(numberB)) {
+            return true;
+        }
+
+        if (Double.isInfinite(numberA) || Double.isNaN(numberA)
+                || Double.isInfinite(numberB) || Double.isNaN(numberB)) {
+            return false;
+        }
+
+        return Double.compare(round(numberA * factor) / factor, round(numberB * factor) / factor) == 0;
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Contract(pure = true)
+    public static boolean roundEquals(float numberA, float numberB, float factor) {
+        if (Float.compare(numberA, numberB) == 0) {
+            return true;
+        }
+
+        if (Float.isInfinite(numberA) || Float.isNaN(numberA)
+                || Float.isInfinite(numberB) || Float.isNaN(numberB)) {
+            return false;
+        }
+
+        return Float.compare(round(numberA * factor) / factor, round(numberB * factor) / factor) == 0;
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Contract(pure = true)
+    public static boolean roundEquals(double numberA, double numberB, double factor) {
+        if (Double.compare(numberA, numberB) == 0) {
             return true;
         }
 
