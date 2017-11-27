@@ -5,11 +5,11 @@ import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 
-import static com.codeforces.commons.math.Math.abs;
+import static com.codeforces.commons.math.Math.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 24.07.2013
+ * Date: 24.07.2013
  */
 @SuppressWarnings("WeakerAccess")
 public final class NumberUtil {
@@ -595,6 +595,52 @@ public final class NumberUtil {
         }
 
         return abs(numberA - numberB) <= epsilon;
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Contract(value = "null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false", pure = true)
+    public static boolean roundEquals(@Nullable Float numberA, @Nullable Float numberB, float factor) {
+        if (numberA == null) {
+            return numberB == null;
+        }
+
+        if (numberB == null) {
+            return false;
+        }
+
+        if (numberA.equals(numberB)) {
+            return true;
+        }
+
+        if (Float.isInfinite(numberA) || Float.isNaN(numberA)
+                || Float.isInfinite(numberB) || Float.isNaN(numberB)) {
+            return false;
+        }
+
+        return Float.compare(round(numberA * factor) / factor, round(numberB * factor) / factor) == 0;
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Contract(value = "null, null, _ -> true; null, !null, _ -> false; !null, null, _ -> false", pure = true)
+    public static boolean roundEquals(@Nullable Double numberA, @Nullable Double numberB, double factor) {
+        if (numberA == null) {
+            return numberB == null;
+        }
+
+        if (numberB == null) {
+            return false;
+        }
+
+        if (numberA.equals(numberB)) {
+            return true;
+        }
+
+        if (Double.isInfinite(numberA) || Double.isNaN(numberA)
+                || Double.isInfinite(numberB) || Double.isNaN(numberB)) {
+            return false;
+        }
+
+        return Double.compare(round(numberA * factor) / factor, round(numberB * factor) / factor) == 0;
     }
 
     @Contract(pure = true)
