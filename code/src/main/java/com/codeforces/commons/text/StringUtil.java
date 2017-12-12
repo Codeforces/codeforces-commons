@@ -25,6 +25,7 @@ import java.lang.reflect.Array;
 import java.security.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import static com.codeforces.commons.math.Math.*;
@@ -755,13 +756,9 @@ public final class StringUtil {
 
         if (options.skipBlankStrings) {
             if (quoted != null && quoted.booleanValue()) {
-                if (isBlank(stringValue) || isBlank(stringValue.substring(1, stringValue.length() - 1))) {
-                    return true;
-                }
+                return isBlank(stringValue) || isBlank(stringValue.substring(1, stringValue.length() - 1));
             } else {
-                if (isBlank(stringValue)) {
-                    return true;
-                }
+                return isBlank(stringValue);
             }
         }
 
@@ -1580,7 +1577,7 @@ public final class StringUtil {
         return result.toString();
     }
 
-    @SuppressWarnings({"IfStatementWithIdenticalBranches", "OverlyComplexMethod"})
+    @SuppressWarnings({"IfStatementWithIdenticalBranches", "OverlyComplexMethod", "AssignmentOrReturnOfFieldWithMutableType"})
     @Contract("null -> null; !null -> !null")
     @Nullable
     public static byte[] removeBoms(@Nullable byte[] bytes) {
@@ -1624,6 +1621,18 @@ public final class StringUtil {
         byte[] processedBytes = new byte[byteCount - bomLength];
         System.arraycopy(bytes, bomLength, processedBytes, 0, byteCount - bomLength);
         return processedBytes;
+    }
+
+    public static void ifNotEmpty(@Nullable String s, @Nonnull Consumer<String> consumer) {
+        if (isNotEmpty(s)) {
+            consumer.accept(s);
+        }
+    }
+
+    public static void ifNotBlank(@Nullable String s, @Nonnull Consumer<String> consumer) {
+        if (isNotBlank(s)) {
+            consumer.accept(s);
+        }
     }
 
     @SuppressWarnings("InterfaceNeverImplemented")
