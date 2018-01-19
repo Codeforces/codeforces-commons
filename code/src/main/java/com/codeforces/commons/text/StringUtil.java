@@ -558,6 +558,33 @@ public final class StringUtil {
         return tempParts;
     }
 
+    /**
+     * Splits given string into tokens (words) using white-spaces as separators. All empty parts are excluded from the result.
+     *
+     * @param s         the string to be tokenized
+     * @return the array of string tokens
+     */
+    @Nonnull
+    public static String[] tokenize(@Nonnull String s) {
+        String[] split = Patterns.WHITESPACE_PATTERN.split(s);
+        int nonEmptyCount = 0;
+        for (String token : split) {
+            if (StringUtil.isNotEmpty(token)) {
+                nonEmptyCount++;
+            }
+        }
+
+        String[] result = new String[nonEmptyCount];
+        int index = 0;
+        for (String token : split) {
+            if (StringUtil.isNotEmpty(token)) {
+                result[index++] = token;
+            }
+        }
+
+        return result;
+    }
+
     @Contract(value = "null, _, _ -> null; !null, _, _ -> !null", pure = true)
     @Nullable
     public static String replace(@Nullable String s, @Nullable String target, @Nullable String replacement) {
