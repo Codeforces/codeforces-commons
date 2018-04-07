@@ -561,7 +561,7 @@ public class UnsafeFileUtil {
     public static File createTemporaryDirectory(String prefix) throws IOException {
         File file = internalCreateTempFile(prefix);
         deleteTotally(file);
-        if (!file.mkdir()) {
+        if (!file.mkdirs()) {
             throw new IOException("Can't create directory '" + file + "'.");
         }
         return new TemporaryDirectory(file.getAbsolutePath());
