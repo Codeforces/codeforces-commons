@@ -36,7 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 27.11.14
+ * Date: 27.11.14
  */
 @NotThreadSafe
 public final class HttpRequest {
@@ -48,6 +48,7 @@ public final class HttpRequest {
     @Nullable
     private byte[] binaryEntity;
     private boolean gzip;
+    private boolean followRedirects = true;
 
     private final Map<String, List<String>> headersByName = new LinkedHashMap<>(8);
     private HttpMethod method = HttpMethod.GET;
@@ -226,6 +227,15 @@ public final class HttpRequest {
         return this;
     }
 
+    public boolean isFollowRedirects() {
+        return followRedirects;
+    }
+
+    public HttpRequest setFollowRedirects(boolean followRedirects) {
+        this.followRedirects = followRedirects;
+        return this;
+    }
+
     public Map<String, List<String>> getHeadersByNameMap() {
         return getDeepUnmodifiableMap(headersByName);
     }
@@ -388,7 +398,7 @@ public final class HttpRequest {
         long startTimeMillis = System.currentTimeMillis();
 
         for (int attemptIndex = 1; attemptIndex < maxRetryCount; ++attemptIndex) {
-            HttpResponse response = internalGetHttpResponse(readBytes, internalUrl, startTimeMillis);
+            HttpResponse response = internalGetHttpResponse(readBytes, internalUrl, startTimeMillis, 0);
             if (responseChecker.check(response)) {
                 return response;
             } else {
@@ -396,11 +406,15 @@ public final class HttpRequest {
             }
         }
 
-        return internalGetHttpResponse(readBytes, internalUrl, startTimeMillis);
+        return internalGetHttpResponse(readBytes, internalUrl, startTimeMillis, 0);
     }
 
     @Nonnull
-    private HttpResponse internalGetHttpResponse(boolean readBytes, String internalUrl, long startTimeMillis) {
+    private HttpResponse internalGetHttpResponse(boolean readBytes, String internalUrl, long startTimeMillis, int redirectCount) {
+        if (redirectCount > 5) {
+            return new HttpResponse(-1, null, null, new IOException("Too many redirects"));
+        }
+
         HttpURLConnection connection;
         try {
             connection = newConnection(
@@ -439,8 +453,23 @@ public final class HttpRequest {
             connection.connect();
 
             int code = connection.getResponseCode();
-            byte[] bytes = getBytes(connection, readBytes, startTimeMillis);
+            if (method == HttpMethod.GET && followRedirects && HttpCode.isRedirect(code)) {
+                boolean hasPrivateParameter = false;
+                for (String parameter : CommonsPropertiesUtil.getPrivateParameters()) {
+                    if (parametersByName.containsKey(parameter)) {
+                        hasPrivateParameter = true;
+                    }
+                }
 
+                if (!hasPrivateParameter) {
+                    String redirectLocation = connection.getHeaderField("Location");
+                    if (StringUtil.isNotEmpty(redirectLocation)) {
+                        return internalGetHttpResponse(readBytes, redirectLocation, startTimeMillis, redirectCount + 1);
+                    }
+                }
+            }
+
+            byte[] bytes = getBytes(connection, readBytes, startTimeMillis);
             return new HttpResponse(code, bytes, connection.getHeaderFields(), null);
         } catch (IOException e) {
             String message = "Can't read response from '" + internalUrl + "'.";
@@ -631,6 +660,8 @@ public final class HttpRequest {
                 connection.setRequestProperty("Content-Encoding", "gzip");
             }
         }
+
+        connection.setInstanceFollowRedirects(followRedirects);
 
         for (Map.Entry<String, List<String>> headerEntry : headersByName.entrySet()) {
             String headerName = headerEntry.getKey();
