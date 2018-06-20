@@ -16,6 +16,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -61,6 +62,11 @@ public class HttpUtilTest extends TestCase {
     public void tearDown() throws Exception {
         server.stop();
         super.tearDown();
+    }
+
+    public void testRedirect() {
+        HttpResponse httpResponse = HttpRequest.create("http://polygon.codeforces.com", "a", "привет").executeAndReturnResponse();
+        System.out.println(httpResponse.getCode());
     }
 
     private static byte[] doGet(String s) throws IOException {

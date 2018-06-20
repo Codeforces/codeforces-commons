@@ -281,4 +281,8 @@ public final class HttpCode {
     private HttpCode() {
         throw new UnsupportedOperationException();
     }
+
+    public static boolean isRedirect(int code) {
+        return code / 100 == 3;
+    }
 }
