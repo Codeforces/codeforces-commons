@@ -194,10 +194,10 @@ public class ResourceUtil {
         if (useValidationCache) {
             Boolean valid = validationResultByCacheKey.get(cacheKey);
             if (valid != null && valid) {
-                long size = Resources.asByteSource(actualResourceClassLoaderClass.getResource(resource)).size();
-                if (cacheFile.length() == size) {
+//                long size = Resources.asByteSource(actualResourceClassLoaderClass.getResource(resource)).size();
+//                if (cacheFile.length() == size) {
                     return true;
-                }
+//                }
             }
         }
 

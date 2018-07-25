@@ -1,13 +1,16 @@
 package com.codeforces.commons.xml;
 
 import com.codeforces.commons.io.ByteArrayOutputStream;
-import com.codeforces.commons.io.*;
+import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.process.ThreadUtil;
 import com.codeforces.commons.text.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.w3c.dom.*;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Maxim Shipko (sladethe@gmail.com)
  * Date: 14.09.11
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class XmlUtil {
     private static final Lock factoryLock = new ReentrantLock();
     private static final Lock expressionLock = new ReentrantLock();
@@ -908,6 +912,97 @@ public final class XmlUtil {
             return xPath.evaluate(element);
         } finally {
             expressionLock.unlock();
+        }
+    }
+
+    public static Map<String, String> toMap(String xml) throws XmlException {
+        SAXParserFactory fabrique = SAXParserFactory.newInstance();
+        SAXParser parser;
+        try {
+            parser = fabrique.newSAXParser();
+        } catch (Exception e) {
+            throw new RuntimeException("Can't create SAX parser.", e);
+        }
+        ToMapHandler handler = new ToMapHandler();
+        try {
+            parser.parse(new InputSource(new StringReader(xml)), handler);
+        } catch (Exception e) {
+            throw new XmlException("Can't parse XML.", e);
+        }
+        return handler.getMap();
+    }
+
+    private static class ToMapHandler extends DefaultHandler {
+        private final Stack<String> tags = new Stack<>();
+        private final Map<String, String> map = new HashMap<>();
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) {
+            StringBuilder tag = new StringBuilder(qName);
+
+            if (attributes != null && attributes.getLength() > 0) {
+                Map<String, String> attrs = new TreeMap<>();
+                int length = attributes.getLength();
+                for (int i = 0; i < length; i++) {
+                    attrs.put(attributes.getQName(i), attributes.getValue(i));
+                }
+                boolean first = true;
+                for (Map.Entry<String, String> e : attrs.entrySet()) {
+                    tag.append(first ? '@' : '&');
+                    tag.append(e.getKey()).append('=').append(e.getValue());
+                    first = false;
+                }
+            }
+
+            tags.add(tag.toString());
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) {
+            boolean hasContent = false;
+            if (ch != null) {
+                for (int i = 0; i < length; i++) {
+                    if (!Character.isWhitespace(ch[start + i])) {
+                        hasContent = true;
+                        break;
+                    }
+                }
+            }
+            if (hasContent) {
+                String content = new String(ch, start, length).trim();
+                StringBuilder key = new StringBuilder();
+                for (String tag : tags) {
+                    if (key.length() > 0) {
+                        key.append('/');
+                    }
+                    key.append(tag);
+                }
+                if (map.containsKey(key.toString())) {
+                    map.put(key.toString(), map.get(key.toString()) + content);
+                } else {
+                    map.put(key.toString(), content);
+                }
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) {
+            tags.pop();
+        }
+
+        @Override
+        public void endDocument() {
+            // No operations.
+        }
+
+        public Map<String, String> getMap() {
+            return map;
+        }
+    }
+
+    public static final class XmlException extends Exception {
+        private XmlException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

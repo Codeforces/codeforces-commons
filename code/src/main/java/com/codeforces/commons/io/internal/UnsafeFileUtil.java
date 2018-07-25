@@ -269,9 +269,7 @@ public class UnsafeFileUtil {
             throw new IOException("Failed to list files of '" + directory + "'.");
         }
 
-        for (int fileIndex = 0, fileCount = files.length; fileIndex < fileCount; ++fileIndex) {
-            File file = files[fileIndex];
-
+        for (File file : files) {
             if (deleteFileFilter == null || deleteFileFilter.accept(file)) {
                 deleteTotally(file);
             } else if (file.isDirectory() && !Files.isSymbolicLink(Paths.get(file.toURI()))) {
@@ -762,6 +760,18 @@ public class UnsafeFileUtil {
         return result.toString();
     }
 
+    private static void copyAndRemoveFile(File sourceFile, File destinationFile) throws IOException {
+        if (sourceFile.isFile()) {
+            copyFile(sourceFile, destinationFile);
+            removeFile(sourceFile);
+        } else if (sourceFile.isDirectory()) {
+            copyDirectory(sourceFile, destinationFile);
+            deleteTotally(sourceFile);
+        } else {
+            throw new IOException("sourceFile=" + sourceFile.getPath() + " neither file nor the directory.");
+        }
+    }
+
     /**
      * Renames source to destination. Or throws IOException if can't.
      *
@@ -778,17 +788,26 @@ public class UnsafeFileUtil {
                 if (destinationFile.exists()) {
                     deleteTotally(destinationFile);
                     if (!sourceFile.renameTo(destinationFile)) {
-                        throw new IOException("Can't overwrite while renaming " + sourceFile.getPath() + " to " +
-                                destinationFile.getPath());
+                        try {
+                            copyAndRemoveFile(sourceFile, destinationFile);
+                        } catch (IOException e) {
+                            throw new IOException("Can't rename " + sourceFile.getPath() + " to " + destinationFile.getPath() + " [overwrite=true, destination has been deleted before].", e);
+                        }
                     }
                 } else {
-                    throw new IOException("Can't rename " + sourceFile.getPath() + " to " + destinationFile.getPath());
+                    try {
+                        copyAndRemoveFile(sourceFile, destinationFile);
+                    } catch (IOException e) {
+                        throw new IOException("Can't rename " + sourceFile.getPath() + " to " + destinationFile.getPath() + " [overwrite=true].", e);
+                    }
                 }
             }
         } else {
             if (!destinationFile.exists()) {
-                if (!sourceFile.renameTo(destinationFile) && !destinationFile.isFile()) {
-                    throw new IOException("Can't rename " + sourceFile.getPath() + " to " + destinationFile.getPath());
+                try {
+                    copyAndRemoveFile(sourceFile, destinationFile);
+                } catch (IOException e) {
+                    throw new IOException("Can't rename " + sourceFile.getPath() + " to " + destinationFile.getPath() + " [overwrite=false].", e);
                 }
             }
         }
