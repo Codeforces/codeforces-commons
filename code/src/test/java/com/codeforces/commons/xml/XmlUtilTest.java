@@ -14,7 +14,7 @@ import java.util.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 08.11.11
+ * Date: 08.11.11
  */
 public class XmlUtilTest {
     @Test
@@ -197,19 +197,19 @@ public class XmlUtilTest {
             filterAttributes.put("boolAttr", "false");
             filterAttributes.put("strAttr", "");
 
-            ThreadUtil.sleep(1);
+            ThreadUtil.sleep(100);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, null);
             Assert.assertEquals(lastModified, testFile.lastModified());
 
-            ThreadUtil.sleep(1);
+            ThreadUtil.sleep(100);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, filterAttributes, null);
             Assert.assertEquals(lastModified, testFile.lastModified());
 
-            ThreadUtil.sleep(1);
+            ThreadUtil.sleep(100);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Collections.singletonList("c")));
             Assert.assertEquals(lastModified, testFile.lastModified());
 
-            ThreadUtil.sleep(1);
+            ThreadUtil.sleep(100);
             XmlUtil.ensureXmlElementExists(testFile, "/a", "c", filterAttributes, null, new TreeSet<>(Collections.singletonList("intAttr")));
             Assert.assertNotEquals(lastModified, testFile.lastModified());
             lastModified = testFile.lastModified();
