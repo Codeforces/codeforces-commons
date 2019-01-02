@@ -2,16 +2,22 @@ package com.codeforces.commons.reflection;
 
 import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import net.sf.cglib.reflect.FastClass;
 import net.sf.cglib.reflect.FastMethod;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -24,6 +30,16 @@ public class MethodArgumentsFormatUtil {
     private static final Map<ClassAndProperty, FastMethod> methodByProperty = new ConcurrentHashMap<>();
 
     private static final Pattern JAVA_IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z_$][a-zA-Z\\d_$]*");
+
+    private static final LoadingCache<Method, Annotation[][]> parameterAnnotationsCache = CacheBuilder.newBuilder()
+            .maximumSize(100000)
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .build(
+                    new CacheLoader<Method, Annotation[][]>() {
+                        public Annotation[][] load(@NotNull Method method) {
+                            return method.getParameterAnnotations();
+                        }
+                    });
 
     /**
      * Formats string containing expressions like "${user}", "${city.name.length}" and so on,
@@ -44,7 +60,7 @@ public class MethodArgumentsFormatUtil {
         int namedParameterCount = 0;
 
         int index = 0;
-        for (Annotation[] annotations : method.getParameterAnnotations()) {
+        for (Annotation[] annotations : getParameterAnnotations(method)) {
             for (Annotation annotation : annotations) {
                 if (annotation instanceof Name) {
                     String name = ((Name) annotation).value();
@@ -80,6 +96,14 @@ public class MethodArgumentsFormatUtil {
         }
 
         return result.toString();
+    }
+
+    private static Annotation[][] getParameterAnnotations(Method method) {
+        try {
+            return parameterAnnotationsCache.get(method);
+        } catch (ExecutionException e) {
+            return method.getParameterAnnotations();
+        }
     }
 
     private static Object getNamedParameterValue(String expression, int namedParameterCount,
