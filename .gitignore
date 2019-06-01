@@ -1,3 +1,6 @@
 /code/.idea
 /code/*.iml
 /code/target
+.project
+.classpath
+.settings
