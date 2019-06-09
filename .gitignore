@@ -4,3 +4,5 @@
 .project
 .classpath
 .settings
+/code/src/test/files/com/codeforces/commons/codec/realtek.log
+/code/src/test/files/com/codeforces/commons/compress/realtek.log
