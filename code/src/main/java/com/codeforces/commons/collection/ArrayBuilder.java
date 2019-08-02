@@ -13,9 +13,8 @@ import java.util.stream.Collectors;
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
  * Date: 17.04.2017
- * @noinspection unused
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 @NotThreadSafe
 public class ArrayBuilder<E> {
     @Nonnull

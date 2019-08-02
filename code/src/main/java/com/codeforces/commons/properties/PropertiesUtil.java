@@ -20,9 +20,8 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author Mike Mirzayanov
  * @author Maxim Shipko (sladethe@gmail.com)
- * @noinspection WeakerAccess, unused
  */
-@SuppressWarnings("OverloadedVarargsMethod")
+@SuppressWarnings({"OverloadedVarargsMethod", "unused", "WeakerAccess"})
 public class PropertiesUtil {
     private static final Logger logger = Logger.getLogger(PropertiesUtil.class);
 

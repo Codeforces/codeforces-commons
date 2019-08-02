@@ -21,8 +21,8 @@ import java.util.function.Supplier;
  *
  * @author Maxim Shipko (sladethe@gmail.com)
  * Date: 29.03.2012
- * @noinspection unused
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class InmemoryCache<K, V> extends Cache<K, V> {
     private static final Logger logger = Logger.getLogger(InmemoryCache.class);
 
@@ -230,10 +230,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
         CacheEntryExpirationInfo<K, V> firstExpirationInfo = null;
 
         String[] expirationInfoSections = getExpirationInfoSections();
-        int sectionsCount = expirationInfoSections.length;
-
-        for (int sectionIndex = 0; sectionIndex < sectionsCount; ++sectionIndex) {
-            String section = expirationInfoSections[sectionIndex];
+        for (String section : expirationInfoSections) {
             CacheEntryExpirationInfo<K, V> expirationInfo = getFirstExpirationInfoInSection(section);
 
             if (firstExpirationInfo == null || expirationInfo != null
@@ -252,7 +249,7 @@ public class InmemoryCache<K, V> extends Cache<K, V> {
     private String[] getExpirationInfoSections() {
         return readLockCacheAndReturnResult(() -> {
             Set<String> sections = cacheEntryExpirationInfosBySection.keySet();
-            return sections.toArray(new String[sections.size()]);
+            return sections.toArray(new String[0]);
         });
     }
 
