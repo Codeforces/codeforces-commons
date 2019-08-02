@@ -866,7 +866,7 @@ public class FileUtil {
             System.arraycopy(first.bytes, 0, result, 0, first.bytes.length);
             System.arraycopy(second.bytes, 0, result, first.bytes.length, second.bytes.length);
         } else {
-            byte[] lineSep = System.getProperty("line.separator").getBytes();
+            byte[] lineSep = System.getProperty("line.separator").getBytes(StandardCharsets.UTF_8);
             result = new byte[first.bytes.length + lineSep.length + second.bytes.length];
             System.arraycopy(first.bytes, 0, result, 0, first.bytes.length);
             System.arraycopy(lineSep, 0, result, first.bytes.length, lineSep.length);

@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Mike Mirzayanov
  * @author Maxim Shipko (sladethe@gmail.com)
  */
-@SuppressWarnings("OverloadedVarargsMethod")
+@SuppressWarnings({"OverloadedVarargsMethod", "unused", "WeakerAccess"})
 public class PropertiesUtil {
     private static final Logger logger = Logger.getLogger(PropertiesUtil.class);
 
@@ -92,7 +92,9 @@ public class PropertiesUtil {
             properties = new Properties();
             try (InputStream inputStream = PropertiesUtil.class.getResourceAsStream(resourceName)) {
                 if (inputStream != null) {
-                    properties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                    try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+                        properties.load(inputStreamReader);
+                    }
                 } else {
                     logger.warn(String.format("Can't find resource file '%s'.", resourceName));
                 }

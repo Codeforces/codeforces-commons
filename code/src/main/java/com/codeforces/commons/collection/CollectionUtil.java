@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -1409,7 +1410,7 @@ public class CollectionUtil {
         return new TDoubleDoubleHashMap(capacity, DEFAULT_LOAD_FACTOR, 0.0D, Double.NaN);
     }
 
-    public static class CollectionComparator<T extends Comparable<T>> implements Comparator<Collection<T>> {
+    public static class CollectionComparator<T extends Comparable<T>> implements Comparator<Collection<T>>, Serializable {
         @Override
         public int compare(Collection<T> collectionA, Collection<T> collectionB) {
             Iterator<T> iteratorA = collectionA.iterator();

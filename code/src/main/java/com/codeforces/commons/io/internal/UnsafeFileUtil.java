@@ -20,6 +20,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 
@@ -336,7 +337,7 @@ public class UnsafeFileUtil {
         Writer writer = null;
         try {
             writer = encoding == null
-                    ? new OutputStreamWriter(new FileOutputStream(file))
+                    ? new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)
                     : new OutputStreamWriter(new FileOutputStream(file), encoding);
             writer.write(content);
         } finally {
@@ -852,7 +853,7 @@ public class UnsafeFileUtil {
         URLConnection connection = problemUrl.openConnection();
         connection.setDoOutput(true);
 
-        Writer writer = new OutputStreamWriter(connection.getOutputStream());
+        Writer writer = new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8);
         writer.write(postParametersString.toString());
         writer.close();
 

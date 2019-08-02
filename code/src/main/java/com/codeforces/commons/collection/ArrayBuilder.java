@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * @author Maxim Shipko (sladethe@gmail.com)
  * Date: 17.04.2017
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 @NotThreadSafe
 public class ArrayBuilder<E> {
     @Nonnull
@@ -102,6 +102,7 @@ public class ArrayBuilder<E> {
             return this;
         }
 
+        //noinspection ConstantConditions
         Preconditions.checkArgument(count > 0, "The count %s is negative.");
 
         int length = array.length;
@@ -130,6 +131,7 @@ public class ArrayBuilder<E> {
             return this;
         }
 
+        //noinspection ConstantConditions
         Preconditions.checkArgument(count > 0, "The count %s is negative.");
 
         @SuppressWarnings("LocalVariableHidesMemberVariable") E[] array = this.array;
