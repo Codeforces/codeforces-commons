@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
  *         Date: 07.03.13
+ * @noinspection unused
  */
 @SuppressWarnings("WeakerAccess")
 public class Holders {

@@ -21,6 +21,7 @@ import java.util.function.Supplier;
  *
  * @author Maxim Shipko (sladethe@gmail.com)
  * Date: 29.03.2012
+ * @noinspection unused
  */
 public class InmemoryCache<K, V> extends Cache<K, V> {
     private static final Logger logger = Logger.getLogger(InmemoryCache.class);

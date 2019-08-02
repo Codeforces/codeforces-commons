@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class RedisByteCache extends ByteCache {
     private static final Logger logger = Logger.getLogger(RedisByteCache.class);
@@ -65,7 +66,7 @@ public class RedisByteCache extends ByteCache {
     }
 
     private static byte[] getFilename(@Nonnull String section, @Nonnull String key) {
-        return (section + '/' + key).getBytes();
+        return (section + '/' + key).getBytes(StandardCharsets.UTF_8);
     }
 
     @Override

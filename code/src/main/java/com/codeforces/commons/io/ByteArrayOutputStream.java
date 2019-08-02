@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -87,7 +88,7 @@ public class ByteArrayOutputStream extends OutputStream {
 
     @Nonnull
     public String toString() {
-        return new String(buffer, 0, size);
+        return new String(buffer, 0, size, StandardCharsets.UTF_8);
     }
 
     @Nonnull

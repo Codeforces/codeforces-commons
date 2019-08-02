@@ -139,7 +139,7 @@ public final class NumberUtil {
         }
 
         if (value instanceof Short) {
-            return (short) value;
+            return (Short) value;
         }
 
         if (value instanceof Byte) {

@@ -11,7 +11,17 @@
     <url>https://github.com/Codeforces/codeforces-commons</url>
     <description>Commons for Codeforces and related projects.</description>
 
-    <licenses>
+   <reporting>
+     <plugins>
+       <plugin>
+         <groupId>com.github.spotbugs</groupId>
+         <artifactId>spotbugs-maven-plugin</artifactId>
+         <version>3.1.12</version>
+       </plugin>
+     </plugins>
+   </reporting>
+   
+   <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
@@ -347,6 +357,24 @@
                   </goals>
                 </execution>
               </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.8.2</version>
+            </plugin>
+            <plugin>
+              <groupId>com.github.spotbugs</groupId>
+              <artifactId>spotbugs-maven-plugin</artifactId>
+              <version>3.1.12</version>
+              <dependencies>
+                <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                <dependency>
+                  <groupId>com.github.spotbugs</groupId>
+                  <artifactId>spotbugs</artifactId>
+                  <version>4.0.0-beta3</version>
+                </dependency>
+              </dependencies>
             </plugin>
         </plugins>
     </build>
