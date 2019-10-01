@@ -17,6 +17,44 @@ public class ObjectUtil {
         throw new UnsupportedOperationException();
     }
 
+    @Contract(value = " -> fail", pure = true)
+    public static <T> T firstNonNull() {
+        throw new NullPointerException("Can't find non-null argument.");
+    }
+
+    @Contract(value = "null -> fail; !null -> param1", pure = true)
+    public static <T> T firstNonNull(T object) {
+        if (object == null) {
+            throw new NullPointerException("Can't find non-null argument.");
+        } else {
+            return object;
+        }
+    }
+
+    @Contract(value = "!null, _ -> param1; null, !null -> param2; null, null -> fail", pure = true)
+    public static <T> T firstNonNull(T object1, T object2) {
+        if (object1 != null) {
+            return object1;
+        } else if (object2 != null) {
+            return object2;
+        } else {
+            throw new NullPointerException("Can't find non-null argument.");
+        }
+    }
+
+    @SafeVarargs
+    @Contract(value = "null -> fail", pure = true)
+    public static <T> T firstNonNull(T ... objects) {
+        if (objects != null) {
+            for (T object : objects) {
+                if (object != null) {
+                    return object;
+                }
+            }
+        }
+        throw new NullPointerException("Can't find non-null argument.");
+    }
+
     @Contract("null, null -> fail")
     @Nonnull
     public static <T> T toNotNull(@Nullable T value, @Nullable T nullReplacement) {
