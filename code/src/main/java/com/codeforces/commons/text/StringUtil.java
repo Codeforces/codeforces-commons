@@ -1662,6 +1662,43 @@ public final class StringUtil {
         }
     }
 
+    @Contract(value = " -> fail", pure = true)
+    public static String firstNonNull() {
+        throw new NullPointerException("Can't find non-null argument.");
+    }
+
+    @Contract(value = "null -> fail; !null -> param1", pure = true)
+    public static String firstNonNull(String string) {
+        if (string == null) {
+            throw new NullPointerException("Can't find non-null argument.");
+        } else {
+            return string;
+        }
+    }
+
+    @Contract(value = "!null, _ -> param1; null, !null -> param2; null, null -> fail", pure = true)
+    public static String firstNonNull(String string1, String string2) {
+        if (string1 != null) {
+            return string1;
+        } else if (string2 != null) {
+            return string2;
+        } else {
+            throw new NullPointerException("Can't find non-null argument.");
+        }
+    }
+
+    @Contract(value = "null -> fail", pure = true)
+    public static String firstNonNull(String ... strings) {
+        if (strings != null) {
+            for (String string : strings) {
+                if (string != null) {
+                    return string;
+                }
+            }
+        }
+        throw new NullPointerException("Can't find non-null argument.");
+    }
+
     @SuppressWarnings("InterfaceNeverImplemented")
     public interface ToStringConverter<T> {
         @Nonnull
