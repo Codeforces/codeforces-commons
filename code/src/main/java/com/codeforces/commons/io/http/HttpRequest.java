@@ -500,6 +500,7 @@ public final class HttpRequest {
             if (connectionInputStream == null) {
                 bytes = null;
             } else {
+                connectionInputStream = new BufferedInputStream(connectionInputStream, (int) (256 * FileUtil.BYTES_PER_KB));
                 String contentEncoding = connection.getContentEncoding();
 
                 if ("gzip".equalsIgnoreCase(contentEncoding)) {
@@ -518,7 +519,11 @@ public final class HttpRequest {
                     }
                 });
 
-                bytes = IoUtil.toByteArray(connectionInputStream, NumberUtil.toInt(maxSizeBytes), true);
+                try {
+                    bytes = IoUtil.toByteArray(connectionInputStream, NumberUtil.toInt(maxSizeBytes), true);
+                } finally {
+                    IoUtil.closeQuietly(connectionInputStream);
+                }
             }
         } else {
             bytes = null;
@@ -645,8 +650,9 @@ public final class HttpRequest {
         connection.setDoInput(true);
         connection.setDoOutput(doOutput);
         connection.setInstanceFollowRedirects(true);
+        //connection.setRequestProperty("Content-Length", "1000");
 
-//        connection.setRequestProperty("Connection", "close");
+        //connection.setRequestProperty("Connection", "close");
         connection.setRequestProperty("Connection", "keep-alive");
 
         if (method == HttpMethod.POST) {
@@ -823,5 +829,9 @@ public final class HttpRequest {
             entry.setValue(Collections.unmodifiableList(new ArrayList<>(entry.getValue())));
         }
         return Collections.unmodifiableMap(copy);
+    }
+
+    static {
+        System.setProperty("http.keepAlive", "true");
     }
 }
