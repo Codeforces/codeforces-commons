@@ -17,11 +17,16 @@ import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.crypto.Cipher;
 import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
 import java.util.concurrent.locks.*;
@@ -43,6 +48,9 @@ public final class StringUtil {
 
     private static final Map<Class, ToStringConverter> toStringConverterByClass = new HashMap<>();
     private static final ReadWriteLock toStringConverterByClassMapLock = new ReentrantReadWriteLock();
+
+    private static final String ENCRYPTION_ALGO = "DES";
+    private static final String ENCRYPTION_PREFIX = "cfb550";
 
     private static final CharSequenceTranslator ESCAPE_JAVA_RETAIN_CYRILLIC = new LookupTranslator(
             new MapBuilder<CharSequence, CharSequence>().put("\"", "\\\"").put("\\", "\\\\").buildUnmodifiable()
@@ -569,7 +577,7 @@ public final class StringUtil {
         String[] split = Patterns.WHITESPACE_PATTERN.split(s);
         int nonEmptyCount = 0;
         for (String token : split) {
-            if (StringUtil.isNotEmpty(token)) {
+            if (isNotEmpty(token)) {
                 nonEmptyCount++;
             }
         }
@@ -577,7 +585,7 @@ public final class StringUtil {
         String[] result = new String[nonEmptyCount];
         int index = 0;
         for (String token : split) {
-            if (StringUtil.isNotEmpty(token)) {
+            if (isNotEmpty(token)) {
                 result[index++] = token;
             }
         }
@@ -1341,6 +1349,7 @@ public final class StringUtil {
         return false;
     }
 
+    @Nonnull
     public static byte[] sha1(byte[] input) {
         try {
             return MessageDigest.getInstance("SHA1").digest(input);
@@ -1356,6 +1365,16 @@ public final class StringUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Nonnull
+    public static byte[] sha1(@Nonnull String s) {
+        return sha1(s.getBytes(UTF_8));
+    }
+
+    @Nonnull
+    public static String sha1Hex(@Nonnull String s) {
+        return sha1Hex(s.getBytes(UTF_8));
     }
 
     public static String sha1Base64(byte[] input) {
@@ -1419,6 +1438,49 @@ public final class StringUtil {
         }
 
         return plainText;
+    }
+
+    @SuppressWarnings("Duplicates")
+    @Nonnull
+    public static String hexEncrypt(@Nonnull String text, @Nonnull String secretKey) {
+        text = sha1Hex(text).substring(0, ENCRYPTION_PREFIX.length()) + text;
+
+        try {
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGO);
+            byte[] input = text.getBytes();
+            byte[] encrypted = new byte[input.length * 2];
+            SecretKey key = SecretKeyFactory.getInstance(ENCRYPTION_ALGO).generateSecret(new DESKeySpec(sha1((ENCRYPTION_PREFIX + secretKey).getBytes(StandardCharsets.UTF_8))));
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            int length = cipher.update(input, 0, input.length, encrypted, 0);
+            length += cipher.doFinal(encrypted, length);
+            return Hex.encodeHexString(Arrays.copyOf(encrypted, length));
+        } catch (Exception e) {
+            throw new RuntimeException("Can't encrypt.", e);
+        }
+    }
+
+    @SuppressWarnings("Duplicates")
+    @Nonnull
+    public static String hexDecrypt(@Nonnull String text, @Nonnull String secretKey) throws DecryptException {
+        try {
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGO);
+            byte[] input = Hex.decodeHex(text);
+            byte[] decrypted = new byte[input.length * 2];
+            SecretKey key = SecretKeyFactory.getInstance(ENCRYPTION_ALGO).generateSecret(new DESKeySpec(sha1((ENCRYPTION_PREFIX + secretKey).getBytes(StandardCharsets.UTF_8))));
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            int length = cipher.update(input, 0, input.length, decrypted, 0);
+            length += cipher.doFinal(decrypted, length);
+
+            String result = new String(decrypted, 0, length);
+            if (result.length() < ENCRYPTION_PREFIX.length() || !result.substring(0, ENCRYPTION_PREFIX.length())
+                    .equals(sha1Hex(result.substring(ENCRYPTION_PREFIX.length())).substring(0, ENCRYPTION_PREFIX.length()))) {
+                throw new DecryptException("Expected magic prefix after decryption.");
+            } else {
+                return result.substring(ENCRYPTION_PREFIX.length());
+            }
+        } catch (Exception e) {
+            throw new DecryptException("Can't encrypt.", e);
+        }
     }
 
     /**
