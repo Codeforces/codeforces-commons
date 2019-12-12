@@ -15,53 +15,52 @@ public class MimeUtil {
     public static final String DEFAULT_MIME_TYPE = Type.TEXT_PLAIN;
 
     private static final Map<String, String> MIME_TYPE_BY_EXTENSION = new MapBuilder<String, String>()
-            .put(".tif", "image/tiff")
-            .put(".tiff", "image/tiff")
-            .put(".gif", "image/gif")
-            .put(".png", "image/png")
-            .put(".jpg", "image/jpeg")
-            .put(".jpe", "image/jpeg")
-            .put(".jpeg", "image/jpeg")
-            .put(".bmp", "image/bmp")
+            .put(".tif", Type.IMAGE_TIFF)
+            .put(".tiff", Type.IMAGE_TIFF)
+            .put(".gif", Type.IMAGE_GIF)
+            .put(".png", Type.IMAGE_PNG)
+            .put(".jpg", Type.IMAGE_JPEG)
+            .put(".jpe", Type.IMAGE_JPEG)
+            .put(".jpeg", Type.IMAGE_JPEG)
+            .put(".bmp", Type.IMAGE_BMP)
 
             .put(".html", Type.TEXT_HTML)
-            .put(".js", "application/x-javascript")
+            .put(".js", Type.APPLICATION_JAVASCRIPT)
             .put(".css", Type.TEXT_CSS)
-            .put(".ps", "application/postscript")
+            .put(".ps", Type.APPLICATION_POSTSCRIPT)
             .put(".xml", Type.APPLICATION_XML)
             .put(".json", Type.APPLICATION_JSON)
 
-            .put(".dot", "application/msword")
-            .put(".doc", "application/msword")
-            .put(".docx", "application/msword")
-            .put(".rtf", "application/rtf")
+            .put(".dot", Type.APPLICATION_MSWORD)
+            .put(".doc", Type.APPLICATION_MSWORD)
+            .put(".docx", Type.APPLICATION_MSWORD)
+            .put(".rtf", Type.APPLICATION_RTF)
             .put(".odt", "application/vnd.oasis.opendocument.text")
             .put(".pdf", Type.APPLICATION_PDF)
             .put(".tex", Type.APPLICATION_X_TEX)
             .put(".csv", "text/csv")
-            .put(".mp", "text/x-metapost")
-            .put(".tex", "application/x-latex")
+            .put(".mp", Type.TEXT_X_METAPOST)
 
             .put(".exe", Type.APPLICATION_OCTET_STREAM)
             .put(".dll", "application/x-msdownload")
             .put(".zip", Type.APPLICATION_ZIP)
             .put(".tar", "application/x-tar-compressed")
             .put(".rar", "application/x-rar-compressed")
-            .put(".7z", "application/x-7z-compressed")
+            .put(".7z", Type.APPLICATION_X_7Z_COMPRESSED)
 
             .put(".jnlp", "application/x-java-jnlp-file")
             .put(".bat", "application/bat")
             .put(".sh", "application/x-sh")
 
-            .put(".avi", "video/x-msvideo")
-            .put(".wmv", "video/x-ms-wmv")
-            .put(".mov", "video/quicktime")
-            .put(".3gp", "video/3gpp")
-            .put(".mp4", "video/mp4")
-            .put(".flv", "video/x-flv")
-            .put(".mpeg", "video/mpeg")
-            .put(".ogg", "video/ogg")
-            .put(".webm", "video/webm")
+            .put(".avi", Type.VIDEO_X_MSVIDEO)
+            .put(".wmv", Type.VIDEO_X_MS_WMV)
+            .put(".mov", Type.VIDEO_QUICKTIME)
+            .put(".3gp", Type.VIDEO_3GPP)
+            .put(".mp4", Type.VIDEO_MP4)
+            .put(".flv", Type.VIDEO_FLV)
+            .put(".mpeg", Type.VIDEO_MPEG)
+            .put(".ogg", Type.VIDEO_OGG)
+            .put(".webm", Type.VIDEO_WEBM)
 
             .buildUnmodifiable();
 
@@ -118,7 +117,6 @@ public class MimeUtil {
         public static final String APPLICATION_MSWORD = "application/msword";
         public static final String APPLICATION_RTF = "application/rtf";
         public static final String APPLICATION_X_TEX = "application/x-tex";
-        public static final String APPLICATION_X_LATEX = "application/x-latex";
 
         public static final String APPLICATION_ZIP = "application/zip";
         public static final String APPLICATION_X_7Z_COMPRESSED = "application/x-7z-compressed";
@@ -129,9 +127,11 @@ public class MimeUtil {
         public static final String IMAGE_PNG = "image/png";
         public static final String IMAGE_GIF = "image/gif";
         public static final String IMAGE_TIFF = "image/tiff";
+        public static final String IMAGE_BMP = "image/bmp";
 
         public static final String VIDEO_X_MSVIDEO = "video/x-msvideo";
         public static final String VIDEO_AVI = "video/x-msvideo";
+        public static final String VIDEO_WMV = "video/x-ms-wmv";
         public static final String VIDEO_X_MS_WMV = "video/x-ms-wmv";
         public static final String VIDEO_MOV = "video/quicktime";
         public static final String VIDEO_QUICKTIME = "video/quicktime";
@@ -142,7 +142,6 @@ public class MimeUtil {
         public static final String VIDEO_MPEG = "video/mpeg";
         public static final String VIDEO_OGG = "video/ogg";
         public static final String VIDEO_WEBM = "video/webm";
-        public static final String VIDEO_WMV = "video/x-ms-wmv";
 
         private Type() {
             throw new UnsupportedOperationException();
