@@ -39,6 +39,8 @@ public class MimeUtil {
             .put(".pdf", Type.APPLICATION_PDF)
             .put(".tex", Type.APPLICATION_X_TEX)
             .put(".csv", "text/csv")
+            .put(".mp", "text/x-metapost")
+            .put(".tex", "application/x-latex")
 
             .put(".exe", Type.APPLICATION_OCTET_STREAM)
             .put(".dll", "application/x-msdownload")
@@ -50,6 +52,16 @@ public class MimeUtil {
             .put(".jnlp", "application/x-java-jnlp-file")
             .put(".bat", "application/bat")
             .put(".sh", "application/x-sh")
+
+            .put(".avi", "video/x-msvideo")
+            .put(".wmv", "video/x-ms-wmv")
+            .put(".mov", "video/quicktime")
+            .put(".3gp", "video/3gpp")
+            .put(".mp4", "video/mp4")
+            .put(".flv", "video/x-flv")
+            .put(".mpeg", "video/mpeg")
+            .put(".ogg", "video/ogg")
+            .put(".webm", "video/webm")
 
             .buildUnmodifiable();
 
@@ -93,17 +105,44 @@ public class MimeUtil {
 
         public static final String TEXT_HTML = "text/html";
         public static final String TEXT_CSS = "text/css";
+        public static final String TEXT_X_METAPOST = "text/x-metapost";
+
+        public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+
         public static final String APPLICATION_XML = "application/xml";
         public static final String APPLICATION_JSON = "application/json";
         public static final String APPLICATION_JAVASCRIPT = "application/javascript";
 
         public static final String APPLICATION_PDF = "application/pdf";
+        public static final String APPLICATION_POSTSCRIPT = "application/postscript";
+        public static final String APPLICATION_MSWORD = "application/msword";
+        public static final String APPLICATION_RTF = "application/rtf";
         public static final String APPLICATION_X_TEX = "application/x-tex";
+        public static final String APPLICATION_X_LATEX = "application/x-latex";
 
-        public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
         public static final String APPLICATION_ZIP = "application/zip";
+        public static final String APPLICATION_X_7Z_COMPRESSED = "application/x-7z-compressed";
 
         public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+
+        public static final String IMAGE_JPEG = "image/jpeg";
+        public static final String IMAGE_PNG = "image/png";
+        public static final String IMAGE_GIF = "image/gif";
+        public static final String IMAGE_TIFF = "image/tiff";
+
+        public static final String VIDEO_X_MSVIDEO = "video/x-msvideo";
+        public static final String VIDEO_AVI = "video/x-msvideo";
+        public static final String VIDEO_X_MS_WMV = "video/x-ms-wmv";
+        public static final String VIDEO_MOV = "video/quicktime";
+        public static final String VIDEO_QUICKTIME = "video/quicktime";
+        public static final String VIDEO_3GP = "video/3gpp";
+        public static final String VIDEO_3GPP = "video/3gpp";
+        public static final String VIDEO_MP4 = "video/mp4";
+        public static final String VIDEO_FLV = "video/x-flv";
+        public static final String VIDEO_MPEG = "video/mpeg";
+        public static final String VIDEO_OGG = "video/ogg";
+        public static final String VIDEO_WEBM = "video/webm";
+        public static final String VIDEO_WMV = "video/x-ms-wmv";
 
         private Type() {
             throw new UnsupportedOperationException();
