@@ -135,7 +135,7 @@ public class MimeUtil {
     }
 
     @Nullable
-    @Contract("_, null -> null; _, !null -> !null")
+    @Contract("_, !null -> !null")
     public static String getContentTypeByFile(@Nonnull String fileName, @Nullable String defaultMimeType) {
         String mimeType = MIME_TYPE_BY_EXTENSION.get(FileUtil.getExt(fileName));
         return mimeType == null ? defaultMimeType : mimeType;
