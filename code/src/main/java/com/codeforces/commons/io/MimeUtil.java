@@ -99,6 +99,7 @@ public class MimeUtil {
             .put(".wav", Type.AUDIO_X_WAV)
             .put(".weba", Type.AUDIO_WEBM)
 
+            .put(".3gp", Type.VIDEO_3GPP)
             .put(".avi", Type.VIDEO_X_MSVIDEO)
             .put(".flv", Type.VIDEO_X_FLV)
             .put(".mov", Type.VIDEO_QUICKTIME)
@@ -205,6 +206,7 @@ public class MimeUtil {
         public static final String AUDIO_X_WAV = "audio/x-wav";
         public static final String AUDIO_WEBM = "audio/webm";
 
+        public static final String VIDEO_3GPP = "video/3gpp";
         public static final String VIDEO_X_MSVIDEO = "video/x-msvideo";
         public static final String VIDEO_X_FLV = "video/x-flv";
         public static final String VIDEO_QUICKTIME = "video/quicktime";
