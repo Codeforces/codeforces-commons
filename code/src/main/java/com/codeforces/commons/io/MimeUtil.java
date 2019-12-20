@@ -116,6 +116,7 @@ public class MimeUtil {
             .put(".html", Type.TEXT_HTML)
             .put(".ics", Type.TEXT_CALENDAR)
             .put(".md", Type.TEXT_MARKDOWN)
+            .put(".mp", Type.TEXT_X_METAPOST)
             .put(".txt", Type.TEXT_PLAIN)
 
             .put(".otf", Type.FONT_OTF)
@@ -221,6 +222,7 @@ public class MimeUtil {
         public static final String TEXT_CSS = "text/css";
         public static final String TEXT_CSV = "text/csv";
         public static final String TEXT_CALENDAR = "text/calendar";
+        public static final String TEXT_X_METAPOST = "text/x-metapost";
         public static final String TEXT_MARKDOWN = "text/markdown";
 
         public static final String FONT_OTF = "font/otf";
