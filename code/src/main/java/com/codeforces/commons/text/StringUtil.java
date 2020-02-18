@@ -23,6 +23,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.lang.reflect.Array;
@@ -546,7 +550,7 @@ public final class StringUtil {
         }
 
         if (parts == null) {
-            return new String[] {s};
+            return new String[]{s};
         }
 
         if (count == parts.length) {
@@ -569,7 +573,7 @@ public final class StringUtil {
     /**
      * Splits given string into tokens (words) using white-spaces as separators. All empty parts are excluded from the result.
      *
-     * @param s         the string to be tokenized
+     * @param s the string to be tokenized
      * @return the array of string tokens
      */
     @Nonnull
@@ -1750,7 +1754,7 @@ public final class StringUtil {
     }
 
     @Contract(value = "null -> fail", pure = true)
-    public static String firstNonNull(String ... strings) {
+    public static String firstNonNull(String... strings) {
         if (strings != null) {
             for (String string : strings) {
                 if (string != null) {
@@ -1759,6 +1763,75 @@ public final class StringUtil {
             }
         }
         throw new NullPointerException("Can't find non-null argument.");
+    }
+
+    /**
+     * Converts extremely simple HTML to text. For example, use it to convert emails HTML to text.
+     *
+     * @param html Html to convert
+     * @return Text
+     */
+    @Nonnull
+    public static String convertHtmlToText(@Nonnull String html) {
+        final StringBuilder sb = new StringBuilder();
+
+        HTMLEditorKit.ParserCallback parserCallback = new HTMLEditorKit.ParserCallback() {
+            private final String[] BLOCK_ELEMENT_TAGS = {
+                    "p",
+                    "h1",
+                    "h2",
+                    "h3",
+                    "h4",
+                    "h5",
+                    "h6",
+                    "ol",
+                    "ul",
+                    "li",
+                    "pre",
+                    "address",
+                    "blockquote",
+                    "dl",
+                    "div",
+                    "fieldset",
+                    "form",
+                    "hr",
+                    "noscript",
+                    "table",
+                    "br"
+            };
+
+            private boolean readyForNewline;
+
+            @Override
+            public void handleText(final char[] data, final int pos) {
+                sb.append(new String(data));
+                readyForNewline = true;
+            }
+
+            @Override
+            public void handleStartTag(final HTML.Tag t, final MutableAttributeSet a, final int pos) {
+                if (readyForNewline && ArrayUtils.indexOf(BLOCK_ELEMENT_TAGS, t.toString().toLowerCase()) >= 0) {
+                    sb.append("\n");
+                    if (t == HTML.Tag.P) {
+                        sb.append("\n");
+                    }
+                    readyForNewline = false;
+                }
+            }
+
+            @Override
+            public void handleSimpleTag(final HTML.Tag t, final MutableAttributeSet a, final int pos) {
+                handleStartTag(t, a, pos);
+            }
+        };
+
+        try {
+            new ParserDelegator().parse(new StringReader(html), parserCallback, false);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to parse.", e);
+        }
+
+        return sb.toString();
     }
 
     @SuppressWarnings("InterfaceNeverImplemented")
