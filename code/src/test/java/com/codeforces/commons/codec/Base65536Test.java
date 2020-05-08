@@ -25,7 +25,7 @@ public class Base65536Test extends TestCase {
         }
         {
             // Encode to chars, decode from string
-            byte[] plainBytes = getBytes("realtek.log");
+            byte[] plainBytes = getBytes("realtek.txt");
             char[] encodedChars = Base65536.encodeBase65536(plainBytes);
             assertTrue(Arrays.equals(plainBytes, Base65536.decodeBase65536(new String(encodedChars))));
         }
