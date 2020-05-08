@@ -8,3 +8,4 @@ Name=Realtek High Definition Audio Driver
 Version=2.32
 Company=Realtek Semiconductor Corp.
 Lang=0019
+

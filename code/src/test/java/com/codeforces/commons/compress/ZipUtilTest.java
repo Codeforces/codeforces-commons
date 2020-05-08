@@ -28,7 +28,7 @@ public class ZipUtilTest extends TestCase {
         FileUtil.writeFile(new File(fileSubDir, "files/memoryx"), getBytes("memoryx"));
 
         File fileSubSubDir = FileUtil.ensureDirectoryExists(new File(fileSubDir, "subsubdir"));
-        FileUtil.writeFile(new File(fileSubSubDir, "files/realtek.log"), getBytes("realtek.log"));
+        FileUtil.writeFile(new File(fileSubSubDir, "files/realtek.txt"), getBytes("realtek.txt"));
 
         FileUtil.ensureDirectoryExists(new File(dir, "emptydir"));
     }
@@ -147,7 +147,7 @@ public class ZipUtilTest extends TestCase {
             );
 
             checkZipEntryExists(zipFile, "random");
-            checkZipEntryExists(zipFile, "subdir/subsubdir/files/realtek.log");
+            checkZipEntryExists(zipFile, "subdir/subsubdir/files/realtek.txt");
             checkZipEntryNotExists(zipFile, "sabako/sabako");
             checkZipEntryNotExists(zipFile, "root-sabako");
 
@@ -163,7 +163,7 @@ public class ZipUtilTest extends TestCase {
             );
 
             checkZipEntryExists(zipFile, "random");
-            checkZipEntryExists(zipFile, "subdir/subsubdir/files/realtek.log");
+            checkZipEntryExists(zipFile, "subdir/subsubdir/files/realtek.txt");
             checkZipEntryExists(zipFile, "sabako/sabako");
             checkZipEntryExists(zipFile, "root-sabako");
 
@@ -196,7 +196,7 @@ public class ZipUtilTest extends TestCase {
             );
 
             checkZipEntryNotExists(zipFile, "random");
-            checkZipEntryExists(zipFile, "subdir/subsubdir/files/realtek.log");
+            checkZipEntryExists(zipFile, "subdir/subsubdir/files/realtek.txt");
             checkZipEntryNotExists(zipFile, "sabako/sabako");
             checkZipEntryExists(zipFile, "root-sabako");
         } finally {
