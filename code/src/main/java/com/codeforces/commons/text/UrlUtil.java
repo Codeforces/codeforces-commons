@@ -2,6 +2,7 @@ package com.codeforces.commons.text;
 
 import org.apache.commons.validator.routines.UrlValidator;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,6 +24,7 @@ public class UrlUtil {
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings("unused")
     public static Set<String> getParameterNames(@Nonnull String url) {
         Set<String> parameterNames = new HashSet<>();
 
@@ -36,10 +38,8 @@ public class UrlUtil {
         String rawQuery = uri.getRawQuery();
         if (rawQuery != null) {
             String[] parameters = StringUtil.split(rawQuery, '&');
-            int parameterCount = parameters.length;
 
-            for (int parameterIndex = 0; parameterIndex < parameterCount; ++parameterIndex) {
-                String parameter = parameters[parameterIndex];
+            for (String parameter : parameters) {
                 int equalitySignPos = parameter.indexOf('=');
                 String parameterName = equalitySignPos == -1
                         ? parameter.trim()
@@ -200,6 +200,7 @@ public class UrlUtil {
         return firstParameter ? url : resultUrl.append(urlPostfix).toString();
     }
 
+    @SuppressWarnings("unused")
     public static String appendRelativePathToUrl(@Nonnull String url, @Nullable String relativePath) {
         if (!isValidUri(url) || StringUtil.isBlank(relativePath)
                 || relativePath.length() == 1 && relativePath.charAt(0) == '/') {
@@ -232,6 +233,7 @@ public class UrlUtil {
         return urlPostfix == null ? urlPrefix : urlPrefix + urlPostfix;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     @Contract("null -> false")
     public static boolean isValidUrl(@Nullable String url) {
         return isValidUrl(url, ALLOWED_SCHEMES);
@@ -243,14 +245,22 @@ public class UrlUtil {
             return false;
         }
 
+        if (containsDangerousUriChars(url)) {
+            return false;
+        }
+
         UrlValidator urlValidator = new UrlValidator(allowedSchemes, UrlValidator.ALLOW_LOCAL_URLS);
         return urlValidator.isValid(url);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "BooleanMethodIsAlwaysInverted"})
     @Contract("null -> false")
     public static boolean isValidUri(@Nullable String uri) {
         if (uri == null) {
+            return false;
+        }
+
+        if (containsDangerousUriChars(uri)) {
             return false;
         }
 
@@ -262,6 +272,16 @@ public class UrlUtil {
         }
     }
 
+    private static boolean containsDangerousUriChars(@NotNull String uri) {
+        return uri.contains("<") || uri.contains(">")
+                || uri.contains("{") || uri.contains("}")
+                || uri.contains("[") || uri.contains("]")
+                || uri.contains("|") || uri.contains("\\")
+                || uri.contains("^")
+                || uri.contains("\"") || uri.contains("'");
+    }
+
+    @SuppressWarnings("unused")
     @Contract("null -> null")
     @Nullable
     public static String extractFileName(@Nullable String url) {
@@ -285,12 +305,9 @@ public class UrlUtil {
         }
 
         String[] parameters = StringUtil.split(query, '&');
-        int parameterCount = parameters.length;
 
         StringBuilder queryBuilder = new StringBuilder(query.length());
-
-        for (int parameterIndex = 0; parameterIndex < parameterCount; ++parameterIndex) {
-            String parameter = parameters[parameterIndex];
+        for (String parameter : parameters) {
             if (parameter.startsWith(parameterName + '=') || parameterName.equals(parameter)) {
                 continue;
             }

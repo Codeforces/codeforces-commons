@@ -2,16 +2,16 @@ package com.codeforces.commons.text;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
- *         Date: 19.03.14
+ * Date: 19.03.14
  */
 @SuppressWarnings("MessageMissingOnJUnitAssertion")
 public class UrlUtilTest {
     @Test
-    public void testAppendParameterToUrl() throws Exception {
+    public void testAppendParameterToUrl() {
         assertEquals(
                 "http://localhost/?pageIndex=19",
                 UrlUtil.appendParameterToUrl("http://localhost/", "pageIndex", "19")
@@ -49,7 +49,7 @@ public class UrlUtilTest {
     }
 
     @Test
-    public void testAppendParametersToUrl() throws Exception {
+    public void testAppendParametersToUrl() {
         // Single parameter
         assertEquals(
                 "http://localhost/?pageIndex=19",
@@ -129,7 +129,7 @@ public class UrlUtilTest {
     }
 
     @Test
-    public void testRemoveParameterFromUrl() throws Exception {
+    public void testRemoveParameterFromUrl() {
         assertEquals("http://localhost/", UrlUtil.removeParameterFromUrl("http://localhost/?", "pageIndex"));
         assertEquals("http://localhost/", UrlUtil.removeParameterFromUrl("http://localhost/?pageIndex=0", "pageIndex"));
         assertEquals(
@@ -152,7 +152,7 @@ public class UrlUtilTest {
     }
 
     @Test
-    public void testReplaceParameterInUrl() throws Exception {
+    public void testReplaceParameterInUrl() {
         assertEquals(
                 "http://localhost/?pageIndex=999",
                 UrlUtil.replaceParameterInUrl("http://localhost/?", "pageIndex", "999")
@@ -178,5 +178,18 @@ public class UrlUtilTest {
                         "http://google.ru/#?id=17&pageIndex=0&pageIndex1&counter=0&pageIndex&flag=1", "pageIndex1", "0"
                 )
         );
+    }
+
+    @Test
+    public void testIsValidUrl() {
+        assertTrue(UrlUtil.isValidUrl("https://ru.wikipedia.org/wiki/"
+                + "%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0"));
+        assertTrue(UrlUtil.isValidUrl("http://codeforces.com/profile/MikeMirzayanov/%D1%83%D0%BF%D1%81#%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82"));
+        assertFalse(UrlUtil.isValidUrl(null));
+        assertFalse(UrlUtil.isValidUrl(""));
+        assertFalse(UrlUtil.isValidUrl("\t"));
+        assertFalse(UrlUtil.isValidUrl(" "));
+        assertFalse(UrlUtil.isValidUrl("    "));
+        assertFalse(UrlUtil.isValidUrl("http://codeforces.com/#\"><script>alert(\"hello world!\");</script><br"));
     }
 }
