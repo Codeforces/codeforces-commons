@@ -118,6 +118,7 @@ public class MimeUtil {
             .put(".md", Type.TEXT_MARKDOWN)
             .put(".mp", Type.TEXT_X_METAPOST)
             .put(".txt", Type.TEXT_PLAIN)
+            .put(".vtt", Type.TEXT_VTT)
 
             .put(".otf", Type.FONT_OTF)
             .put(".ttf", Type.FONT_TTF)
@@ -224,6 +225,7 @@ public class MimeUtil {
         public static final String TEXT_CALENDAR = "text/calendar";
         public static final String TEXT_X_METAPOST = "text/x-metapost";
         public static final String TEXT_MARKDOWN = "text/markdown";
+        public static final String TEXT_VTT = "text/vtt";
 
         public static final String FONT_OTF = "font/otf";
         public static final String FONT_TTF = "font/ttf";
