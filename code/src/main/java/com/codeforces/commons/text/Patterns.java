@@ -29,6 +29,9 @@ public final class Patterns {
     public static final Pattern COLON_PATTERN = Pattern.compile(":");
     public static final Pattern AMP_PATTERN = Pattern.compile("&");
 
+    public static final Pattern JAVA_SOURCE_PATTERN = Pattern.compile("[^{}]*public\\s+(final)?\\s*class\\s+(\\w+).*", Pattern.DOTALL);
+    public static final Pattern SCALA_SOURCE_PATTERN = Pattern.compile("[^{}]*object\\s+(\\w+).*", Pattern.DOTALL);
+
     private Patterns() {
         throw new UnsupportedOperationException();
     }
