@@ -466,7 +466,7 @@ public class ReflectionUtil {
         }
     }
 
-    public static void propertiesIterate(Object source, BiConsumer<String, Object> nameAndValueConsumer, Set<String> ignoreFieldNames) {
+    public static void iterateProperties(Object source, BiConsumer<String, Object> nameAndValueConsumer, Set<String> ignoreFieldNames) {
         if (source == null) {
             throw new NullPointerException("Argument source can't be null (if target is not null).");
         }
