@@ -1,8 +1,10 @@
 package com.codeforces.commons.reflection;
 
+import com.codeforces.commons.collection.SetBuilder;
 import com.codeforces.commons.math.RandomUtil;
 import com.codeforces.commons.text.StringUtil;
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -71,11 +73,7 @@ public class ReflectionUtilTest extends TestCase {
                 ReflectionUtil.getDeepValue(personMax, "friendByName.Mike.firstFriend.friendByName.Ivan.admin")
         );
 
-        assertEquals(
-                "personMike.friendByName.Mike mismatch.",
-                null,
-                ReflectionUtil.getDeepValue(personMike, "friendByName.Mike")
-        );
+        assertNull("personMike.friendByName.Mike mismatch.", ReflectionUtil.getDeepValue(personMike, "friendByName.Mike"));
 
         assertEquals(
                 "personMax.friendByName.Mike.firstFriend.friendList.-1.friendSet.0.friendSet.-2.name mismatch.",
@@ -129,6 +127,25 @@ public class ReflectionUtilTest extends TestCase {
         }
     }
 
+    public void testIterateProperties() {
+        SimpleDataClass simpleDataClass = new SimpleDataClass(55, "test", SimpleDataClass.Type.C, null);
+        Map<String, Object> map = new HashMap<>();
+        ReflectionUtil.iterateProperties(simpleDataClass, (name, value) -> {
+            assertFalse("Duplicated property name " + name, map.containsKey(name));
+            map.put(name, value);
+        }, Collections.emptySet());
+
+        assertEquals(3, map.size());
+        assertEquals(55, (long) map.get("id"));
+        assertEquals("test", (String) map.get("name"));
+        assertEquals(SimpleDataClass.Type.C, map.get("type"));
+
+        SimpleDataClass simpleDataClass1 = new SimpleDataClass(37, "sample", SimpleDataClass.Type.A, simpleDataClass);
+        ReflectionUtil.iterateProperties(simpleDataClass1, (name, value) -> {
+            assertEquals(simpleDataClass, simpleDataClass1.getInner());
+        }, new SetBuilder<String>().add("id").add("name").add("type").buildUnmodifiable());
+    }
+
     public B newB() {
         B b = new B();
         b.setId(RandomUtil.getRandomLong());
@@ -151,6 +168,60 @@ public class ReflectionUtilTest extends TestCase {
         }
 
         return b;
+    }
+
+    private static class DataClass {
+        private final long id;
+        private final String name;
+        private final Type type;
+        private final DataClass inner;
+        private final Object noGetter = new Object();
+
+        public DataClass(long id, String name, Type type, DataClass inner) {
+            this.id = id;
+            this.name = name;
+            this.type = type;
+            this.inner = inner;
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public DataClass getInner() {
+            return inner;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof DataClass)) return false;
+            DataClass that = (DataClass) o;
+            return getId() == that.getId() && Objects.equals(getName(), that.getName()) && getType() == that.getType() && Objects.equals(getInner(), that.getInner());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getId(), getName(), getType(), getInner());
+        }
+
+        enum Type {
+            A, B, C;
+        }
+    }
+
+    private static class SimpleDataClass extends DataClass {
+        public SimpleDataClass(long id, String name, Type type, DataClass inner) {
+            super(id, name, type, inner);
+        }
     }
 
     private static class Person {

@@ -13,6 +13,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiConsumer;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -461,6 +462,35 @@ public class ReflectionUtil {
                             getterEntry.getKey(), source.getClass(), target.getClass()
                     ), e);
                 }
+            }
+        }
+    }
+
+    public static void iterateProperties(Object source, BiConsumer<String, Object> nameAndValueConsumer, Set<String> ignoreFieldNames) {
+        if (source == null) {
+            throw new NullPointerException("Argument source can't be null (if target is not null).");
+        }
+
+        Map<String, FastMethod> sourceGetters = getGettersMap(source.getClass());
+
+        for (Map.Entry<String, FastMethod> getterEntry : sourceGetters.entrySet()) {
+            if (ignoreFieldNames.contains(getterEntry.getKey())) {
+                continue;
+            }
+
+            FastMethod getter = getterEntry.getValue();
+
+            Object value;
+            try {
+                value = getter.invoke(source, ArrayUtils.EMPTY_OBJECT_ARRAY);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(String.format(
+                        "Can't get property '%s' from %s.", getterEntry.getKey(), source.getClass()
+                ), e);
+            }
+
+            if (value != null) {
+                nameAndValueConsumer.accept(getterEntry.getKey(), value);
             }
         }
     }
