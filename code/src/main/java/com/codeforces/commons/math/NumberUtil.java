@@ -49,7 +49,7 @@ public final class NumberUtil {
         }
 
         if (value instanceof Number) {
-            return toByte(((Number) value).doubleValue());
+            return toByte(((Number) value).longValue());
         }
 
         return toByte(value.toString());
@@ -163,7 +163,7 @@ public final class NumberUtil {
         }
 
         if (value instanceof Number) {
-            return toShort(((Number) value).doubleValue());
+            return toShort(((Number) value).longValue());
         }
 
         return toShort(value.toString());
@@ -263,7 +263,7 @@ public final class NumberUtil {
         }
 
         if (value instanceof Number) {
-            return toInt(((Number) value).doubleValue());
+            return toInt(((Number) value).longValue());
         }
 
         return toInt(value.toString());
@@ -349,7 +349,7 @@ public final class NumberUtil {
         }
 
         if (value instanceof Number) {
-            return toLong(((Number) value).doubleValue());
+            return toLong(((Number) value).longValue());
         }
 
         return toLong(value.toString());
