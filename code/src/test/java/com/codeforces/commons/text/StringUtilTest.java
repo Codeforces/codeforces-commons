@@ -1,11 +1,13 @@
 package com.codeforces.commons.text;
 
+import com.codeforces.commons.text.similarity.SimilarityChecker;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
@@ -245,6 +247,100 @@ public class StringUtilTest {
         internalTestSplit(".size.", '.', new String[]{"", "size", ""});
         internalTestSplit(" size  ", ' ', new String[]{"", "size", "", ""});
         internalTestSplit(",,,,", ',', new String[]{"", "", "", "", ""});
+    }
+
+    @Test
+    public void testUnicodeTr39Util() {
+        internalTestUnicodeTr39("paypal", "⍴ɑɣ⍴⍺⏽", "⍴⍺у⍴⍺⏽", "раγра١", "раყра1");
+        internalTestUnicodeTr39("c०de", "code", "с੦ᑯҽ", "с໐ᑯҽ", "cσd℮");
+        internalTestUnicodeTr39("Привет", "∏⍴ᴎʙꬲᴛ", "∏⍴ᴎʙ℮ᴛ");
+        internalTestUnicodeTr39("ሀոıc၀ᑯꬲ", "ሀոıс၀Ꮷe", "Unicode");
+        internalTestUnicodeTr39("MikeMirzayanov", "МikеМirzауаnоv");
+    }
+
+    @Test
+    public void testLooksLikeUtil() {
+        internalTestLooksLikeUtil("antontrygubO_o", "antontrygub0_o", "antontrygubO_0", "antontrygub0_O",
+                "antontrygub0_0", "antontrygub007");
+        internalTestLooksLikeUtil("tourist", "touristv2", "tourlst", "Tourist1");
+        internalTestLooksLikeUtil("MikeMirzayanov", "MlkeMlrzayanov", "MikeMirzayan0v", "MikeMirzayanoff",
+                "MikeMirzayanow", "mikemirzayanov");
+
+        internalTestLooksLikeUtilDifferent("Errichto", "rng_58", "-is-this-fft-", "1-gon", "abacaba");
+    }
+
+    @Test
+    public void testLooksLike() {
+        assertTrue(SimilarityChecker.isSimilar("geranazavr555", "geranazavr666", SimilarityChecker.Mode.SIMPLE_EN));
+        assertTrue(SimilarityChecker.isSimilar("geranazavr555", "geranazavr666", SimilarityChecker.Mode.SIMPLE_RU_EN));
+        assertTrue(SimilarityChecker.isSimilar("geranazavr555", "geranazar555", SimilarityChecker.Mode.SIMPLE_EN));
+        assertTrue(SimilarityChecker.isSimilar("antontrygubO_o", "antontrYgubO_0", SimilarityChecker.Mode.SIMPLE_EN));
+        assertTrue(SimilarityChecker.isSimilar("antontrygubO_o", "antontrygub", SimilarityChecker.Mode.SIMPLE_EN));
+
+        assertFalse(SimilarityChecker.isSimilar("antontrygubO_o", "anttrubO_0", SimilarityChecker.Mode.SIMPLE_EN));
+
+        Predicate<String> checker = StringUtil.getSimilarityChecker("scott_wu");
+        assertTrue(checker.test("scott_wu"));
+        assertTrue(checker.test("scott_mu"));
+        assertTrue(checker.test("scottwu"));
+        assertTrue(checker.test("scot_wu"));
+        assertTrue(checker.test("sc0tt_wu"));
+        assertTrue(checker.test("sc0ttWu"));
+
+        checker = StringUtil.getSimilarityChecker("Nebuchadnezzar");
+        assertTrue(checker.test("Nebucbadnezzar"));
+        assertTrue(checker.test("Nebuchadnezzzar"));
+        assertTrue(checker.test("Nebuchabnezzar"));
+        assertTrue(checker.test("Neducdabnezzar"));
+        assertTrue(checker.test("Neducdabnezar"));
+
+        assertFalse(checker.test("Naducdabnezr"));
+
+        checker = StringUtil.getSimilarityChecker("Benq");
+        assertFalse(checker.test("Abcd"));
+
+        checker = StringUtil.getSimilarityChecker("vovuh");
+        assertFalse(checker.test("Abcd"));
+        assertFalse(checker.test("v0hah"));
+        assertTrue(checker.test("vovvuh"));
+        assertTrue(checker.test("vohuh"));
+        assertTrue(checker.test("v0huh"));
+
+        checker = StringUtil.getSimilarityChecker("tori");
+        assertFalse(checker.test("tourist"));
+    }
+
+    private static void internalTestUnicodeTr39(String... strings) {
+        for (int i = 0; i < strings.length; i++) {
+            for (int j = 0; j < strings.length; j++) {
+                if (i != j) {
+                    assertTrue("Not detected confusable strings: '" + strings[i] + "', '" + strings[j] + "'",
+                            SimilarityChecker.isSimilar(strings[i], strings[j], SimilarityChecker.Mode.UNICODE_TR_39));
+                }
+            }
+        }
+    }
+
+    private static void internalTestLooksLikeUtil(String... strings) {
+        for (int i = 0; i < strings.length; i++) {
+            for (int j = 0; j < strings.length; j++) {
+                if (i != j) {
+                    assertTrue("Not detected looks like strings: '" + strings[i] + "', '" + strings[j] + "'",
+                            SimilarityChecker.isSimilar(strings[i], strings[j], SimilarityChecker.Mode.SIMPLE_EN));
+                }
+            }
+        }
+    }
+
+    private static void internalTestLooksLikeUtilDifferent(String... strings) {
+        for (int i = 0; i < strings.length; i++) {
+            for (int j = 0; j < strings.length; j++) {
+                if (i != j) {
+                    assertFalse("Detected looks like strings: '" + strings[i] + "', '" + strings[j] + "'",
+                            SimilarityChecker.isSimilar(strings[i], strings[j], SimilarityChecker.Mode.SIMPLE_EN));
+                }
+            }
+        }
     }
 
     private static void internalTestSplit(String s, char c, String[] parts) {

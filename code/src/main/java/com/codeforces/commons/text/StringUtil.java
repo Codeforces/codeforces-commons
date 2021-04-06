@@ -7,12 +7,16 @@ import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.pair.*;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.reflection.ReflectionUtil;
+import com.codeforces.commons.text.similarity.SimilarityChecker;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.text.translate.*;
+import org.apache.commons.text.translate.CharSequenceTranslator;
+import org.apache.commons.text.translate.EntityArrays;
+import org.apache.commons.text.translate.JavaUnicodeEscaper;
+import org.apache.commons.text.translate.LookupTranslator;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -31,13 +35,19 @@ import java.awt.event.KeyEvent;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.locks.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import static com.codeforces.commons.math.Math.*;
+import static com.codeforces.commons.math.Math.max;
+import static com.codeforces.commons.math.Math.min;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -1832,6 +1842,27 @@ public final class StringUtil {
         }
 
         return sb.toString();
+    }
+
+    @Contract("null, null -> true; !null, null -> false; null, !null -> false")
+    public static boolean isSimilar(@Nullable String a, @Nullable String b) {
+        if (equals(a, b)) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        return getSimilarityChecker(a).test(b);
+    }
+
+    @Nonnull
+    public static Predicate<String> getSimilarityChecker(@Nullable String sample) {
+        if (StringUtil.isBlank(sample)) {
+            return StringUtil::isBlank;
+        }
+        return new SimilarityChecker(sample, SimilarityChecker.Mode.SIMPLE_EN)
+                .or(new SimilarityChecker(sample, SimilarityChecker.Mode.SIMPLE_RU_EN))
+                .or(new SimilarityChecker(sample, SimilarityChecker.Mode.UNICODE_TR_39));
     }
 
     @SuppressWarnings("InterfaceNeverImplemented")
