@@ -1861,8 +1861,7 @@ public final class StringUtil {
             return StringUtil::isBlank;
         }
         return new SimilarityChecker(sample, SimilarityChecker.Mode.SIMPLE_EN)
-                .or(new SimilarityChecker(sample, SimilarityChecker.Mode.SIMPLE_RU_EN))
-                .or(new SimilarityChecker(sample, SimilarityChecker.Mode.UNICODE_TR_39));
+                .or(new SimilarityChecker(sample, SimilarityChecker.Mode.SIMPLE_RU_EN));
     }
 
     @SuppressWarnings("InterfaceNeverImplemented")

@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 class SimilarityUtil {
-    private static final int DEFAULT_LEVENSHTEIN_THRESHOLD = 4;
+    private static final int DEFAULT_LEVENSHTEIN_THRESHOLD = 1;
     private static final LevenshteinDistance defaultLevenshtein = new LevenshteinDistance(DEFAULT_LEVENSHTEIN_THRESHOLD);
 
     private static final Map<String, Integer> protoRuEn;
@@ -25,21 +25,12 @@ class SimilarityUtil {
     };
 
     static boolean levenshteinCheck(String a, String b) {
-        LevenshteinDistance levenshteinDistance = defaultLevenshtein;
-        int threshold = DEFAULT_LEVENSHTEIN_THRESHOLD;
-
-        int minLength = Math.min(a.length(), b.length());
-        if (minLength <= DEFAULT_LEVENSHTEIN_THRESHOLD * 3 / 2) {
-            threshold = minLength / 2;
-            levenshteinDistance = new LevenshteinDistance(threshold);
-        }
-
-        int distance = levenshteinDistance.apply(a, b);
+        int distance = defaultLevenshtein.apply(a, b);
         if (distance < 0) {
             return false;
         }
 
-        return distance < threshold;
+        return distance < DEFAULT_LEVENSHTEIN_THRESHOLD;
     }
 
     static String normalizeByRuEnMap(String s) {

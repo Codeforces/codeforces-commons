@@ -26,8 +26,8 @@ public class SimilarityChecker implements Predicate<String> {
 
     public enum Mode {
         UNICODE_TR_39(UnicodeTr39Util::skeleton, Objects::equals),
-        SIMPLE_EN(SimilarityUtil::normalizeByEnMap, SimilarityUtil::levenshteinCheck),
-        SIMPLE_RU_EN(SimilarityUtil::normalizeByRuEnMap, SimilarityUtil::levenshteinCheck);
+        SIMPLE_EN(SimilarityUtil::normalizeByEnMap, Objects::equals),
+        SIMPLE_RU_EN(SimilarityUtil::normalizeByRuEnMap, Objects::equals);
 
         private final Function<String, String> normalizer;
         private final BiPredicate<String, String> normsChecker;
