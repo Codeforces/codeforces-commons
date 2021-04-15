@@ -1,11 +1,15 @@
 package com.codeforces.commons.text;
 
+import com.codeforces.commons.io.IoUtil;
+import com.codeforces.commons.text.similarity.SimilarityChecker;
+import com.codeforces.commons.xml.XmlUtilTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
@@ -245,6 +249,110 @@ public class StringUtilTest {
         internalTestSplit(".size.", '.', new String[]{"", "size", ""});
         internalTestSplit(" size  ", ' ', new String[]{"", "size", "", ""});
         internalTestSplit(",,,,", ',', new String[]{"", "", "", "", ""});
+    }
+
+    @Test
+    public void testUnicodeTr39Util() {
+        internalTestUnicodeTr39("paypal", "⍴ɑɣ⍴⍺⏽", "⍴⍺у⍴⍺⏽", "раγра١", "раყра1");
+        internalTestUnicodeTr39("c०de", "code", "с੦ᑯҽ", "с໐ᑯҽ", "cσd℮");
+        internalTestUnicodeTr39("Привет", "∏⍴ᴎʙꬲᴛ", "∏⍴ᴎʙ℮ᴛ");
+        internalTestUnicodeTr39("ሀոıc၀ᑯꬲ", "ሀոıс၀Ꮷe", "Unicode");
+        internalTestUnicodeTr39("MikeMirzayanov", "МikеМirzауаnоv");
+    }
+
+    @Test
+    public void testLooksLikeUtil() {
+        internalTestLooksLikeUtil("antontrygubO_o", "antontrygub0_o", "antontrygubO_0", "antontrygub0_O",
+                "antontrygub0_0"/*, "antontrygub007"*/);
+        internalTestLooksLikeUtil("tourist", /*"touristv2",*/ "tourlst"/*, "Tourist1"*/);
+        internalTestLooksLikeUtil("MikeMirzayanov", "MlkeMlrzayanov", "MikeMirzayan0v"/*, "MikeMirzayanoff"*/,
+                /*"MikeMirzayanow",*/ "mikemirzayanov");
+
+        internalTestLooksLikeUtilDifferent("Errichto", "rng_58", "-is-this-fft-", "1-gon", "abacaba");
+    }
+
+    @Test
+    public void testLooksLike() {
+        assertTrue(SimilarityChecker.isSimilar("antontrygubO_o", "antontrYgubO_0", SimilarityChecker.Mode.SIMPLE_EN));
+
+        assertFalse(SimilarityChecker.isSimilar("antontrygubO_o", "anttrubO_0", SimilarityChecker.Mode.SIMPLE_EN));
+
+        Predicate<String> checker = StringUtil.getSimilarityChecker("scott_wu");
+        assertTrue(checker.test("scott_wu"));
+        assertTrue(checker.test("sc0tt_wu"));
+
+        checker = StringUtil.getSimilarityChecker("Benq");
+        assertFalse(checker.test("Abcd"));
+
+        checker = StringUtil.getSimilarityChecker("vovuh");
+        assertFalse(checker.test("Abcd"));
+        assertFalse(checker.test("v0hah"));
+        assertTrue(checker.test("v0vuh"));
+
+        checker = StringUtil.getSimilarityChecker("tori");
+        assertFalse(checker.test("tourist"));
+    }
+
+//    @Test
+//    public void testTopHandles() {
+//        Scanner scanner = new Scanner(getClass().getResourceAsStream("/com/codeforces/commons/text/tophandles.txt"));
+//        List<String> handles = new ArrayList<>(8000);
+//        while (scanner.hasNextLine()) {
+//            String s = scanner.nextLine();
+//            if (StringUtil.isNotBlank(s)) {
+//                s = s.trim();
+//                handles.add(s);
+//            }
+//        }
+//
+//        int cnt = 0;
+//        for (String handle1 : handles) {
+//            for (String handle2 : handles) {
+//                if (!StringUtil.equals(handle1, handle2)) {
+//                    if (StringUtil.isSimilar(handle1, handle2)) {
+//                        System.out.print(handle1);
+//                        System.out.print(" ");
+//                        System.out.println(handle2);
+//                        cnt++;
+//                    }
+//                }
+//            }
+//        }
+//        System.err.println(cnt);
+//        System.err.println((handles.size() - 1) * handles.size() / 2);
+//    }
+
+    private static void internalTestUnicodeTr39(String... strings) {
+        for (int i = 0; i < strings.length; i++) {
+            for (int j = 0; j < strings.length; j++) {
+                if (i != j) {
+                    assertTrue("Not detected confusable strings: '" + strings[i] + "', '" + strings[j] + "'",
+                            SimilarityChecker.isSimilar(strings[i], strings[j], SimilarityChecker.Mode.UNICODE_TR_39));
+                }
+            }
+        }
+    }
+
+    private static void internalTestLooksLikeUtil(String... strings) {
+        for (int i = 0; i < strings.length; i++) {
+            for (int j = 0; j < strings.length; j++) {
+                if (i != j) {
+                    assertTrue("Not detected looks like strings: '" + strings[i] + "', '" + strings[j] + "'",
+                            SimilarityChecker.isSimilar(strings[i], strings[j], SimilarityChecker.Mode.SIMPLE_EN));
+                }
+            }
+        }
+    }
+
+    private static void internalTestLooksLikeUtilDifferent(String... strings) {
+        for (int i = 0; i < strings.length; i++) {
+            for (int j = 0; j < strings.length; j++) {
+                if (i != j) {
+                    assertFalse("Detected looks like strings: '" + strings[i] + "', '" + strings[j] + "'",
+                            SimilarityChecker.isSimilar(strings[i], strings[j], SimilarityChecker.Mode.SIMPLE_EN));
+                }
+            }
+        }
     }
 
     private static void internalTestSplit(String s, char c, String[] parts) {

@@ -1,0 +1,31 @@
+a а
+A А
+b 6
+B В в
+c с C С
+9 d q
+e е
+E Е
+9 g
+i j l
+k к K К
+m м
+M М
+n л п
+o O 0 о О
+p р P Р
+r г
+s 5
+T Т
+u U ц
+x х X Х
+y у У Y
+z 2
+H Нн
+ш щ Ш Щ
+3 з З э Э
+ь ъ
+4 ч
+w vv W VV
+v V
+. - _
