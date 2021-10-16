@@ -18,6 +18,24 @@ import java.util.*;
  */
 public class XmlUtilTest {
     @Test
+    public void testIsNode() throws IOException {
+        File tempDir = null;
+
+        try {
+            tempDir = FileUtil.createTemporaryDirectory("test-xml");
+            File testFile = new File(tempDir, "test.xml");
+            FileUtil.writeFile(testFile, getBytes("test.xml"));
+
+            Assert.assertTrue(XmlUtil.isNode(testFile, "/a"));
+            Assert.assertTrue(XmlUtil.isNode(testFile, "/a/bs"));
+            Assert.assertTrue(XmlUtil.isNode(testFile, "/a/bs/b"));
+            Assert.assertFalse(XmlUtil.isNode(testFile, "/bs/b"));
+        } finally {
+            FileUtil.deleteTotallyAsync(tempDir);
+        }
+    }
+
+    @Test
     public void testExtractFromXml() throws IOException {
         File tempDir = null;
 

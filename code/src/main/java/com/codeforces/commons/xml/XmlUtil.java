@@ -90,6 +90,43 @@ public final class XmlUtil {
     }
 
     /**
+     * Checks if xml contains a node specified by xPath.
+     *
+     * @param xmlInputStream XML to be scanned.
+     * @param xPath XPath expression.
+     * @return {@code true} if only if node exists.
+     */
+    public static boolean isNode(@Nonnull InputStream xmlInputStream, @Nonnull String xPath) {
+        try {
+            internalExtractFromXml(xmlInputStream, xPath, Node.class);
+        } catch (IOException ignored) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if xml contains a node specified by xPath.
+     *
+     * @param xmlFile XML file to be scanned.
+     * @param xPath XPath expression.
+     * @return {@code true} if only if node exists.
+     */
+    public static boolean isNode(@Nonnull File xmlFile, @Nonnull String xPath) throws IOException {
+        byte[] inputBytes = FileUtil.getBytes(xmlFile);
+        InputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
+
+        try {
+            internalExtractFromXml(xmlInputStream, xPath, Node.class);
+        } catch (IOException ignored) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Writes XML document into file.
      *
      * @param xmlFile  File to write.
