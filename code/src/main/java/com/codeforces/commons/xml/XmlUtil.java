@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
@@ -32,6 +33,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class XmlUtil {
+    private static final Pattern EXTRA_XML_EMPTY_LINES_PATTERN = Pattern.compile("(>\r?\n)(\\s*\r?\n)(\\s*<)");
+
     private static final Lock factoryLock = new ReentrantLock();
     private static final Lock expressionLock = new ReentrantLock();
 
@@ -482,7 +485,12 @@ public final class XmlUtil {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
             StreamResult result = new StreamResult(xmlOutputStream);
-            transformer.transform(source, result);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            transformer.transform(source, new StreamResult(byteArrayOutputStream));
+            String xml = EXTRA_XML_EMPTY_LINES_PATTERN
+                    .matcher(byteArrayOutputStream.toString(StandardCharsets.UTF_8))
+                    .replaceAll("$1$3");
+            xmlOutputStream.write(xml.getBytes(StandardCharsets.UTF_8));
         } catch (TransformerConfigurationException e) {
             throw new IOException("Transformer configuration is illegal.", e);
         } catch (TransformerException e) {
@@ -739,8 +747,11 @@ public final class XmlUtil {
 
     @SuppressWarnings({"HardcodedLineSeparator"})
     private static void formatDocument(@Nonnull Document document) {
-        formatElement(document, document.getDocumentElement(), 1);
-        formatElementEnd(document, document.getDocumentElement(), "\n");
+        Element documentElement = document.getDocumentElement();
+        if (documentElement != null) {
+            formatElement(document, documentElement, 1);
+            formatElementEnd(document, documentElement, "\n");
+        }
     }
 
     @SuppressWarnings({"ChainOfInstanceofChecks", "HardcodedLineSeparator", "OverlyComplexMethod"})
