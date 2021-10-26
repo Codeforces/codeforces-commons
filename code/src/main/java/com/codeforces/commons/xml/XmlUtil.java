@@ -21,6 +21,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -112,6 +113,7 @@ public final class XmlUtil {
      * @param xmlFile XML file to be scanned.
      * @param xPath XPath expression.
      * @return {@code true} if only if node exists.
+     * @throws IOException on IO error.
      */
     public static boolean isNode(@Nonnull File xmlFile, @Nonnull String xPath) throws IOException {
         byte[] inputBytes = FileUtil.getBytes(xmlFile);
@@ -417,7 +419,7 @@ public final class XmlUtil {
 
     @Contract("null -> null; !null -> !null")
     @Nullable
-    public static String formatEnumValueForXml(@Nullable Enum enumValue) {
+    public static String formatEnumValueForXml(@Nullable Enum<?> enumValue) {
         return enumValue == null ? null : enumValue.name().toLowerCase().replace('_', '-');
     }
 
@@ -463,7 +465,7 @@ public final class XmlUtil {
             }
             return (T) result;
         } catch (XPathException e) {
-            String xmlString = new String(xmlBytes, "UTF-8");
+            String xmlString = new String(xmlBytes, StandardCharsets.UTF_8.name());
             throw new IOException("Can't get xpath \"" + xPath + "\" from \""
                     + StringUtil.shrinkTo(xmlString, 128) + "\".", e);
         } finally {
@@ -896,7 +898,11 @@ public final class XmlUtil {
             throws XPathExpressionException {
         expressionLock.lock();
         try {
-            return xPath.evaluate(new InputSource(xmlInputStream), returnType);
+            Object result = xPath.evaluate(new InputSource(xmlInputStream), returnType);
+            if (result == null) {
+                throw new XPathExpressionException("Can't evaluate xmlInputStream xpath '" + xPath + "' [returnType='" + returnType + "'].");
+            }
+            return result;
         } finally {
             expressionLock.unlock();
         }
@@ -906,7 +912,11 @@ public final class XmlUtil {
             throws XPathExpressionException {
         expressionLock.lock();
         try {
-            return xPath.evaluate(document, returnType);
+            Object result = xPath.evaluate(document, returnType);
+            if (result == null) {
+                throw new XPathExpressionException("Can't evaluate document xpath '" + xPath + "' [returnType='" + returnType + "'].");
+            }
+            return result;
         } finally {
             expressionLock.unlock();
         }
@@ -916,7 +926,11 @@ public final class XmlUtil {
             throws XPathExpressionException {
         expressionLock.lock();
         try {
-            return xPath.evaluate(element, returnType);
+            Object result = xPath.evaluate(element, returnType);
+            if (result == null) {
+                throw new XPathExpressionException("Can't evaluate element xpath '" + xPath + "' [returnType='" + returnType + "'].");
+            }
+            return result;
         } finally {
             expressionLock.unlock();
         }
@@ -926,7 +940,11 @@ public final class XmlUtil {
             throws XPathExpressionException {
         expressionLock.lock();
         try {
-            return xPath.evaluate(new InputSource(xmlInputStream));
+            String result = xPath.evaluate(new InputSource(xmlInputStream));
+            if (result == null) {
+                throw new XPathExpressionException("Can't evaluate input stream xpath '" + xPath + "' [returnType='String.class'].");
+            }
+            return result;
         } finally {
             expressionLock.unlock();
         }
@@ -936,7 +954,11 @@ public final class XmlUtil {
             throws XPathExpressionException {
         expressionLock.lock();
         try {
-            return xPath.evaluate(document);
+            String result = xPath.evaluate(document);
+            if (result == null) {
+                throw new XPathExpressionException("Can't evaluate document xpath '" + xPath + "' [returnType='String.class'].");
+            }
+            return result;
         } finally {
             expressionLock.unlock();
         }
@@ -946,7 +968,11 @@ public final class XmlUtil {
             throws XPathExpressionException {
         expressionLock.lock();
         try {
-            return xPath.evaluate(element);
+            String result = xPath.evaluate(element);
+            if (result == null) {
+                throw new XPathExpressionException("Can't evaluate element xpath '" + xPath + "' [returnType='String.class'].");
+            }
+            return result;
         } finally {
             expressionLock.unlock();
         }

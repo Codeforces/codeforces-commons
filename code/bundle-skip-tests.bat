@@ -1,1 +1,1 @@
-bundle.bat -DskipTests
+call bundle.bat -DskipTests
