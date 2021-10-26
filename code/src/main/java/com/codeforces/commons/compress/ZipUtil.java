@@ -6,10 +6,10 @@ import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import de.schlichtherle.truezip.file.*;
 import de.schlichtherle.truezip.fs.FsSyncException;
-import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.CompressionLevel;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.io.IOCase;
@@ -31,7 +31,7 @@ import static com.codeforces.commons.math.Math.max;
 /**
  * @author Mike Mirzayanov
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public final class ZipUtil {
     @SuppressWarnings("unused")
     public static final int MINIMAL_COMPRESSION_LEVEL = 0;
@@ -157,11 +157,12 @@ public final class ZipUtil {
         try {
             ZipParameters parameters = new ZipParameters();
             parameters.setIncludeRootFolder(false);
-            parameters.setCompressionLevel(level);
+            parameters.setCompressionLevel(CompressionLevel.values()[level - 1]);
             parameters.setReadHiddenFiles(true);
             parameters.setDefaultFolderPath(source.getAbsolutePath());
 
-            ZipFile zipFile = new ZipFile(destination);
+            net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(destination);
+
             zipFile.addFiles(deepListFilesInDirectory(source, skipFilter, !parameters.isReadHiddenFiles()), parameters);
         } catch (ZipException e) {
             throw new IOException("Can't add directory to ZIP-file.", e);
@@ -257,33 +258,32 @@ public final class ZipUtil {
             throws IOException {
         try {
             FileUtil.ensureDirectoryExists(destinationDirectory);
-            ZipFile zipFile = new ZipFile(zipArchive);
+            net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(zipArchive);
 
             int count = 0;
 
-            for (Object fileHeader : zipFile.getFileHeaders()) {
+            for (FileHeader fileHeader : zipFile.getFileHeaders()) {
                 if (count >= MAX_ZIP_ENTRY_COUNT) {
                     break;
                 }
 
-                FileHeader entry = (FileHeader) fileHeader;
-                File file = new File(destinationDirectory, entry.getFileName());
+                File file = new File(destinationDirectory, fileHeader.getFileName());
                 if (skipFilter != null && skipFilter.accept(file)) {
                     continue;
                 }
 
-                if (entry.isDirectory()) {
+                if (fileHeader.isDirectory()) {
                     FileUtil.ensureDirectoryExists(file);
                 } else {
-                    long maxSize = max(entry.getUncompressedSize(), entry.getCompressedSize());
+                    long maxSize = max(fileHeader.getUncompressedSize(), fileHeader.getCompressedSize());
 
                     if (maxSize <= MAX_ZIP_ENTRY_SIZE) {
                         FileUtil.ensureDirectoryExists(file.getParentFile());
-                        zipFile.extractFile(entry, destinationDirectory.getAbsolutePath());
+                        zipFile.extractFile(fileHeader, destinationDirectory.getAbsolutePath());
                     } else {
                         throw new IOException(String.format(
                                 "Entry '%s' (%s) is larger than %s.",
-                                entry.getFileName(), FileUtil.formatSize(maxSize),
+                                fileHeader.getFileName(), FileUtil.formatSize(maxSize),
                                 FileUtil.formatSize(MAX_ZIP_ENTRY_SIZE)
                         ));
                     }
@@ -440,7 +440,7 @@ public final class ZipUtil {
                 InputStream inputStream;
                 if (trueZipFile.isArchive()) {
                     synchronizeQuietly(trueZipFile);
-                    ZipFile internalZipFile = new ZipFile(zipFile);
+                    net.lingala.zip4j.ZipFile internalZipFile = new net.lingala.zip4j.ZipFile(zipFile);
 
                     inputStream = internalZipFile.getInputStream(internalZipFile.getFileHeader(zipEntryPath));
                 } else {
@@ -456,14 +456,13 @@ public final class ZipUtil {
         }
     }
 
-    @Contract("null, _ -> fail; _, null -> fail")
     public static void deleteZipEntry(@Nonnull File zipFile, @Nonnull String zipEntryPath) throws IOException {
         synchronizeQuietly(new TFile(new File(zipFile, zipEntryPath)).rm_r());
     }
 
     public static boolean isZipEntryExists(File zipFile, String zipEntryPath) throws IOException {
         try {
-            return new ZipFile(zipFile).getFileHeader(normalizeZipEntryPath(zipEntryPath)) != null;
+            return new net.lingala.zip4j.ZipFile(zipFile).getFileHeader(normalizeZipEntryPath(zipEntryPath)) != null;
         } catch (ZipException e) {
             throw new IOException("Can't check ZIP-entry existence.", e);
         }
@@ -479,7 +478,7 @@ public final class ZipUtil {
      */
     public static long getZipEntrySize(File zipFile, String zipEntryPath) throws IOException {
         try {
-            return new ZipFile(zipFile).getFileHeader(normalizeZipEntryPath(zipEntryPath)).getUncompressedSize();
+            return new net.lingala.zip4j.ZipFile(zipFile).getFileHeader(normalizeZipEntryPath(zipEntryPath)).getUncompressedSize();
         } catch (ZipException e) {
             throw new IOException("Can't get ZIP-entry size.", e);
         }
@@ -487,13 +486,12 @@ public final class ZipUtil {
 
     public static ZipArchiveInfo getZipArchiveInfo(File zipFile) throws IOException {
         try {
-            ZipFile internalZipFile = new ZipFile(zipFile);
+            net.lingala.zip4j.ZipFile internalZipFile = new net.lingala.zip4j.ZipFile(zipFile);
             long totalSize = 0;
             long entryCount = 0;
 
-            for (Object fileHeader : internalZipFile.getFileHeaders()) {
-                FileHeader entry = (FileHeader) fileHeader;
-                long size = entry.getUncompressedSize();
+            for (FileHeader fileHeader : internalZipFile.getFileHeaders()) {
+                long size = fileHeader.getUncompressedSize();
                 if (size > 0L) {
                     totalSize += size;
                 }
@@ -821,7 +819,7 @@ public final class ZipUtil {
         try {
             Charset charset = StandardCharsets.UTF_8;
 
-            ZipFile internalZipFile = new ZipFile(zipFile);
+            net.lingala.zip4j.ZipFile internalZipFile = new net.lingala.zip4j.ZipFile(zipFile);
             List<?> fileHeaders = internalZipFile.getFileHeaders();
             int headerCount = fileHeaders.size();
 
@@ -863,8 +861,8 @@ public final class ZipUtil {
                 }
             }
 
-            for (int headerIndex = 0; headerIndex < headerCount; ++headerIndex) {
-                FileHeader header = (FileHeader) fileHeaders.get(headerIndex);
+            for (Object fileHeader : fileHeaders) {
+                FileHeader header = (FileHeader) fileHeader;
                 if (header.isDirectory()) {
                     continue;
                 }
@@ -889,10 +887,10 @@ public final class ZipUtil {
 
     private static void formatAndAppendEntryContent(
             CountingOutputStream countingOutputStream, int maxLength, MutableBoolean truncated, Charset charset,
-            ZipFile zipFile, FileHeader zipEntryHeader, int maxEntryLineCount, int maxEntryLineLength,
+            net.lingala.zip4j.ZipFile zipFile, FileHeader zipEntryHeader, int maxEntryLineCount, int maxEntryLineLength,
             String entryContentHeaderPattern, String entryContentLinePattern,
             String entryContentLineSeparatorPattern, String entryContentCloserPattern,
-            String binaryEntryContentPlaceholderPattern) throws IOException, ZipException {
+            String binaryEntryContentPlaceholderPattern) throws IOException {
         String fileName = zipEntryHeader.getFileName();
 
         byte[] fileBytes = IoUtil.toByteArray(zipFile.getInputStream(zipEntryHeader));
