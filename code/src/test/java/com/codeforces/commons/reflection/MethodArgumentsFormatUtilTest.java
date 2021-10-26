@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 @SuppressWarnings("MessageMissingOnJUnitAssertion")
 public class MethodArgumentsFormatUtilTest extends TestCase {
     public void testFormatNoArgs() throws NoSuchMethodException {
-        Method testFormatMethod = MethodArgumentsFormatUtilTest.class.getDeclaredMethod("testFormatNoArgs", ArrayUtils.EMPTY_CLASS_ARRAY);
+        Method testFormatMethod = MethodArgumentsFormatUtilTest.class.getDeclaredMethod("testFormatNoArgs");
 
         Assert.assertEquals("", MethodArgumentsFormatUtil.format("", testFormatMethod, ArrayUtils.EMPTY_OBJECT_ARRAY));
         Assert.assertEquals("test", MethodArgumentsFormatUtil.format("test", testFormatMethod, ArrayUtils.EMPTY_OBJECT_ARRAY));
@@ -20,7 +20,7 @@ public class MethodArgumentsFormatUtilTest extends TestCase {
     }
 
     public void testFormat() throws NoSuchMethodException {
-        Method method = MethodArgumentsFormatUtilTest.class.getDeclaredMethod("justToTest", new Class[] {User.class, Integer.class, long.class, Country.class});
+        Method method = MethodArgumentsFormatUtilTest.class.getDeclaredMethod("justToTest", User.class, Integer.class, long.class, Country.class);
 
         User userA = new User(123, true, new Country("Russia"));
         User userB = new User(-32, false, new Country("US"));
