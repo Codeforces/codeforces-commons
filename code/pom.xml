@@ -35,8 +35,6 @@
             <groupId>org.outerj.daisy</groupId>
             <artifactId>daisydiff</artifactId>
             <version>1.2-NX5-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/daisydiff-1.2-NX5-SNAPSHOT.jar</systemPath>
             <exclusions>
                 <exclusion>
                     <groupId>org.cyberneko</groupId>
@@ -48,8 +46,6 @@
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>5.0.2-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/guice-5.0.2-SNAPSHOT.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>
@@ -378,6 +374,43 @@
         </testResources>
 
         <plugins>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-install-plugin</artifactId>
+               <version>2.5.2</version>
+               <executions>
+                  <execution>
+                     <id>install-daisydiff</id>
+                     <goals>
+                        <goal>install-file</goal>
+                     </goals>
+                     <phase>validate</phase>
+                     <configuration>
+                         <groupId>org.outerj.daisy</groupId>
+                         <artifactId>daisydiff</artifactId>
+                         <version>1.2-NX5-SNAPSHOT</version>
+                         <packaging>jar</packaging>
+                         <file>${pom.basedir}/lib/daisydiff-1.2-NX5-SNAPSHOT.jar</file>
+                         <generatePom>true</generatePom>
+                     </configuration>
+                  </execution>
+                  <execution>
+                     <id>install-guice</id>
+                     <goals>
+                        <goal>install-file</goal>
+                     </goals>
+                     <phase>validate</phase>
+                     <configuration>
+                         <groupId>com.google.inject</groupId>
+                         <artifactId>guice</artifactId>
+                         <version>5.0.2-SNAPSHOT</version>
+                         <packaging>jar</packaging>
+                         <file>${pom.basedir}/lib/guice-5.0.2-SNAPSHOT.jar</file>
+                         <generatePom>true</generatePom>
+                     </configuration>
+                  </execution>
+               </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-repository-plugin</artifactId>
