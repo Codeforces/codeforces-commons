@@ -5,4 +5,5 @@ if not "!JAVA8_64_HOME!"=="" (
     set JAVA_HOME=!JAVA8_64_HOME!
 )
 
+call mvn.cmd -Dfile.encoding=UTF-8 validate
 call mvn.cmd -Dfile.encoding=UTF-8 -DcreateChecksum=true clean source:jar javadoc:jar repository:bundle-create install --batch-mode %*
