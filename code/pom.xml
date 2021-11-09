@@ -32,6 +32,26 @@
     <!-- Dependencies are ordered by groupId, artifactId. -->
     <dependencies>
         <dependency>
+            <groupId>org.outerj.daisy</groupId>
+            <artifactId>daisydiff</artifactId>
+            <version>1.2-NX5-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/daisydiff-1.2-NX5-SNAPSHOT.jar</systemPath>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.cyberneko</groupId>
+                    <artifactId>html</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>5.0.2-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/guice-5.0.2-SNAPSHOT.jar</systemPath>
+        </dependency>
+        <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
             <version>3.3.0</version>
@@ -68,11 +88,6 @@
                 </exclusion>
             </exclusions>
             -->
-        </dependency>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>5.0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
@@ -336,17 +351,6 @@
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <version>2.12.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.outerj.daisy</groupId>
-            <artifactId>daisydiff</artifactId>
-            <version>1.2-NX5-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.cyberneko</groupId>
-                    <artifactId>html</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 
