@@ -5,7 +5,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     permissions:
       contents: read
       packages: write
@@ -17,6 +17,11 @@ jobs:
           distribution: "adopt"
       - name: Publish package
         if: github.ref == 'refs/heads/master' && github.repository_owner == 'Codeforces'
-        run: mvn --batch-mode deploy -DskipTests
+        run: |
+          cd code
+          pushd lib
+          install.bat
+          popd
+          mvn --batch-mode deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
