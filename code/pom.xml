@@ -11,6 +11,14 @@
     <url>https://github.com/Codeforces/codeforces-commons</url>
     <description>Commons for Codeforces and related projects.</description>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/Codeforces/codeforces-commons</url>
+        </repository>
+    </distributionManagement>
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
