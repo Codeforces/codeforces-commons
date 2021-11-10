@@ -18,7 +18,6 @@ jobs:
       - name: Publish package
         run: |
           cd code
-          mvn --batch-mode validate
-          mvn --batch-mode deploy -DskipTests
+          mvn --batch-mode validate deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
