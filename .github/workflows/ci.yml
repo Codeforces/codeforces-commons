@@ -9,6 +9,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      MAVEN_OPTS: "--illegal-access=permit --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2
