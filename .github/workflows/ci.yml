@@ -4,7 +4,7 @@ on:
   pull_request:
 
 jobs:
-  publish:
+  ci:
     runs-on: windows-latest
     permissions:
       contents: read
@@ -15,9 +15,18 @@ jobs:
         with:
           java-version: "11"
           distribution: "adopt"
-      - name: Publish package
+      - name: Validate
         run: |
           cd code
-          mvn --batch-mode validate deploy -DskipTests
+          mvn --batch-mode validate
+      - name: Test
+        run: |
+          cd code
+          mvn --batch-mode test
+      - name: Publish
+        if: github.ref == 'refs/heads/master' && github.repository_owner == 'Codeforces'
+        run: |
+          cd code
+          mvn --batch-mode deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
