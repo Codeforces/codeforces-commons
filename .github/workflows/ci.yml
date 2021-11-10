@@ -16,12 +16,8 @@ jobs:
           java-version: "11"
           distribution: "adopt"
       - name: Publish package
-        if: github.ref == 'refs/heads/master' && github.repository_owner == 'Codeforces'
         run: |
           cd code
-          pushd lib
-          cmd /C install.bat
-          popd
           mvn --batch-mode deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
