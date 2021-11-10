@@ -21,13 +21,9 @@ jobs:
           java-version: ${{ matrix.java-version }}
           distribution: "adopt"
       - name: Validate
-        run: |
-          cd code
-          mvn --batch-mode validate
+        run: mvn --batch-mode validate
       - name: Test
-        run: |
-          cd code
-          mvn --batch-mode test
+        run: mvn --batch-mode test
   publish:
     if: github.ref == 'refs/heads/master' && github.repository_owner == 'Codeforces'
     needs: test
@@ -42,12 +38,8 @@ jobs:
           java-version: "17"
           distribution: "adopt"
       - name: Validate
-        run: |
-          cd code
-          mvn --batch-mode validate
+        run: mvn --batch-mode validate
       - name: Publish
-        run: |
-          cd code
-          mvn --batch-mode deploy -DskipTests
+        run: mvn --batch-mode deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
