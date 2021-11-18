@@ -430,6 +430,7 @@
                      </goals>
                      <phase>deploy</phase>
                      <configuration>
+                         <url>${project.distributionManagement.repository.url}</url>
                          <groupId>org.outerj.daisy</groupId>
                          <artifactId>daisydiff</artifactId>
                          <version>1.2-NX5-SNAPSHOT</version>
@@ -445,6 +446,7 @@
                      </goals>
                      <phase>deploy</phase>
                      <configuration>
+                         <url>${project.distributionManagement.repository.url}</url>
                          <groupId>com.google.inject</groupId>
                          <artifactId>guice</artifactId>
                          <version>5.0.2-SNAPSHOT</version>
