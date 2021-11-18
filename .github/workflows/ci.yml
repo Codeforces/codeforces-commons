@@ -8,8 +8,8 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        java-version: [8, 11, 17]
+        os: [ubuntu-latest]
+        java-version: [17]
     runs-on: ${{ matrix.os }}
     env:
       JDK_JAVA_OPTIONS: "--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED"
@@ -19,10 +19,6 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
           distribution: "adopt"
-      - name: Validate
-        run: |
-          cd code
-          mvn --batch-mode validate
       - name: Test
         run: |
           cd code
@@ -41,10 +37,6 @@ jobs:
           java-version: "17"
           distribution: "adopt"
           server-id: "github-commons"
-      - name: Validate
-        run: |
-          cd code
-          mvn --batch-mode validate
       - name: Publish
         run: |
           cd code
