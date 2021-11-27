@@ -5,19 +5,19 @@
 
   <profiles>
     <profile>
-      <id>commons</id>
+      <id>Codeforces</id>
       <repositories>
         <repository>
           <id>github</id>
-          <name>GitHub Packages</name>
-          <!-- Actually used for all artifacts, not only commons -->
+          <name>GitHub Packages (Codeforces)</name>
+          <!-- Actually used for all group artifacts -->
           <url>https://maven.pkg.github.com/Codeforces/codeforces-commons</url>
         </repository>
       </repositories>
     </profile>
   </profiles>
   <activeProfiles>
-    <activeProfile>commons</activeProfile>
+    <activeProfile>Codeforces</activeProfile>
   </activeProfiles>
   <servers>
     <server>
