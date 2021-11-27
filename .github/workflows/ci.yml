@@ -6,6 +6,7 @@ on:
 
 env:
   JDK_JAVA_OPTIONS: "--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   test:
@@ -45,5 +46,3 @@ jobs:
         run: |
           cd code
           mvn --batch-mode deploy -DskipTests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
