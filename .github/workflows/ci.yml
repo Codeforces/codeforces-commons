@@ -36,7 +36,6 @@ jobs:
         with:
           java-version: "17"
           distribution: "adopt"
-          server-id: "github-commons"
       - name: Publish
         run: |
           cd code
