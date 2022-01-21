@@ -31,7 +31,10 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
+import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +42,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -85,6 +89,8 @@ public final class StringUtil {
     static final char NON_BREAKING_SPACE = (char) 160;
     static final char THIN_SPACE = '\u2009';
     static final char ZERO_WIDTH_SPACE = '\u200B';
+
+    private static Font MONOSPACED_FONT;
 
     private StringUtil() {
         throw new UnsupportedOperationException();
@@ -1918,5 +1924,81 @@ public final class StringUtil {
         public void setAddEnclosingClassNames(boolean addEnclosingClassNames) {
             this.addEnclosingClassNames = addEnclosingClassNames;
         }
+    }
+
+    private synchronized static Font internalGetFont() {
+        FontRenderContext frc = new FontRenderContext(null, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT,
+                RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
+
+        for (Font font : GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()) {
+            String family = font.getFamily();
+            String name = font.getName();
+            if (family.equals("Monospaced")
+                    && !name.contains("italic") && !name.contains("bold")) {
+                Rectangle2D iBounds = font.getStringBounds("i", frc);
+                Rectangle2D mBounds = font.getStringBounds("m", frc);
+                if (iBounds.getWidth() == mBounds.getWidth() && iBounds.getWidth() > 0) {
+                    MONOSPACED_FONT = font;
+                    return font;
+                }
+            }
+        }
+
+        for (Font font : GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()) {
+            Rectangle2D iBounds = font.getStringBounds("", frc);
+            if (iBounds.getWidth() > 0 && iBounds.getHeight() > 0) {
+                MONOSPACED_FONT = font;
+                return font;
+            }
+        }
+
+        return null;
+    }
+
+    private static Font getMonospacedFont() {
+        if (MONOSPACED_FONT == null) {
+            Font font = internalGetFont();
+            if (font != null) {
+                return MONOSPACED_FONT;
+            }
+
+            throw new RuntimeException("Can't find a font.");
+        }
+
+        return MONOSPACED_FONT;
+    }
+
+    private static SimplePair<Rectangle2D, Rectangle2D> getRenderingRectangles(String s) {
+        if (s == null) {
+            return null;
+        }
+
+        FontRenderContext frc = new FontRenderContext(null, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT,
+                RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
+
+        Font font = getMonospacedFont();
+
+        Rectangle2D aBounds = font.getStringBounds("a", frc);
+        Rectangle2D sBounds = font.getStringBounds(s, frc);
+
+        return new SimplePair<>(aBounds, sBounds);
+    }
+
+    public static int getRenderingWidth(String s) {
+        SimplePair<Rectangle2D, Rectangle2D> rectangles = getRenderingRectangles(s);
+        if (rectangles == null) {
+            return 0;
+        }
+        return (int) Math.round(Objects.requireNonNull(rectangles.getSecond()).getWidth()
+                / Objects.requireNonNull(rectangles.getFirst()).getWidth() + 1E-7);
+    }
+
+    public static int getRenderingHeight(String s) {
+        SimplePair<Rectangle2D, Rectangle2D> rectangles = getRenderingRectangles(s);
+        if (rectangles == null) {
+            return 0;
+        }
+        return (int) Math.round(Objects.requireNonNull(rectangles.getSecond()).getHeight()
+                / Objects.requireNonNull(rectangles.getFirst()).getHeight() + 1E-7);
     }
 }
