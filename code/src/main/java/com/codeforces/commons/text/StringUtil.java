@@ -31,7 +31,11 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
+import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +43,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -85,6 +90,8 @@ public final class StringUtil {
     static final char NON_BREAKING_SPACE = (char) 160;
     static final char THIN_SPACE = '\u2009';
     static final char ZERO_WIDTH_SPACE = '\u200B';
+
+    private static Font GENERAL_FONT;
 
     private StringUtil() {
         throw new UnsupportedOperationException();
@@ -1918,5 +1925,89 @@ public final class StringUtil {
         public void setAddEnclosingClassNames(boolean addEnclosingClassNames) {
             this.addEnclosingClassNames = addEnclosingClassNames;
         }
+    }
+
+    private synchronized static void testGeneralFont(FontRenderContext frc, String name) {
+        if (GENERAL_FONT == null) {
+            Font font = new Font(name, Font.PLAIN, 24);
+            Rectangle2D iBounds = font.getStringBounds("i", frc);
+            Rectangle2D mBounds = font.getStringBounds("m", frc);
+            Rectangle2D schBounds = font.getStringBounds("щ", frc);
+            Rectangle2D arabBounds = font.getStringBounds("﷽", frc);
+            Rectangle2D tireBounds = font.getStringBounds("⸻", frc);
+            if (iBounds.getWidth() < mBounds.getWidth()
+                    && iBounds.getWidth() < schBounds.getWidth()
+                    && mBounds.getWidth() < tireBounds.getWidth()
+                    && schBounds.getWidth() < tireBounds.getWidth()
+                    && mBounds.getWidth() < arabBounds.getWidth()
+                    && schBounds.getWidth() < arabBounds.getWidth()
+                    && iBounds.getWidth() > 0) {
+                GENERAL_FONT = font;
+            }
+        }
+    }
+
+    public synchronized static void internalSetGeneralFont() {
+        FontRenderContext frc = new FontRenderContext(null, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT,
+                RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
+
+        testGeneralFont(frc, "Tahoma");
+        testGeneralFont(frc, "Times New Roman");
+        testGeneralFont(frc, "Arial");
+
+        for (Font font : GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts()) {
+            if (GENERAL_FONT == null) {
+                testGeneralFont(frc, font.getName());
+            } else {
+                break;
+            }
+        }
+    }
+
+    private static Font getGeneralFont() {
+        if (GENERAL_FONT == null) {
+            internalSetGeneralFont();
+
+            if (GENERAL_FONT != null) {
+                return GENERAL_FONT;
+            } else {
+                throw new RuntimeException("Can't find a font.");
+            }
+        }
+
+        return GENERAL_FONT;
+    }
+
+    private static SimplePair<Rectangle2D, Rectangle2D> getRenderingRectangles(String s) {
+        if (s == null) {
+            return null;
+        }
+
+        FontRenderContext frc = new FontRenderContext(null, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT,
+                RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
+
+        Font font = getGeneralFont();
+        Rectangle2D aBounds = font.getStringBounds("a", frc);
+        Rectangle2D sBounds = font.getStringBounds(s, frc);
+
+        return new SimplePair<>(aBounds, sBounds);
+    }
+
+    public static int getRenderingWidth(String s) {
+        SimplePair<Rectangle2D, Rectangle2D> rectangles = getRenderingRectangles(s);
+        if (rectangles == null) {
+            return 0;
+        }
+        return (int) Math.ceil(Objects.requireNonNull(rectangles.getSecond()).getWidth()
+                / Objects.requireNonNull(rectangles.getFirst()).getWidth() - 1E-7);
+    }
+
+    public static int getRenderingHeight(String s) {
+        SimplePair<Rectangle2D, Rectangle2D> rectangles = getRenderingRectangles(s);
+        if (rectangles == null) {
+            return 0;
+        }
+        return (int) Math.ceil(Objects.requireNonNull(rectangles.getSecond()).getHeight()
+                / Objects.requireNonNull(rectangles.getFirst()).getHeight() - 1E-7);
     }
 }

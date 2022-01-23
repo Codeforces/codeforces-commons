@@ -6,9 +6,13 @@ import com.codeforces.commons.xml.XmlUtilTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import java.awt.*;
+import java.awt.font.FontRenderContext;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -291,6 +295,27 @@ public class StringUtilTest {
 
         checker = StringUtil.getSimilarityChecker("tori");
         assertFalse(checker.test("tourist"));
+    }
+
+    @Test
+    public void testGetRenderingWidth() {
+        assertEquals(1, StringUtil.getRenderingWidth("1"));
+        assertEquals(0, StringUtil.getRenderingWidth(null));
+        assertEquals(0, StringUtil.getRenderingWidth(""));
+        assertTrue(StringUtil.getRenderingWidth("кодефорсес") > 5
+                && StringUtil.getRenderingWidth("кодефорсес") < 15);
+        assertTrue(StringUtil.getRenderingWidth("ௌ") > 1);
+        assertTrue(StringUtil.getRenderingWidth("⸻") > 1);
+    }
+
+    @Test
+    public void testGetRenderingHeight() {
+        assertEquals(1, StringUtil.getRenderingHeight("1"));
+        assertEquals(0, StringUtil.getRenderingHeight(null));
+        assertEquals(1, StringUtil.getRenderingHeight(""));
+        assertEquals(1, StringUtil.getRenderingHeight("кодефорсес"));
+        assertEquals(1, StringUtil.getRenderingHeight("ௌ"));
+        assertEquals(1, StringUtil.getRenderingHeight("⸻"));
     }
 
 //    @Test
