@@ -17,6 +17,7 @@ import org.apache.commons.text.translate.CharSequenceTranslator;
 import org.apache.commons.text.translate.EntityArrays;
 import org.apache.commons.text.translate.JavaUnicodeEscaper;
 import org.apache.commons.text.translate.LookupTranslator;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -62,6 +63,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 @SuppressWarnings({"WeakerAccess", "ForLoopWithMissingComponent"})
 public final class StringUtil {
+    private static final Logger logger = Logger.getLogger(StringUtil.class);
+
     private static final Pattern FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN = Pattern.compile("\\[pre]|\\[/pre]");
     private static final Pattern FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN = Pattern.compile("[\n\r][\n\r]+");
 
@@ -139,6 +142,17 @@ public final class StringUtil {
     @Contract(pure = true)
     public static boolean isCyrillic(char c) {
         return c >= 'а' && c <= 'я' || c >= 'А' && c <= 'Я' || c == 'ё' || c == 'Ё';
+    }
+
+    @Contract(pure = true)
+    public static int getCharCount(@Nonnull String s, char c) {
+        int result = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == c) {
+                result++;
+            }
+        }
+        return result;
     }
 
     /**
@@ -1971,7 +1985,8 @@ public final class StringUtil {
             if (GENERAL_FONT != null) {
                 return GENERAL_FONT;
             } else {
-                throw new RuntimeException("Can't find a font.");
+                logger.error("Can't find general font. Please, install more fonts in the system"
+                        + " (dnf install liberation-fonts liberation-fonts-common).");
             }
         }
 
@@ -1987,6 +2002,10 @@ public final class StringUtil {
                 RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
 
         Font font = getGeneralFont();
+        if (font == null) {
+            return null;
+        }
+
         Rectangle2D aBounds = font.getStringBounds("a", frc);
         Rectangle2D sBounds = font.getStringBounds(s, frc);
 
@@ -1996,7 +2015,7 @@ public final class StringUtil {
     public static int getRenderingWidth(String s) {
         SimplePair<Rectangle2D, Rectangle2D> rectangles = getRenderingRectangles(s);
         if (rectangles == null) {
-            return 0;
+            return trimToEmpty(s).length();
         }
         return (int) Math.ceil(Objects.requireNonNull(rectangles.getSecond()).getWidth()
                 / Objects.requireNonNull(rectangles.getFirst()).getWidth() - 1E-7);
@@ -2005,7 +2024,7 @@ public final class StringUtil {
     public static int getRenderingHeight(String s) {
         SimplePair<Rectangle2D, Rectangle2D> rectangles = getRenderingRectangles(s);
         if (rectangles == null) {
-            return 0;
+            return getCharCount(trimToEmpty(s), '\n') + 1;
         }
         return (int) Math.ceil(Objects.requireNonNull(rectangles.getSecond()).getHeight()
                 / Objects.requireNonNull(rectangles.getFirst()).getHeight() - 1E-7);
