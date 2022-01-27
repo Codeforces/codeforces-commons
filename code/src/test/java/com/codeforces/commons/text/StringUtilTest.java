@@ -311,7 +311,7 @@ public class StringUtilTest {
     @Test
     public void testGetRenderingHeight() {
         assertEquals(1, StringUtil.getRenderingHeight("1"));
-        assertEquals(0, StringUtil.getRenderingHeight(null));
+        assertEquals(1, StringUtil.getRenderingHeight(null));
         assertEquals(1, StringUtil.getRenderingHeight(""));
         assertEquals(1, StringUtil.getRenderingHeight("кодефорсес"));
         assertEquals(1, StringUtil.getRenderingHeight("ௌ"));
