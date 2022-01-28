@@ -39,7 +39,8 @@ import java.util.zip.GZIPOutputStream;
 @SuppressWarnings({"CallToPrintStackTrace", "MessageMissingOnJUnitAssertion", "deprecation", "SameParameterValue", "ResultOfMethodCallIgnored"})
 public class HttpUtilTest extends TestCase {
     private static final String BASE_TESTING_URL_WO_PORT = "http://127.0.0.1:";
-    private static final AtomicInteger port = new AtomicInteger(8080);
+
+    private static final AtomicInteger port = new AtomicInteger(9381);
     private static String baseTestingUrl;
 
     private static final int CONCURRENCY_LEVEL = 20;
@@ -68,6 +69,7 @@ public class HttpUtilTest extends TestCase {
     @Override
     public void tearDown() throws Exception {
         server.stop();
+        server = null;
         super.tearDown();
     }
 
