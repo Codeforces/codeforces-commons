@@ -226,7 +226,11 @@ final class CacheTestUtil {
 
         long cachePutTime = System.currentTimeMillis();
         cache.put(section, key, value, valueLifetimeMillis);
-        Assert.assertArrayEquals("Restored value (with lifetime) does not equal to original value.", value, cache.get(section, key));
+        byte[] cachedValue = cache.get(section, key);
+        Assert.assertArrayEquals("Restored value (with lifetime) does not equal to original value"
+                + " [valueLifetimeMillis=" + valueLifetimeMillis
+                + ", valueCheckIntervalMillis=" + valueCheckIntervalMillis
+                + ", cacheTime=" + (System.currentTimeMillis() - cachePutTime) + "].", value, cachedValue);
 
         ThreadUtil.sleep(valueLifetimeMillis - valueCheckIntervalMillis);
         byte[] restoredValue = cache.get(section, key);
