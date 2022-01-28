@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Maxim Shipko (sladethe@gmail.com)
  * Date: 29.12.12
  */
-@SuppressWarnings({"CallToSystemGC", "ThrowableResultOfMethodCallIgnored", "ErrorNotRethrown"})
+@SuppressWarnings({"CallToSystemGC", "ThrowableResultOfMethodCallIgnored", "ErrorNotRethrown", "SimplifiableAssertion"})
 final class CacheTestUtil {
     private CacheTestUtil() {
         throw new UnsupportedOperationException();
@@ -226,20 +226,21 @@ final class CacheTestUtil {
 
         long cachePutTime = System.currentTimeMillis();
         cache.put(section, key, value, valueLifetimeMillis);
-        Assert.assertTrue(
-                "Restored value (with lifetime) does not equal to original value.",
-                Arrays.equals(value, cache.get(section, key))
-        );
+        Assert.assertArrayEquals("Restored value (with lifetime) does not equal to original value.", value, cache.get(section, key));
 
         ThreadUtil.sleep(valueLifetimeMillis - valueCheckIntervalMillis);
         byte[] restoredValue = cache.get(section, key);
-        Assert.assertTrue(String.format(
-                "Restored value (with lifetime) does not equal to original value after sleeping some time (%s) " +
-                        "(restored=%s, expected=%s, section=%s, key=%s, valueLifetime=%s, valueCheckInterval=%s).",
-                TimeUtil.formatInterval(System.currentTimeMillis() - cachePutTime),
-                toShortString(restoredValue), toShortString(value), section, key,
-                TimeUtil.formatInterval(valueLifetimeMillis), TimeUtil.formatInterval(valueCheckIntervalMillis)
-        ), Arrays.equals(value, restoredValue));
+        long actualSleepingTime = System.currentTimeMillis() - cachePutTime;
+
+        if (actualSleepingTime < valueLifetimeMillis - valueCheckIntervalMillis * 0.5) {
+            Assert.assertArrayEquals(String.format(
+                    "Restored value (with lifetime) does not equal to original value after sleeping some time (%s) " +
+                            "(restored=%s, expected=%s, section=%s, key=%s, valueLifetime=%s, valueCheckInterval=%s).",
+                    TimeUtil.formatInterval(actualSleepingTime),
+                    toShortString(restoredValue), toShortString(value), section, key,
+                    TimeUtil.formatInterval(valueLifetimeMillis), TimeUtil.formatInterval(valueCheckIntervalMillis)
+            ), value, restoredValue);
+        }
 
         ThreadUtil.sleep(2L * valueCheckIntervalMillis);
         Assert.assertNull(
