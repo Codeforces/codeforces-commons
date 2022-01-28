@@ -1,7 +1,6 @@
 package com.codeforces.commons.io.http;
 
 import com.codeforces.commons.exception.ExceptionUtil;
-import com.codeforces.commons.io.ByteArrayOutputStream;
 import com.codeforces.commons.io.*;
 import com.codeforces.commons.math.NumberUtil;
 import com.codeforces.commons.math.RandomUtil;
@@ -15,16 +14,20 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.junit.Ignore;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -33,10 +36,11 @@ import java.util.zip.GZIPOutputStream;
  * @author Mike Mirzayanov (mirzayanovmr@gmail.com)
  * @author Maxim Shipko (sladethe@gmail.com)
  */
-@SuppressWarnings({"CallToPrintStackTrace", "MessageMissingOnJUnitAssertion", "deprecation"})
+@SuppressWarnings({"CallToPrintStackTrace", "MessageMissingOnJUnitAssertion", "deprecation", "SameParameterValue", "ResultOfMethodCallIgnored"})
 public class HttpUtilTest extends TestCase {
-    private static final String BASE_TESTING_URL = "http://127.0.0.1:8081";
-    //private static final String BASE_TESTING_URL = "http://polygon-api.codeforces.com/httpLoad";
+    private static final String BASE_TESTING_URL_WO_PORT = "http://127.0.0.1:";
+    private static final AtomicInteger port = new AtomicInteger(8080);
+    private static String baseTestingUrl;
 
     private static final int CONCURRENCY_LEVEL = 20;
     private static final int REQUEST_COUNT = 500;
@@ -49,11 +53,15 @@ public class HttpUtilTest extends TestCase {
 
     private static final boolean VERBOSE = false;
 
-    private final NanoHTTPD server = new HttpRequestTestServer();
+    private NanoHTTPD server;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
+
+        int port = HttpUtilTest.port.incrementAndGet();
+        baseTestingUrl = BASE_TESTING_URL_WO_PORT + port;
+        server = new HttpRequestTestServer(port);
         server.start();
     }
 
@@ -76,53 +84,7 @@ public class HttpUtilTest extends TestCase {
         return result;
     }
 
-    @Ignore
-    public void _testManyConcurrentGets_HttpClientUtil() throws InterruptedException, IOException {
-        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
-        AtomicInteger count = new AtomicInteger();
-
-        ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
-
-        long startTimeMillis = System.currentTimeMillis();
-
-        for (int i = 0; i < REQUEST_COUNT; ++i) {
-            pool.submit(() -> {
-                try {
-                    @SuppressWarnings("ConstantConditions") byte[] bytes = IoUtil.toByteArray(
-                            HttpClientUtil.executeGetRequestAndReturnResponse(
-                                    100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
-                            ).getInputStream()
-                    );
-
-                    assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
-
-                    if (VERBOSE) {
-                        println(String.format(
-                                "HttpUtilTest.testManyConcurrentGets_HttpClientUtil: done %d",
-                                count.incrementAndGet()
-                        ));
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    exceptions.add(e);
-                }
-            });
-        }
-
-        pool.shutdown();
-        pool.awaitTermination(1L, TimeUnit.DAYS);
-
-        if (!exceptions.isEmpty()) {
-            throw new RuntimeException("exceptions.size() = " + exceptions.size());
-        }
-
-        printf(
-                "Done 'HttpUtilTest.testManyConcurrentGets_HttpClientUtil' in %d ms.%n",
-                System.currentTimeMillis() - startTimeMillis
-        );
-    }
-
-    public void testManyConcurrentGets() throws InterruptedException, IOException {
+    public void testManyConcurrentGets() throws InterruptedException {
         List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger count = new AtomicInteger();
 
@@ -134,7 +96,7 @@ public class HttpUtilTest extends TestCase {
             pool.submit(() -> {
                 try {
                     byte[] bytes = HttpUtil.executeGetRequestAndReturnResponse(
-                            100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
+                            100000, baseTestingUrl, "size", LARGE_RESPONSE_SIZE
                     ).getBytes();
 
                     assertEquals(LARGE_RESPONSE_SIZE, ArrayUtils.getLength(bytes));
@@ -159,53 +121,7 @@ public class HttpUtilTest extends TestCase {
         printf("Done 'HttpUtilTest.testManyConcurrentGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
-    @Ignore
-    public void _testManyConcurrentPosts_HttpClientUtil() throws InterruptedException, IOException {
-        List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
-        AtomicInteger count = new AtomicInteger();
-
-        ExecutorService pool = Executors.newFixedThreadPool(CONCURRENCY_LEVEL);
-
-        long startTimeMillis = System.currentTimeMillis();
-
-        for (int i = 0; i < REQUEST_COUNT; ++i) {
-            pool.submit(() -> {
-                try {
-                    @SuppressWarnings("ConstantConditions") byte[] bytes = IoUtil.toByteArray(
-                            HttpClientUtil.executePostRequestAndReturnResponse(
-                                    100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
-                            ).getInputStream()
-                    );
-
-                    assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
-
-                    if (VERBOSE) {
-                        println(String.format(
-                                "HttpUtilTest.testManyConcurrentPosts_HttpClientUtil: done %d",
-                                count.incrementAndGet()
-                        ));
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    exceptions.add(e);
-                }
-            });
-        }
-
-        pool.shutdown();
-        pool.awaitTermination(1L, TimeUnit.DAYS);
-
-        if (!exceptions.isEmpty()) {
-            throw new RuntimeException("exceptions.size() = " + exceptions.size());
-        }
-
-        printf(
-                "Done 'HttpUtilTest.testManyConcurrentPosts_HttpClientUtil' in %d ms.%n",
-                System.currentTimeMillis() - startTimeMillis
-        );
-    }
-
-    public void testManyConcurrentPosts() throws InterruptedException, IOException {
+    public void testManyConcurrentPosts() throws InterruptedException {
         List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger count = new AtomicInteger();
 
@@ -217,7 +133,7 @@ public class HttpUtilTest extends TestCase {
             pool.submit(() -> {
                 try {
                     byte[] bytes = HttpUtil.executePostRequestAndReturnResponse(
-                            100000, BASE_TESTING_URL, "size", LARGE_RESPONSE_SIZE
+                            100000, baseTestingUrl, "size", LARGE_RESPONSE_SIZE
                     ).getBytes();
 
                     assertEquals(LARGE_RESPONSE_SIZE, ArrayUtils.getLength(bytes));
@@ -242,7 +158,7 @@ public class HttpUtilTest extends TestCase {
         printf("Done 'HttpUtilTest.testManyConcurrentPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
-    public void testManyConcurrentDoGets() throws InterruptedException, IOException {
+    public void testManyConcurrentDoGets() throws InterruptedException {
         List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger count = new AtomicInteger();
 
@@ -253,7 +169,7 @@ public class HttpUtilTest extends TestCase {
         for (int i = 0; i < REQUEST_COUNT; ++i) {
             pool.submit(() -> {
                 try {
-                    byte[] bytes = doGet(BASE_TESTING_URL + "?size=" + LARGE_RESPONSE_SIZE);
+                    byte[] bytes = doGet(baseTestingUrl + "?size=" + LARGE_RESPONSE_SIZE);
 
                     assertEquals(LARGE_RESPONSE_SIZE, bytes.length);
 
@@ -277,7 +193,7 @@ public class HttpUtilTest extends TestCase {
         printf("Done 'HttpUtilTest.testManyConcurrentDoGets' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
-    public void testManyNotTimedOutPosts() throws InterruptedException, IOException {
+    public void testManyNotTimedOutPosts() throws InterruptedException {
         int concurrency = 5;
         int requestCount = 5 * concurrency;
 
@@ -292,7 +208,7 @@ public class HttpUtilTest extends TestCase {
             pool.submit(() -> {
                 try {
                     HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
-                            1500, BASE_TESTING_URL + "?delay=1000"
+                            1500, baseTestingUrl + "?delay=1000"
                     );
 
                     assertEquals(
@@ -320,7 +236,7 @@ public class HttpUtilTest extends TestCase {
         printf("Done 'HttpUtilTest.testManyNotTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
-    public void testManyTimedOutPosts() throws InterruptedException, IOException {
+    public void testManyTimedOutPosts() throws InterruptedException {
         int concurrency = 5;
         int requestCount = 5 * concurrency;
 
@@ -335,7 +251,7 @@ public class HttpUtilTest extends TestCase {
             pool.submit(() -> {
                 try {
                     HttpResponse response = HttpUtil.executePostRequestAndReturnResponse(
-                            950, BASE_TESTING_URL + "?delay=1000"
+                            950, baseTestingUrl + "?delay=1000"
                     );
 
                     assertEquals(
@@ -362,10 +278,10 @@ public class HttpUtilTest extends TestCase {
         printf("Done 'HttpUtilTest.testManyTimedOutPosts' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
 
-    public void testTimedOutPost() throws InterruptedException, IOException {
+    public void testTimedOutPost() {
         long startTimeMillis = System.currentTimeMillis();
 
-        HttpUtil.executePostRequestAndReturnResponse(1000, BASE_TESTING_URL + "?delay=1000000");
+        HttpUtil.executePostRequestAndReturnResponse(1000, baseTestingUrl + "?delay=1000000");
 
         assertTrue(
                 "Response with 1000 ms timeout takes more than 2050 ms.",
@@ -384,7 +300,7 @@ public class HttpUtilTest extends TestCase {
 
         try {
             httpClient = HttpClientUtil.newHttpClient(20000, 20000);
-            request = new HttpPost(BASE_TESTING_URL);
+            request = new HttpPost(baseTestingUrl);
 
             byte[] bytes = POST_DATA.getBytes(StandardCharsets.UTF_8);
             HttpEntity entity = new InputStreamEntity(new ByteArrayInputStream(bytes), bytes.length);
@@ -404,10 +320,10 @@ public class HttpUtilTest extends TestCase {
         );
     }
 
-    public void testPostWithBinaryEntity() throws IOException {
+    public void testPostWithBinaryEntity() {
         long startTimeMillis = System.currentTimeMillis();
 
-        HttpResponse response = HttpRequest.create(BASE_TESTING_URL)
+        HttpResponse response = HttpRequest.create(baseTestingUrl)
                 .setMethod(HttpMethod.POST)
                 .setBinaryEntity(POST_DATA.getBytes(StandardCharsets.UTF_8))
                 .setTimeoutMillis(20000)
@@ -416,13 +332,6 @@ public class HttpUtilTest extends TestCase {
         response.getHeadersByNameMap();
 
         assertEquals(NanoHTTPD.Response.Status.BAD_REQUEST.getRequestStatus(), response.getCode());
-
-//        assertEquals(getIllegalResponseLengthMessage(response, DEFAULT_RESPONSE_SIZE),
-//                DEFAULT_RESPONSE_SIZE, ArrayUtils.getLength(response.getBytes()));
-//
-//        assertEquals(String.format(
-//                "Got unexpected response code %d.", response.getCode()
-//        ), HttpCode.OK, response.getCode());
 
         printf("Done 'HttpUtilTest.testPostWithBinaryEntity' in %d ms.%n", System.currentTimeMillis() - startTimeMillis);
     }
@@ -436,7 +345,7 @@ public class HttpUtilTest extends TestCase {
 
         try {
             httpClient = HttpClientUtil.newHttpClient(20000, 20000);
-            request = new HttpPost(BASE_TESTING_URL);
+            request = new HttpPost(baseTestingUrl);
 
             HttpEntity entity;
             ByteArrayOutputStream gzippedOutputStream = null;
@@ -474,10 +383,10 @@ public class HttpUtilTest extends TestCase {
         );
     }
 
-    public void testPostWithGzippedBinaryEntity() throws IOException {
+    public void testPostWithGzippedBinaryEntity() {
         long startTimeMillis = System.currentTimeMillis();
 
-        HttpResponse response = HttpRequest.create(BASE_TESTING_URL)
+        HttpResponse response = HttpRequest.create(baseTestingUrl)
                 .setMethod(HttpMethod.POST)
                 .setBinaryEntity(POST_DATA.getBytes(StandardCharsets.UTF_8))
                 .setTimeoutMillis(20000)
@@ -499,10 +408,10 @@ public class HttpUtilTest extends TestCase {
         );
     }
 
-    public void testPostWithGzippedParameters() throws IOException {
+    public void testPostWithGzippedParameters() {
         long startTimeMillis = System.currentTimeMillis();
 
-        HttpResponse response = HttpRequest.create(BASE_TESTING_URL)
+        HttpResponse response = HttpRequest.create(baseTestingUrl)
                 .setMethod(HttpMethod.POST)
                 .appendParameter("size", LARGE_RESPONSE_SIZE)
                 .setTimeoutMillis(20000)
@@ -525,7 +434,7 @@ public class HttpUtilTest extends TestCase {
     }
 
     public void testPostWithoutReadingResponse() {
-        assertEquals(HttpCode.OK, HttpRequest.create(BASE_TESTING_URL).setMethod(HttpMethod.POST).execute());
+        assertEquals(HttpCode.OK, HttpRequest.create(baseTestingUrl).setMethod(HttpMethod.POST).execute());
     }
 
     private static String getIllegalResponseLengthMessage(HttpResponse response, int expectedLength) {
@@ -548,8 +457,8 @@ public class HttpUtilTest extends TestCase {
         private final String randomString1024 = getRandomString(DEFAULT_RESPONSE_SIZE - 2 * TRUE_RANDOM_PART_LENGTH);
         private final String randomString100000 = getRandomString(LARGE_RESPONSE_SIZE - 2 * TRUE_RANDOM_PART_LENGTH);
 
-        private HttpRequestTestServer() {
-            super(8081);
+        public HttpRequestTestServer(int port) {
+            super(port);
         }
 
         @SuppressWarnings({"RefusedBequest", "OverlyLongMethod"})
