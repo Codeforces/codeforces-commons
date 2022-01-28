@@ -109,6 +109,7 @@ final class CacheTestUtil {
         }
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void testConcurrentStoringOfValuesWithLifetime(
             Class<?> cacheTestClass, Cache<String, byte[]> cache,
             int sectionCount, int keyPerSectionCount, int totalKeyCount, int valueLength,
@@ -190,6 +191,7 @@ final class CacheTestUtil {
 
         executorService.shutdown();
         try {
+            //noinspection ResultOfMethodCallIgnored
             executorService.awaitTermination(1L, TimeUnit.HOURS);
         } catch (InterruptedException ignored) {
             // No operations.
@@ -226,13 +228,20 @@ final class CacheTestUtil {
 
         long cachePutTime = System.currentTimeMillis();
         cache.put(section, key, value, valueLifetimeMillis);
-        Assert.assertArrayEquals("Restored value (with lifetime) does not equal to original value.", value, cache.get(section, key));
-
-        ThreadUtil.sleep(valueLifetimeMillis - valueCheckIntervalMillis);
         byte[] restoredValue = cache.get(section, key);
         long actualSleepingTime = System.currentTimeMillis() - cachePutTime;
+        if (actualSleepingTime < valueLifetimeMillis * 0.9) {
+            Assert.assertArrayEquals("Restored value (with lifetime) does not equal to original value"
+                    + " [valueLifetimeMillis=" + valueLifetimeMillis
+                    + ", valueCheckIntervalMillis=" + valueCheckIntervalMillis
+                    + ", cacheTime=" + (System.currentTimeMillis() - cachePutTime) + "].", value, restoredValue);
+        }
 
-        if (actualSleepingTime < valueLifetimeMillis - valueCheckIntervalMillis * 0.5) {
+        ThreadUtil.sleep(valueLifetimeMillis - valueCheckIntervalMillis);
+        restoredValue = cache.get(section, key);
+        actualSleepingTime = System.currentTimeMillis() - cachePutTime;
+
+        if (actualSleepingTime < valueLifetimeMillis * 0.9) {
             Assert.assertArrayEquals(String.format(
                     "Restored value (with lifetime) does not equal to original value after sleeping some time (%s) " +
                             "(restored=%s, expected=%s, section=%s, key=%s, valueLifetime=%s, valueCheckInterval=%s).",
