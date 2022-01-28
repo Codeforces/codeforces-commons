@@ -14,8 +14,8 @@ public class RateUtil {
 
     private static final ConcurrentMap<String, SimplePair<Long, Integer>> maxRatePerMinuteByScope = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String, ConcurrentMap<String, Data>> datas = new ConcurrentHashMap<>();
-    private static AtomicLong dataCount = new AtomicLong();
-    private static AtomicLong counter = new AtomicLong();
+    private static final AtomicLong dataCount = new AtomicLong();
+    private static final AtomicLong counter = new AtomicLong();
 
     private RateUtil() {
         // No operations.
