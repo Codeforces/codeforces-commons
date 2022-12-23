@@ -6,6 +6,9 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -18,6 +21,8 @@ import static com.codeforces.commons.math.Math.round;
  *         Date: 22.06.11
  */
 public class TimeUtil {
+    private static final Locale DEFAULT_LOCALE = new Locale("en", "EN");
+
     public static final long DAYS_PER_WEEK = 7;
 
     public static final long HOURS_PER_DAY = 24;
@@ -52,6 +57,65 @@ public class TimeUtil {
     public static final long NANOSECONDS_PER_HOUR = NANOSECONDS_PER_MINUTE * MINUTES_PER_HOUR;
     public static final long NANOSECONDS_PER_DAY = NANOSECONDS_PER_HOUR * HOURS_PER_DAY;
     public static final long NANOSECONDS_PER_WEEK = NANOSECONDS_PER_DAY * DAYS_PER_WEEK;
+
+    private static final String SYSTEM_DATE_FORMAT_STRING = "yyyy-MM-dd";
+    private static final String SYSTEM_DATE_TIME_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss";
+    private static final String SYSTEM_SHORT_DATE_TIME_FORMAT_STRING = "yyyy-MM-dd HH:mm";
+    private static final String SYSTEM_TIME_FORMAT_STRING = "HH:mm:ss";
+
+    private static final ThreadLocal<DateFormat> SYSTEM_DATE_FORMAT
+            = newSimpleDateFormat(SYSTEM_DATE_FORMAT_STRING, DEFAULT_LOCALE);
+    private static final ThreadLocal<DateFormat> SYSTEM_DATE_TIME_FORMAT
+            = newSimpleDateFormat(SYSTEM_DATE_TIME_FORMAT_STRING, DEFAULT_LOCALE);
+    private static final ThreadLocal<DateFormat> SYSTEM_SHORT_DATE_TIME_FORMAT
+            = newSimpleDateFormat(SYSTEM_SHORT_DATE_TIME_FORMAT_STRING, DEFAULT_LOCALE);
+    private static final ThreadLocal<DateFormat> SYSTEM_TIME_FORMAT
+            = newSimpleDateFormat(SYSTEM_TIME_FORMAT_STRING, DEFAULT_LOCALE);
+
+    @Nonnull
+    public static ThreadLocal<DateFormat> newSimpleDateFormat(@Nonnull String pattern, @Nullable Locale locale) {
+        return ThreadLocal.withInitial(() -> new SimpleDateFormat(pattern, (locale != null ? locale : Locale.ROOT)));
+    }
+
+    @Nonnull
+    public static Date fromSystemDateString(@Nonnull String systemDateTimeString) throws ParseException {
+        return SYSTEM_DATE_FORMAT.get().parse(systemDateTimeString);
+    }
+
+    @Nonnull
+    public static Date fromSystemDateTimeString(@Nonnull String systemDateTimeString) throws ParseException {
+        return SYSTEM_DATE_TIME_FORMAT.get().parse(systemDateTimeString);
+    }
+
+    @Nonnull
+    public static Date fromSystemShortDateTimeString(@Nonnull String systemDateTimeString) throws ParseException {
+        return SYSTEM_SHORT_DATE_TIME_FORMAT.get().parse(systemDateTimeString);
+    }
+
+    @Nonnull
+    public static Date fromSystemTimeString(@Nonnull String systemDateTimeString) throws ParseException {
+        return SYSTEM_TIME_FORMAT.get().parse(systemDateTimeString);
+    }
+
+    @Nonnull
+    public static String toSystemDateString(@Nonnull Date date) {
+        return SYSTEM_DATE_FORMAT.get().format(date);
+    }
+
+    @Nonnull
+    public static String toSystemDateTimeString(@Nonnull Date date) {
+        return SYSTEM_DATE_TIME_FORMAT.get().format(date);
+    }
+
+    @Nonnull
+    public static String toSystemShortDateTimeString(@Nonnull Date date) {
+        return SYSTEM_SHORT_DATE_TIME_FORMAT.get().format(date);
+    }
+
+    @Nonnull
+    public static String toSystemTimeString(@Nonnull Date date) {
+        return SYSTEM_TIME_FORMAT.get().format(date);
+    }
 
     @Contract("null -> null; !null -> !null")
     @Nullable
