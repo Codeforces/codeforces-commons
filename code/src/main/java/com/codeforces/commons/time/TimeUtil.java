@@ -58,10 +58,10 @@ public class TimeUtil {
     public static final long NANOSECONDS_PER_DAY = NANOSECONDS_PER_HOUR * HOURS_PER_DAY;
     public static final long NANOSECONDS_PER_WEEK = NANOSECONDS_PER_DAY * DAYS_PER_WEEK;
 
-    private static final String SYSTEM_DATE_FORMAT_STRING = "yyyy-MM-dd";
-    private static final String SYSTEM_DATE_TIME_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss";
-    private static final String SYSTEM_SHORT_DATE_TIME_FORMAT_STRING = "yyyy-MM-dd HH:mm";
-    private static final String SYSTEM_TIME_FORMAT_STRING = "HH:mm:ss";
+    public static final String SYSTEM_DATE_FORMAT_STRING = "yyyy-MM-dd";
+    public static final String SYSTEM_DATE_TIME_FORMAT_STRING = "yyyy-MM-dd HH:mm:ss";
+    public static final String SYSTEM_SHORT_DATE_TIME_FORMAT_STRING = "yyyy-MM-dd HH:mm";
+    public static final String SYSTEM_TIME_FORMAT_STRING = "HH:mm:ss";
 
     private static final ThreadLocal<DateFormat> SYSTEM_DATE_FORMAT
             = newSimpleDateFormat(SYSTEM_DATE_FORMAT_STRING, DEFAULT_LOCALE);
