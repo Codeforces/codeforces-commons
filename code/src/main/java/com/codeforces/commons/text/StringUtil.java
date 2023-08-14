@@ -1341,6 +1341,10 @@ public final class StringUtil {
     }
 
     public static String cropLines(String input, int maxLineLength, int maxLineNumber) {
+        return cropLines(input, maxLineLength, maxLineNumber, "...", "...");
+    }
+
+    public static String cropLines(String input, int maxLineLength, int maxLineNumber, String endOfLineReplacement, String endOfContentReplacement) {
         if (isEmpty(input)) {
             return input;
         }
@@ -1353,7 +1357,7 @@ public final class StringUtil {
 
             String croppedLine;
             if (line.length() > maxLineLength) {
-                croppedLine = line.substring(0, maxLineLength) + "...";
+                croppedLine = line.substring(0, maxLineLength) + endOfLineReplacement;
             } else {
                 croppedLine = line;
             }
@@ -1362,7 +1366,7 @@ public final class StringUtil {
         }
 
         if (lines.length > maxLineNumber) {
-            result.append("...\r\n");
+            result.append(endOfContentReplacement).append("\r\n");
         }
 
         return result.toString();
