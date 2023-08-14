@@ -445,7 +445,7 @@
                     <argLine>-Dfile.encoding=UTF-8</argLine>
                     <!-- Uncomment to build with JDK 9+ -->
  
-<!--                    <argLine>&#45;&#45;add&#45;opens java.base/java.lang=ALL&#45;UNNAMED &#45;&#45;add&#45;opens java.base/java.util=ALL&#45;UNNAMED &#45;&#45;add&#45;opens java.base/java.io=ALL&#45;UNNAMED</argLine>-->
+                    <argLine>&#45;&#45;add&#45;opens java.base/java.lang=ALL&#45;UNNAMED &#45;&#45;add&#45;opens java.base/java.util=ALL&#45;UNNAMED &#45;&#45;add&#45;opens java.base/java.io=ALL&#45;UNNAMED</argLine>
 
                 </configuration>
             </plugin>
