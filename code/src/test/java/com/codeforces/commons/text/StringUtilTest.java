@@ -383,4 +383,11 @@ public class StringUtilTest {
     private static void internalTestSplit(String s, char c, String[] parts) {
         assertArrayEquals("Illegal split of '" + s + "' by '" + c + "'.", parts, StringUtil.split(s, c));
     }
+
+    @Test
+    public void testWellformForWindows() {
+        assertEquals("1\r\n", StringUtil.wellformForWindows("\r\n\r\n  1   \r\n  \r\n  "));
+        assertEquals("a b c\r\nd e\r\n", StringUtil.wellformForWindows("\r\n\r\n  a  b     c     \r\n  d      e"));
+        assertEquals("a b c\r\n\r\nd e\r\n", StringUtil.wellformForWindows("a b c\r\n\r\nd e\r\n"));
+    }
 }
