@@ -1164,6 +1164,9 @@ public final class StringUtil {
 
         StringBuilder sb = new StringBuilder();
         for (String line : lines) {
+            if (line.trim().isEmpty() && sb.length() == 0) {
+                continue;
+            }
             sb.append(wellformSingleLineForWindows(line)).append("\r\n");
         }
 
