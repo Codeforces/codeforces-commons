@@ -27,6 +27,25 @@ public class NetworkUtilTest {
     }
 
     @Test
+    public void isIpInSubnet_Ipv6InSubnet_true() {
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59:0::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59:0:1:2","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:089f:ad61::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/40"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:089f:ad61:1:2::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/40"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:089f:ad61:1:2::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/40"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/12"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a0f:1:2:4::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/12"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a0f:1:2:4::","2a02:6b8::/12"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0:0::","2a02:6b8::"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0::","2a02:6b8::"));
+        assertTrue(NetworkUtil.isIpInSubnet("1::","2a02:6b8::/1"));
+        assertTrue(NetworkUtil.isIpInSubnet("::","::/64"));
+        assertTrue(NetworkUtil.isIpInSubnet("::5:6:7:8","0000:0000::/64"));
+    }
+
+    @Test
     public void requestAddressInSubnet_addressNotInSubnet_false() {
         assertFalse(NetworkUtil.isIpInSubnet("192.15.0.2", "192.0.0.0/24"));
         assertFalse(NetworkUtil.isIpInSubnet("192.0.1.16", "192.0.0.0/24"));
@@ -39,7 +58,28 @@ public class NetworkUtilTest {
         assertFalse(NetworkUtil.isIpInSubnet("172.16.0.1", "172.16.0.0/32"));
         assertFalse(NetworkUtil.isIpInSubnet("127.0.0.255", "128.0.0.32/1"));
         assertFalse(NetworkUtil.isIpInSubnet("127.0.0.255", "128.0.0.32"));
+        assertFalse(NetworkUtil.isIpInSubnet("127.0.0.255", "2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
     }
+
+    @Test
+    public void isIpInSubnet_Ipv6InSubnet_false() {
+        assertFalse(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a4","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertFalse(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a4","192.0.0.0/24"));
+        assertFalse(NetworkUtil.isIpInSubnet("2a02:6b8:0892:555:59:0::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertFalse(NetworkUtil.isIpInSubnet("::59:0:1:2","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertFalse(NetworkUtil.isIpInSubnet("2a02:6b8:099f:ad61::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/40"));
+        assertFalse(NetworkUtil.isIpInSubnet("2a02:6b8:079f:ad61:1:2::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/40"));
+        assertFalse(NetworkUtil.isIpInSubnet("21:6b8:089f::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/40"));
+        assertFalse(NetworkUtil.isIpInSubnet("2a13::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/12"));
+        assertFalse(NetworkUtil.isIpInSubnet("2a4e:1:2:4::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/12"));
+        assertFalse(NetworkUtil.isIpInSubnet("1b0f:1:2:4::","2a02:6b8::/12"));
+        assertFalse(NetworkUtil.isIpInSubnet("2a02:6b8:0:1::","2a02:6b8::"));
+        assertFalse(NetworkUtil.isIpInSubnet("2a02:6b9:0::","2a02:6b8::"));
+        assertFalse(NetworkUtil.isIpInSubnet("::","fa02:6b8::/1"));
+        assertFalse(NetworkUtil.isIpInSubnet("0:0:1::","::/64"));
+        assertFalse(NetworkUtil.isIpInSubnet("::1:5:6:7:8","0000:0000::/64"));
+    }
+
 
     @Test
     public void requestAddressInSubnet_incorrectAddress_exceptionThrown() {
@@ -56,7 +96,16 @@ public class NetworkUtilTest {
                 .add("192.0.0.251")
                 .add(null)
                 .add(null)
-                .add("test").build();
+                .add("test")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:gg")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0::")
+                .add("")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0::")
+                .add("-1abc::")
+                .add("")
+                .add("2a02:6b8::ad61:59a2:3149:c5a0::")
+                .add("2a02:6b8:11111:ad61:59a2:3149:c5a0::")
+                .build();
 
         List<String> subnets = new ListBuilder<String>()
                 .add("second")
@@ -71,14 +120,22 @@ public class NetworkUtilTest {
                 .add(null)
                 .add("192.0.0.0/24")
                 .add(null)
-                .add("test").build();
+                .add("test")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/78")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/-1")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/4")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/12")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/12")
+                .add("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/12")
+                .build();
 
         for (int i = 0; i < subnets.size(); i++) {
             try {
                 NetworkUtil.isIpInSubnet(ips.get(i), subnets.get(i));
                 fail(String.format("Expected IllegalArgumentException on ip='%s' and subnet='%s'", ips.get(i), subnets.get(i)));
             } catch (IllegalArgumentException ignored) {
-
             }
         }
     }
