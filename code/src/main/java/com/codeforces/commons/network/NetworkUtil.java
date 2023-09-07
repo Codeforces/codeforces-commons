@@ -42,6 +42,37 @@ public class NetworkUtil {
         }
     }
 
+    private static boolean isIpInSubnetV4(String ip, String[] subnetAndPrefixLength) {
+        if (subnetAndPrefixLength.length == 1) {
+            return ip.equals(subnetAndPrefixLength[0]);
+        }
+
+        if (subnetAndPrefixLength.length != 2) {
+            throw new IllegalArgumentException("Invalid format of subnet");
+        }
+
+        int mask, ipAsInt, subnetAddressInt;
+        try {
+            int prefixLength = Integer.parseInt(subnetAndPrefixLength[1]);
+            if (prefixLength <= 0 || prefixLength > 32) {
+                throw new IllegalArgumentException("Prefix length must be between 0 and 32, got " + prefixLength);
+            }
+            mask = (0xFFFFFFFF << (32 - prefixLength));
+
+            ipAsInt = getIpV4AsInt(ip);
+            subnetAddressInt = getIpV4AsInt(subnetAndPrefixLength[0]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Unable to parse subnet prefix length", e);
+        }
+
+        return (ipAsInt & mask) == (subnetAddressInt & mask);
+    }
+
+    private static int getIpV4AsInt(String ip) {
+        int[] ipParts = Arrays.stream(DOT_PATTERN.split(ip)).mapToInt(Integer::parseInt).toArray();
+        return (ipParts[0] << 24) + (ipParts[1] << 16) + (ipParts[2] << 8) + ipParts[3];
+    }
+
     private static boolean isIpInSubnetV6(String ip, String[] subnetAndPrefixLength) {
         BigInteger mask, ipAsBigInteger, subnetAsBigInteger;
         try {
@@ -94,36 +125,5 @@ public class NetworkUtil {
         } catch (NumberFormatException e) {
             throw new RuntimeException("Invalid format of IpV6: " + ip, e);
         }
-    }
-
-    private static boolean isIpInSubnetV4(String ip, String[] subnetAndPrefixLength) {
-        if (subnetAndPrefixLength.length == 1) {
-            return ip.equals(subnetAndPrefixLength[0]);
-        }
-
-        if (subnetAndPrefixLength.length != 2) {
-            throw new IllegalArgumentException("Invalid format of subnet");
-        }
-
-        int mask, ipAsInt, subnetAddressInt;
-        try {
-            int prefixLength = Integer.parseInt(subnetAndPrefixLength[1]);
-            if (prefixLength <= 0 || prefixLength > 32) {
-                throw new IllegalArgumentException("Prefix length must be between 0 and 32, got " + prefixLength);
-            }
-            mask = (0xFFFFFFFF << (32 - prefixLength));
-
-            ipAsInt = getIpAsInt(ip);
-            subnetAddressInt = getIpAsInt(subnetAndPrefixLength[0]);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Unable to parse subnet prefix length", e);
-        }
-
-        return (ipAsInt & mask) == (subnetAddressInt & mask);
-    }
-
-    private static int getIpAsInt(String ip) {
-        int[] ipParts = Arrays.stream(DOT_PATTERN.split(ip)).mapToInt(Integer::parseInt).toArray();
-        return (ipParts[0] << 24) + (ipParts[1] << 16) + (ipParts[2] << 8) + ipParts[3];
     }
 }
