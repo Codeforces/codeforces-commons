@@ -29,6 +29,8 @@ public class NetworkUtilTest {
     @Test
     public void isIpInSubnet_Ipv6InSubnet_true() {
         assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertTrue(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a5","00:6b8:0892:ad61:59a2:3149:c5a0:67a4/127"));
+        assertTrue(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a5","00:6b8:0892:ad61:59a2:3149:c5a0:67a0/124"));
         assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8::59a2:3149:c5a0:67a4","2a02:6b8:0:0:59a2:3149:c5a0:67a4/64"));
         assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4"));
         assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59:0::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
@@ -64,7 +66,10 @@ public class NetworkUtilTest {
 
     @Test
     public void isIpInSubnet_Ipv6InSubnet_false() {
+        assertFalse(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a8","00:6b8:0892:ad61:59a2:3149:c5a0:67a0/125"));
         assertFalse(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a4","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertFalse(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a4","00:6b8:0892:ad61:59a2:3149:c5a0:67a5"));
+        assertFalse(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a5","00:6b8:0892:ad61:59a2:3149:c5a0:67a4"));
         assertFalse(NetworkUtil.isIpInSubnet("00:6b8:0892:ad61:59a2:3149:c5a0:67a4","192.0.0.0/24"));
         assertFalse(NetworkUtil.isIpInSubnet("2a02:6b8:0892:555:59:0::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
         assertFalse(NetworkUtil.isIpInSubnet("::59:0:1:2","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));

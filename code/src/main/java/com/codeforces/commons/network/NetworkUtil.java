@@ -1,13 +1,12 @@
 package com.codeforces.commons.network;
 
-import com.codeforces.commons.text.StringUtil;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author Vladislav Bandurin (vbandurin7@gmail.com)
@@ -35,8 +34,8 @@ public class NetworkUtil {
                 && ADDRESS_VALIDATOR.isValidInet6Address(subnetAndPrefixLength[0])) {
             return isIpInSubnetV6(ip, subnetAndPrefixLength);
         } else if (isValidSubnetFormat &&
-                  (ADDRESS_VALIDATOR.isValidInet6Address(ip) && ADDRESS_VALIDATOR.isValidInet4Address(subnetAndPrefixLength[0]) ||
-                   ADDRESS_VALIDATOR.isValidInet4Address(ip) && ADDRESS_VALIDATOR.isValidInet6Address(subnetAndPrefixLength[0]))) {
+                (ADDRESS_VALIDATOR.isValidInet6Address(ip) && ADDRESS_VALIDATOR.isValidInet4Address(subnetAndPrefixLength[0]) ||
+                        ADDRESS_VALIDATOR.isValidInet4Address(ip) && ADDRESS_VALIDATOR.isValidInet6Address(subnetAndPrefixLength[0]))) {
             return false;
         } else {
             throw new IllegalArgumentException("Invalid format of arguments: ip=" + ip + " subnet=" + subnet);
@@ -44,46 +43,56 @@ public class NetworkUtil {
     }
 
     private static boolean isIpInSubnetV6(String ip, String[] subnetAndPrefixLength) {
-        long mask, ipSubnetAsLong, subnetAddressAsLong;
+        BigInteger mask, ipAsBigInteger, subnetAsBigInteger;
         try {
-            int prefixLength = subnetAndPrefixLength.length == 1 ? 64 : Integer.parseInt(subnetAndPrefixLength[1]);
-            if (prefixLength > 64 || prefixLength <= 0) {
+            int prefixLength = subnetAndPrefixLength.length == 1 ? 128 : Integer.parseInt(subnetAndPrefixLength[1]);
+            if (prefixLength <= 0 || prefixLength > 128) {
                 throw new IllegalArgumentException("Subnet prefix length must be in range from 1 to 64");
             }
-            mask = (0xFFFFFFFFFFFFFFFFL << (64 - prefixLength));
 
-            ipSubnetAsLong = getSubnetV6AsLong(getIpV6Subnet(ip));
-            subnetAddressAsLong = getSubnetV6AsLong(getIpV6Subnet(subnetAndPrefixLength[0]));
+            mask = BigInteger.valueOf(2).pow(128).subtract(BigInteger.ONE)
+                    .shiftRight(128 - prefixLength).shiftLeft(128 - prefixLength);
+
+            ipAsBigInteger = getIpV6AsBigInteger(getCanonicalIpV6(ip));
+            subnetAsBigInteger = getIpV6AsBigInteger(getCanonicalIpV6(subnetAndPrefixLength[0]));
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Unable to parse subnet prefix length", e);
         }
-        return (ipSubnetAsLong & mask) == (subnetAddressAsLong & mask);
+        return (ipAsBigInteger.and(mask)).equals(subnetAsBigInteger.and(mask));
     }
 
-    private static String getIpV6Subnet(String ip) {
-        String[] parts = ip.split("::");
+    private static String getCanonicalIpV6(String ip) {
         if (ip.contains("::")) {
             int sepCount = StringUtils.countMatches(ip, ':');
-            if (sepCount == 2 && parts.length == 0) {
-                return "0:0:0:0:0:0:0:0";
+
+            int repeatCount = 8 - sepCount;
+            if (ip.charAt(0) == ':') {
+                repeatCount++;
             }
-            String replacement;
-            if (parts.length >= 1 && StringUtil.isEmpty(parts[0])) {
-                replacement = Strings.repeat("0000:", 9 - sepCount);
-            } else {
-                replacement = Strings.repeat(":0000", 8 - sepCount) + ":";
+            if (ip.charAt(ip.length() - 1) == ':') {
+                repeatCount++;
             }
-            ip = ip.replace("::", replacement);
+
+            String replacement = Strings.repeat(":0000", repeatCount) + ":";
+            ip = ip.replace("::", replacement).replaceAll("^:+|:+$", "");
         }
-        return Arrays.stream(ip.split(":")).limit(4).collect(Collectors.joining(":"));
+
+        return ip;
     }
 
-    private static long getSubnetV6AsLong(String subnet) {
+    private static BigInteger getIpV6AsBigInteger(String ip) {
         try {
-            long[] ipParts = Arrays.stream(subnet.split(":")).mapToLong(n -> Long.parseLong(n, 16)).toArray();
-            return (ipParts[0] << 48) + (ipParts[1] << 32) + (ipParts[2] << 16) + ipParts[3];
+            long[] ipParts = Arrays.stream(ip.split(":")).mapToLong(n -> Long.parseLong(n, 16)).toArray();
+            BigInteger result = BigInteger.ZERO;
+            for (long ipPart : ipParts) {
+                if (ipPart < 0 || ipPart > 65535) {
+                    throw new RuntimeException("Invalid format of IpV6: " + ip);
+                }
+                result = result.shiftLeft(16).add(BigInteger.valueOf(ipPart));
+            }
+            return result;
         } catch (NumberFormatException e) {
-            throw new RuntimeException("Invalid format of subnet", e);
+            throw new RuntimeException("Invalid format of IpV6: " + ip, e);
         }
     }
 
