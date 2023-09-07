@@ -85,6 +85,7 @@ public class NetworkUtilTest {
     public void requestAddressInSubnet_incorrectAddress_exceptionThrown() {
         List<String> ips = new ListBuilder<String>()
                 .add("first")
+                .add("192.0.0.0")
                 .add("192.0.0.256")
                 .add("192.0.0.256")
                 .add("192.0.0.256")
@@ -109,6 +110,7 @@ public class NetworkUtilTest {
 
         List<String> subnets = new ListBuilder<String>()
                 .add("second")
+                .add("192.0.0.0/ ")
                 .add("192.0.0.0/24")
                 .add("192.0.0.0/0")
                 .add("192.0.0.0/-1")

@@ -1,5 +1,7 @@
 package com.codeforces.commons.network;
 
+import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 import java.util.Arrays;
@@ -18,9 +20,12 @@ public class NetworkUtil {
         if (ip == null || subnet == null) {
             throw new IllegalArgumentException("Expected not null ip and subnet, got ip=" + ip + " subnet=" + subnet + "instead");
         }
+
         String[] subnetAndPrefixLength = subnet.split("/");
-        boolean isValidSubnetFormat = subnetAndPrefixLength.length == 2
-                || subnetAndPrefixLength.length == 1 && subnet.charAt(subnet.length() - 1) != '/';
+        int slashCount = StringUtils.countMatches(subnet, '/');
+
+        boolean isValidSubnetFormat = subnetAndPrefixLength.length == 2 && slashCount == 1
+                || subnetAndPrefixLength.length == 1 && slashCount == 0;
 
         if (isValidSubnetFormat && ADDRESS_VALIDATOR.isValidInet4Address(ip)
                 && ADDRESS_VALIDATOR.isValidInet4Address(subnetAndPrefixLength[0])) {
@@ -55,6 +60,15 @@ public class NetworkUtil {
     }
 
     private static String getIpV6Subnet(String ip) {
+        //noinspection IndexOfReplaceableByContains
+        if (ip.indexOf("::") >= 0) {
+            int sepCount = StringUtils.countMatches(ip, ':');
+            String replacement = Strings.repeat(":0000", 8 - sepCount) + ":";
+            ip = ip.replace("::", replacement);
+        }
+        return ip.substring(0, )
+
+
         List<String> parts = Arrays.asList(ip.split(":"));
         int ind = parts.lastIndexOf("");
         if (ind == -1 && parts.size() >= 4 || ind >= 4) {
@@ -110,8 +124,8 @@ public class NetworkUtil {
         int mask, ipAsInt, subnetAddressInt;
         try {
             int prefixLength = Integer.parseInt(subnetAndPrefixLength[1]);
-            if (prefixLength <= 0) {
-                throw new IllegalArgumentException("Prefix length must be positive, got " + prefixLength);
+            if (prefixLength <= 0 || prefixLength > 32) {
+                throw new IllegalArgumentException("Prefix length must be between 0 and 32, got " + prefixLength);
             }
             mask = (0xFFFFFFFF << (32 - prefixLength));
 
