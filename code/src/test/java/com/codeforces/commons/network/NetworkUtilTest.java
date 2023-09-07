@@ -29,6 +29,7 @@ public class NetworkUtilTest {
     @Test
     public void isIpInSubnet_Ipv6InSubnet_true() {
         assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
+        assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8::59a2:3149:c5a0:67a4","2a02:6b8:0:0:59a2:3149:c5a0:67a4/64"));
         assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4"));
         assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59:0::","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));
         assertTrue(NetworkUtil.isIpInSubnet("2a02:6b8:0892:ad61:59:0:1:2","2a02:6b8:0892:ad61:59a2:3149:c5a0:67a4/64"));

@@ -1,12 +1,13 @@
 package com.codeforces.commons.network;
 
+import com.codeforces.commons.text.StringUtil;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Vladislav Bandurin (vbandurin7@gmail.com)
@@ -60,47 +61,21 @@ public class NetworkUtil {
     }
 
     private static String getIpV6Subnet(String ip) {
-        //noinspection IndexOfReplaceableByContains
-        if (ip.indexOf("::") >= 0) {
+        String[] parts = ip.split("::");
+        if (ip.contains("::")) {
             int sepCount = StringUtils.countMatches(ip, ':');
-            String replacement = Strings.repeat(":0000", 8 - sepCount) + ":";
+            if (sepCount == 2 && parts.length == 0) {
+                return "0:0:0:0:0:0:0:0";
+            }
+            String replacement;
+            if (parts.length >= 1 && StringUtil.isEmpty(parts[0])) {
+                replacement = Strings.repeat("0000:", 9 - sepCount);
+            } else {
+                replacement = Strings.repeat(":0000", 8 - sepCount) + ":";
+            }
             ip = ip.replace("::", replacement);
         }
-        return ip.substring(0, )
-
-
-        List<String> parts = Arrays.asList(ip.split(":"));
-        int ind = parts.lastIndexOf("");
-        if (ind == -1 && parts.size() >= 4 || ind >= 4) {
-            return String.join(":", parts.subList(0, 4));
-        } else if (ind == -1) {
-            StringBuilder res = new StringBuilder();
-            if (!parts.isEmpty()) {
-                res.append(String.join(":", parts.subList(0, parts.size()))).append(":");
-            }
-            for (int i = 0; i < 4 - parts.size(); i++) {
-                res.append("0:");
-            }
-            res.deleteCharAt(res.length() - 1);
-            return res.toString();
-        } else if (ind == 1 && parts.get(0).isEmpty()) {
-            if (parts.size() <= 6) {
-                return "0:0:0:0";
-            }
-            StringBuilder res = new StringBuilder();
-            for (int i = 0; i < 4 - (parts.size() - 6); i++) {
-                res.append("0:");
-            }
-            return res.append(String.join(":", parts.subList(ind + 1, parts.size() - 4))).toString();
-        } else {
-            StringBuilder res = new StringBuilder();
-            res.append(String.join(":", parts.subList(0, ind))).append(":");
-            for (int i = ind; i < 4; i++) {
-                res.append("0:");
-            }
-            res.deleteCharAt(res.length() - 1);
-            return res.toString();
-        }
+        return Arrays.stream(ip.split(":")).limit(4).collect(Collectors.joining(":"));
     }
 
     private static long getSubnetV6AsLong(String subnet) {
