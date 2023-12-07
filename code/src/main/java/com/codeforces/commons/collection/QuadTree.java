@@ -3,8 +3,12 @@ package com.codeforces.commons.collection;
 import com.codeforces.commons.annotation.NonnullElements;
 import com.google.common.base.Preconditions;
 
-import javax.annotation.*;
-import java.util.*;
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 

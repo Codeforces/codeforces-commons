@@ -7,7 +7,8 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
-import static com.codeforces.commons.math.Math.*;
+import static com.codeforces.commons.math.Math.abs;
+import static com.codeforces.commons.math.Math.sqrt;
 
 /**
  * x^2 + y^2 + ax + by + c = 0

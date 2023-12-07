@@ -1,7 +1,6 @@
 package com.codeforces.commons.cache.util;
 
 import com.codeforces.commons.cache.ByteCache;
-import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

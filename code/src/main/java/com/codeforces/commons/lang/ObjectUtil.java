@@ -5,7 +5,9 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)

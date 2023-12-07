@@ -1,6 +1,8 @@
 package com.codeforces.commons.collection;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import gnu.trove.impl.unmodifiable.*;
 import gnu.trove.map.*;
 import gnu.trove.map.hash.*;
@@ -14,7 +16,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 
-import static gnu.trove.impl.Constants.*;
+import static gnu.trove.impl.Constants.DEFAULT_CAPACITY;
+import static gnu.trove.impl.Constants.DEFAULT_LOAD_FACTOR;
 
 /**
  * @author Edvard Davtyan (homo_sapiens@xakep.ru)
