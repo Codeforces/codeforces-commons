@@ -66,7 +66,7 @@ public final class StringUtil {
     private static final Logger logger = Logger.getLogger(StringUtil.class);
 
     private static final Pattern FORMAT_COMMENTS_COMMENT_SPLIT_PATTERN = Pattern.compile("\\[pre]|\\[/pre]");
-    private static final Pattern FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN = Pattern.compile("[\n\r][\n\r]+");
+    private static final Pattern FORMAT_COMMENTS_LINE_BREAK_REPLACE_PATTERN = Pattern.compile("[\n\r][\\s\\u200B]*[\n\r]+");
 
     private static final Map<Class, ToStringConverter> toStringConverterByClass = new HashMap<>();
     private static final ReadWriteLock toStringConverterByClassMapLock = new ReentrantReadWriteLock();
