@@ -5,9 +5,12 @@ import com.codeforces.commons.pair.DoublePair;
 import com.codeforces.commons.text.StringUtil;
 import org.jetbrains.annotations.Contract;
 
-import javax.annotation.*;
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import static com.codeforces.commons.math.Math.*;
+import static com.codeforces.commons.math.Math.hypot;
+import static com.codeforces.commons.math.Math.sumSqr;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)

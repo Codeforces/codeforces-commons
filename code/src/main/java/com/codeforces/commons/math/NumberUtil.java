@@ -5,7 +5,8 @@ import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 
-import static com.codeforces.commons.math.Math.*;
+import static com.codeforces.commons.math.Math.abs;
+import static com.codeforces.commons.math.Math.round;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)

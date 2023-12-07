@@ -1,10 +1,15 @@
 package com.codeforces.commons.compress;
 
 import com.codeforces.commons.io.ByteArrayOutputStream;
-import com.codeforces.commons.io.*;
+import com.codeforces.commons.io.CountingOutputStream;
+import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
-import de.schlichtherle.truezip.file.*;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TFileOutputStream;
+import de.schlichtherle.truezip.file.TVFS;
 import de.schlichtherle.truezip.fs.FsSyncException;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
@@ -23,7 +28,9 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.zip.*;
 
 import static com.codeforces.commons.math.Math.max;

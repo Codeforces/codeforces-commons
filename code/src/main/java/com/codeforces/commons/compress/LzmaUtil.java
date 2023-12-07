@@ -4,7 +4,9 @@ import com.codeforces.commons.io.ByteArrayOutputStream;
 import lzma.sdk.lzma.Decoder;
 import lzma.sdk.lzma.Encoder;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Mike Mirzayanov

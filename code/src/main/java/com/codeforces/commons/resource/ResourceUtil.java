@@ -2,7 +2,6 @@ package com.codeforces.commons.resource;
 
 import com.codeforces.commons.io.FileUtil;
 import com.codeforces.commons.io.IoUtil;
-import com.google.common.io.Resources;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
