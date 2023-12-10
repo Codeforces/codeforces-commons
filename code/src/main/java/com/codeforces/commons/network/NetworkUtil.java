@@ -1,11 +1,16 @@
 package com.codeforces.commons.network;
 
+import com.codeforces.commons.text.Patterns;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 import java.math.BigInteger;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Pattern;
 
 /**
@@ -15,6 +20,83 @@ import java.util.regex.Pattern;
 public class NetworkUtil {
     private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
     private static final InetAddressValidator ADDRESS_VALIDATOR = InetAddressValidator.getInstance();
+
+    private static final Pattern ADDRESS_SPLIT_PATTERN = Patterns.DOT_PATTERN;
+
+    private static volatile boolean workstationIpCached;
+    private static String workstationIp;
+
+    private static volatile boolean encryptedWorkstationIpCached;
+    private static String encryptedWorkstationIp;
+
+    public static String getWorkstationIp() {
+        if (workstationIpCached) {
+            return workstationIp;
+        }
+
+        try {
+            for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                if (networkInterface.getDisplayName().toLowerCase().contains("virt")
+                        || networkInterface.getDisplayName().toLowerCase().contains("vm")) {
+                    continue;
+                }
+
+                String result = null;
+                int count = 0;
+
+                for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                    if (interfaceAddress == null || interfaceAddress.getAddress() == null
+                            || interfaceAddress.getAddress().isLoopbackAddress()
+                            || interfaceAddress.getAddress().isAnyLocalAddress()) {
+                        continue;
+                    }
+
+                    if (ADDRESS_SPLIT_PATTERN.split(interfaceAddress.getAddress().getHostAddress()).length == 4) {
+                        result = interfaceAddress.getAddress().getHostAddress();
+                        ++count;
+                    }
+                }
+
+                if (count == 1) {
+                    workstationIp = result;
+                    workstationIpCached = true;
+                    return workstationIp;
+                }
+            }
+        } catch (SocketException e) {
+            throw new IllegalStateException(e);
+        }
+
+        workstationIp = "127.0.0.1";
+        workstationIpCached = true;
+
+        return workstationIp;
+    }
+
+    public static String getEncryptedWorkstationIp() {
+        if (encryptedWorkstationIpCached) {
+            return encryptedWorkstationIp;
+        }
+
+        String ip = getWorkstationIp();
+        StringBuilder result = new StringBuilder();
+
+        if (StringUtils.isNotBlank(ip)) {
+            for (int i = 0; i < ip.length(); i++) {
+                if (Character.isDigit(ip.charAt(i))) {
+                    char c = (char) (ip.charAt(i) + 1);
+                    if (c > '9') {
+                        c = '0';
+                    }
+                    result.append(c);
+                }
+            }
+        }
+
+        encryptedWorkstationIp = result.toString();
+        encryptedWorkstationIpCached = true;
+        return encryptedWorkstationIp;
+    }
 
     public static boolean isIpInSubnet(String ip, String subnet) {
         if (ip == null || subnet == null) {
