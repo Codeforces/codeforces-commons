@@ -1,8 +1,8 @@
 setlocal enabledelayedexpansion
 
-if not "!JAVA8_64_HOME!"=="" (
-    set PATH=!JAVA8_64_HOME!\bin;!PATH!
-    set JAVA_HOME=!JAVA8_64_HOME!
+if not "!JAVA11_64_HOME!"=="" (
+    set PATH=!JAVA11_64_HOME!\bin;!PATH!
+    set JAVA_HOME=!JAVA11_64_HOME!
 )
 
 call mvn.cmd -Dfile.encoding=UTF-8 validate
