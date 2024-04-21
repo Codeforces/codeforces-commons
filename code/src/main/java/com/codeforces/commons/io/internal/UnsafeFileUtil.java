@@ -38,6 +38,7 @@ import static com.codeforces.commons.math.Math.max;
 /**
  * @author Mike Mirzayanov
  */
+@SuppressWarnings("unused")
 public class UnsafeFileUtil {
     private static final Logger logger = Logger.getLogger(UnsafeFileUtil.class);
     private static final int BUFFER_SIZE = 655360;
@@ -54,7 +55,7 @@ public class UnsafeFileUtil {
      * @throws IOException Can't perform IO.
      */
     public static String sha1Hex(File file) throws IOException {
-        return IoUtil.sha1Hex(new BufferedInputStream(new FileInputStream(file)));
+        return IoUtil.sha1Hex(new BufferedInputStream(Files.newInputStream(file.toPath())));
     }
 
     /**
@@ -155,7 +156,7 @@ public class UnsafeFileUtil {
                         ZipUtil.synchronizeQuietly(tNextSource);
                         ZipUtil.writeZipEntryBytes(
                                 enclosingArchive, tNextSource.getEnclEntryName(),
-                                new FileOutputStream(nextDestination)
+                                Files.newOutputStream(nextDestination.toPath())
                         );
                     } else {
                         internalCopyDirectory(nextSource, nextDestination, false);
@@ -178,7 +179,7 @@ public class UnsafeFileUtil {
      * @return created file
      * @throws IOException if file does not exist and can't be created
      */
-    @SuppressWarnings({"DuplicateCondition", "DuplicateBooleanBranch"})
+    @SuppressWarnings({"DuplicateBooleanBranch"})
     public static File ensureFileExists(File file) throws IOException {
         File parentFile = file.getParentFile();
         if (parentFile != null) {
@@ -199,7 +200,7 @@ public class UnsafeFileUtil {
      * @return created directory
      * @throws IOException if directory does not exist and can't be created
      */
-    @SuppressWarnings({"DuplicateCondition", "DuplicateBooleanBranch"})
+    @SuppressWarnings({"DuplicateBooleanBranch"})
     @Nonnull
     public static File ensureDirectoryExists(@Nonnull File directory) throws IOException {
         if (directory.isDirectory() || directory.mkdirs() || directory.isDirectory()) {
@@ -230,8 +231,18 @@ public class UnsafeFileUtil {
                     throw new IOException("Can't delete symbolic link '" + file + "'.");
                 }
             } else if (file.isFile()) {
-                if (!file.delete() && file.exists()) {
-                    throw new IOException("Can't delete file '" + file + "'.");
+                IOException deleteException = null;
+                try {
+                    Files.delete(file.toPath());
+                } catch (Exception e) {
+                    deleteException = new IOException("Can't delete file '" + file + "'.", e);
+                }
+                if (file.exists()) {
+                    if (deleteException != null) {
+                        throw deleteException;
+                    } else {
+                        throw new IOException("Can't delete file '" + file + "'.");
+                    }
                 }
             } else if (file.isDirectory()) {
                 cleanDirectory(file, null);
@@ -302,7 +313,7 @@ public class UnsafeFileUtil {
             deleteTotally(file);
         }
 
-        try (OutputStream outputStream = new FileOutputStream(file)) {
+        try (OutputStream outputStream = Files.newOutputStream(file.toPath())) {
             byte[] buffer = new byte[BUFFER_SIZE];
             while (true) {
                 int size = inputStream.read(buffer);
@@ -346,8 +357,8 @@ public class UnsafeFileUtil {
         Writer writer = null;
         try {
             writer = encoding == null
-                    ? new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)
-                    : new OutputStreamWriter(new FileOutputStream(file), encoding);
+                    ? new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8)
+                    : new OutputStreamWriter(Files.newOutputStream(file.toPath()), encoding);
             writer.write(content);
         } finally {
             IoUtil.closeQuietly(writer);
@@ -553,7 +564,7 @@ public class UnsafeFileUtil {
                 TVFS.umount(trueZipFile);
             }
         } else if (file.isFile()) {
-            return new BufferedInputStream(new FileInputStream(file), IoUtil.BUFFER_SIZE);
+            return new BufferedInputStream(Files.newInputStream(file.toPath()), IoUtil.BUFFER_SIZE);
         }
 
         throw new FileNotFoundException("'" + file + "' is not file.");
@@ -594,7 +605,6 @@ public class UnsafeFileUtil {
      * @param file Any file.
      * @return String Name and extension of file (extension in lowercase). For example, "main.cpp".
      */
-    @Contract("null -> fail")
     @Nonnull
     public static String getNameAndExt(@Nonnull File file) {
         String path = file.getPath();
@@ -617,7 +627,6 @@ public class UnsafeFileUtil {
      * @param file Any file.
      * @return String Name part (simple name without extension).
      */
-    @Contract("null -> fail")
     public static String getName(@Nonnull File file) {
         String nameAndExt = getNameAndExt(file);
         int dotIndex = nameAndExt.lastIndexOf('.');

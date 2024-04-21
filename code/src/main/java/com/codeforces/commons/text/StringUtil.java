@@ -60,7 +60,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author Maxim Shipko (sladethe@gmail.com)
  * Date: 10.07.2013
  */
-@SuppressWarnings({"WeakerAccess", "ForLoopWithMissingComponent"})
+@SuppressWarnings({"WeakerAccess", "ForLoopWithMissingComponent", "unused"})
 public final class StringUtil {
     private static final Logger logger = Logger.getLogger(StringUtil.class);
 
