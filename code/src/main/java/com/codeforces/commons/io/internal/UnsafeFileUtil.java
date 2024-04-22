@@ -233,7 +233,8 @@ public class UnsafeFileUtil {
             } else if (file.isFile()) {
                 IOException deleteException = null;
                 try {
-                    Files.delete(file.toPath());
+                    //noinspection ResultOfMethodCallIgnored
+                    file.delete();
                 } catch (Exception e) {
                     deleteException = new IOException("Can't delete file '" + file + "'.", e);
                 }
