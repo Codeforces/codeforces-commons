@@ -9,6 +9,7 @@ import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnegative;
@@ -33,6 +34,8 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class FileUtil {
+    private static final Logger logger = Logger.getLogger(FileUtil.class);
+
     public static final long TB_PER_PB = 1024L;
 
     public static final long GB_PER_TB = 1024L;
@@ -1041,6 +1044,27 @@ public class FileUtil {
 
     private static long parseSize(@Nonnull String size, @Nonnegative int lastCharIndex, @Nonnegative long unit) {
         return NumberUtil.toLong(Double.parseDouble(size.substring(0, lastCharIndex).trim()) * unit);
+    }
+
+    /**
+     * Set executable permission for file.
+     *
+     * @param file File to set permission.
+     * @param executable {@code true} to set executable permission.
+     */
+    public static void setExecutable(@Nonnull File file, boolean executable) {
+        if (!file.setExecutable(executable)) {
+            logger.warn("Can't set executable permission for file '" + file + "' [executable=" + executable + "].");
+        }
+    }
+
+    /**
+     * Set executable permission for file.
+     *
+     * @param file File to set permission.
+     */
+    public static void setExecutable(@Nonnull File file) {
+        setExecutable(file, true);
     }
 
     /**
