@@ -12,7 +12,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RateUtil {
     private static final Logger logger = Logger.getLogger(RateUtil.class);
 
-    private static final ConcurrentMap<String, SimplePair<Long, Integer>> maxRatePerMinuteByScope = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, SimplePair<Long, Integer>> maxRatePerIntervalByScope
+            = new ConcurrentHashMap<>();
+
     private static final ConcurrentMap<String, ConcurrentMap<String, Data>> datas = new ConcurrentHashMap<>();
     private static final AtomicLong dataCount = new AtomicLong();
     private static final AtomicLong counter = new AtomicLong();
@@ -22,15 +24,16 @@ public class RateUtil {
     }
 
     public static void setRestriction(String scope, long intervalMillis, int maxRatePerIntervalMillis) {
-        maxRatePerMinuteByScope.put(scope, new SimplePair<>(intervalMillis, maxRatePerIntervalMillis));
+        maxRatePerIntervalByScope.put(scope, new SimplePair<>(intervalMillis, maxRatePerIntervalMillis));
     }
 
     public static boolean addEvent(String scope, String session) {
         clear();
 
-        SimplePair<Long, Integer> restriction = maxRatePerMinuteByScope.get(scope);
+        SimplePair<Long, Integer> restriction = maxRatePerIntervalByScope.get(scope);
         if (restriction == null) {
-            throw new IllegalStateException("No restriction for the scope '" + scope + "', use #setRestriction(scope, maxRatePerMinute).");
+            throw new IllegalStateException("No restriction for the scope '" + scope
+                    + "', use #setRestriction(scope, maxRatePerInterval).");
         }
 
         ConcurrentMap<String, Data> scopeDatas = datas.compute(scope, (s, stringQueueConcurrentMap) -> {
@@ -42,13 +45,12 @@ public class RateUtil {
         });
 
         @SuppressWarnings("ConstantConditions") final Data data = scopeDatas.compute(session, (k, v) -> v == null
-                ? new Data(4, restriction.getFirst(), restriction.getSecond()) : v);
+                ? new Data(3, restriction.getFirst(), restriction.getSecond()) : v);
 
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (data) {
-            boolean add = data.add();
+            boolean add = data.add(scope, session);
             if (!add) {
-                logger.info("Too many events, RateUtil#addEvent returns false [scope=" + scope + ", session=" + session + "].");
+                logger.info("Rate limit exceeded, RateUtil#addEvent returns false [scope=" + scope + ", session=" + session + "].");
             }
             return add;
         }
@@ -83,14 +85,15 @@ public class RateUtil {
                 }
             }
 
-            logger.warn("RateUtil#clear done [size: " + previousSize + " -> " + (previousSize - removeSize) + " " + (-removeSize) + "].");
+            logger.warn("RateUtil#clear done [size: previousSize=" + previousSize
+                    + " -> currentSize=" + (previousSize - removeSize) + ", removedSize=" + removeSize + "].");
         }
     }
 
     private static final class Data {
         private final int depth;
         private final long intervalMills;
-        private final long maxRatePerMinute;
+        private final long maxRatePerInterval;
         private final Queue<Long>[] queues;
 
         private Data(int depth, long intervalMills, int maxRatePerIntervalMillis) {
@@ -101,7 +104,8 @@ public class RateUtil {
 
             this.depth = depth;
             this.intervalMills = intervalMills;
-            this.maxRatePerMinute = maxRatePerIntervalMillis;
+            this.maxRatePerInterval = maxRatePerIntervalMillis;
+
             //noinspection unchecked
             queues = new Queue[depth];
             for (int i = 0; i < depth; i++) {
@@ -109,11 +113,11 @@ public class RateUtil {
             }
         }
 
-        private boolean add() {
+        private boolean add(String scope, String session) {
             long currentTimeMillis = System.currentTimeMillis();
             adjust(currentTimeMillis);
 
-            if (isProper()) {
+            if (isProper(scope, session)) {
                 queues[0].add(currentTimeMillis);
                 return true;
             } else {
@@ -125,11 +129,13 @@ public class RateUtil {
             for (int i = depth - 1; i >= 0; i--) {
                 Queue<Long> queue = queues[i];
                 while (!queue.isEmpty() && queue.peek() < currentTimeMillis - (1L << i) * intervalMills) {
-                    long elem = queue.poll();
-                    for (int j = i + 1; j < depth; j++) {
-                        if (elem >= currentTimeMillis - (1L << j) * intervalMills) {
-                            queues[j].add(elem);
-                            break;
+                    Long elem = queue.poll();
+                    if (elem != null) {
+                        for (int j = i + 1; j < depth; j++) {
+                            if (elem >= currentTimeMillis - (1L << j) * intervalMills) {
+                                queues[j].add(elem);
+                                break;
+                            }
                         }
                     }
                 }
@@ -145,12 +151,14 @@ public class RateUtil {
             return true;
         }
 
-        private boolean isProper() {
-            long sum = 0;
-            long lim = maxRatePerMinute << (depth - 1);
+        private boolean isProper(String scope, String session) {
             for (int i = 0; i < depth; i++) {
-                sum += queues[i].size();
-                if (sum >= lim) {
+                long lim = Math.round(maxRatePerInterval * Math.pow(1.5, depth - i - 1)) << i;
+                if (queues[i].size() > lim) {
+                    logger.info("Queue #" + i + " has size " + queues[i].size() + " exceeds limit " + lim
+                            + " [maxRatePerInterval=" + maxRatePerInterval
+                            + ", scope=" + scope
+                            + ", session=" + session + "].");
                     return false;
                 }
             }
