@@ -35,6 +35,8 @@ public class MethodArgumentsFormatUtilTest extends TestCase {
         Assert.assertEquals("null13", MethodArgumentsFormatUtil.format("${index}${value}${country.name}", method, new Object[] {userC, null, 13, countryA}));
         Assert.assertEquals("null13Страна", MethodArgumentsFormatUtil.format("${index}${value}${country.name}", method, new Object[] {userC, null, 13, countryC}));
 
+        Assert.assertEquals("userId=null", MethodArgumentsFormatUtil.format("userId=${firstUser?.id}", method, new Object[] {userC, 32, 13, countryB}));
+
         Assert.assertEquals("Cache-user:123,true,Russia and null[32]", MethodArgumentsFormatUtil.format("Cache-user:${firstUser.id},${firstUser.male},${firstUser.country.name} and ${country.name}[${index}]", method, new Object[] {userA, 32, 13, countryB}));
         Assert.assertEquals("Cache-user:-32,false,US and Страна[-1]", MethodArgumentsFormatUtil.format("Cache-user:${firstUser.id},${firstUser.male},${firstUser.country.name} and ${country.name}[${index}]", method, new Object[] {userB, -1, -2, countryC}));
         Assert.assertEquals("Cache-user:123,true,6 and null[32]", MethodArgumentsFormatUtil.format("Cache-user:${firstUser.id},${firstUser.male},${firstUser.country.name.length} and ${country.name}[${index}]", method, new Object[] {userA, 32, 13, countryB}));

@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -108,24 +109,12 @@ public class MethodArgumentsFormatUtil {
 
     private static Object getNamedParameterValue(String expression, int namedParameterCount,
                                                  String[] parameterNames, Object[] namedParameterValues) {
-        String[] tokens = Patterns.DOT_PATTERN.split(expression);
-
-        if (tokens.length == 0) {
-            throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");
-        }
-        for (String token : tokens) {
-            if (token.isEmpty()) {
-                throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");
-            }
-            if (!JAVA_IDENTIFIER_PATTERN.matcher(token).matches()) {
-                throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");
-            }
-        }
+        ExpressionPart[] parts = parseExpression(expression);
 
         Object object = null;
         boolean found = false;
         for (int i = 0; i < namedParameterCount; i++) {
-            if (parameterNames[i].equals(tokens[0])) {
+            if (parameterNames[i].equals(parts[0].getName())) {
                 if (found) {
                     throw new IllegalArgumentException("Parameter names should be unique, but `"
                             + parameterNames[i] + "` seems not to be unique.");
@@ -136,25 +125,57 @@ public class MethodArgumentsFormatUtil {
         }
 
         if (!found) {
-            throw new IllegalArgumentException("Unable to find parameter named `" + tokens[0] + "` (use @Name).");
+            throw new IllegalArgumentException("Unable to find parameter named `" + parts[0].getName() + "` (use @Name).");
         }
 
         if (object == null) {
-            if (tokens.length == 1) {
+            if (parts.length == 1) {
                 return "null";
-            } else {
-                throw new NullPointerException("Parameter `" + tokens[0] + "` is null and can't be used to get it's property.");
             }
         }
 
-        for (int i = 1; i < tokens.length; i++) {
+        for (int i = 1; i < parts.length; i++) {
             if (object == null) {
-                throw new NullPointerException("Parameter `" + tokens[0] + "` has null before property `" + tokens[i] + "`.");
+                if (parts[i].isNullGuard()) {
+                    return null;
+                }
+                throw new NullPointerException("Parameter `" + parts[0].getName() + "` has null before property `" + parts[i].getName() + "`.");
             }
-            object = getProperty(object, tokens[i]);
+            object = getProperty(object, parts[i].getName());
         }
 
         return object;
+    }
+
+    private static @NotNull ExpressionPart[] parseExpression(String expression) {
+        ArrayList<ExpressionPart> parts = new ArrayList<>();
+        int prev = 0;
+        boolean hadNullGuard = false;
+        for (int i = 0; i < expression.length(); i++) {
+            if (expression.charAt(i) == '.') {
+                parts.add(new ExpressionPart(expression.substring(prev, i), hadNullGuard));
+                prev = i + 1;
+                hadNullGuard = false;
+            } else if (expression.charAt(i) == '?') {
+                if (i + 1 >= expression.length() || expression.charAt(i + 1) != '.') {
+                    throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");
+                }
+                parts.add(new ExpressionPart(expression.substring(prev, i), hadNullGuard));
+                i++;
+                prev = i + 1;
+                hadNullGuard = true;
+            }
+        }
+        parts.add(new ExpressionPart(expression.substring(prev), hadNullGuard));
+        for (ExpressionPart part : parts) {
+            if (part.getName().isEmpty()) {
+                throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");
+            }
+            if (!JAVA_IDENTIFIER_PATTERN.matcher(part.getName()).matches()) {
+                throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");
+            }
+        }
+        return parts.toArray(new ExpressionPart[0]);
     }
 
     private static FastMethod getPropertyMethod(Class<?> clazz, String property) {
@@ -237,6 +258,24 @@ public class MethodArgumentsFormatUtil {
             int result = clazz.hashCode();
             result = 32323 * result + property.hashCode();
             return result;
+        }
+    }
+
+    private static final class ExpressionPart {
+        private final String name;
+        private final boolean nullGuard;
+
+        public ExpressionPart(String name, boolean nullGuard) {
+            this.name = name;
+            this.nullGuard = nullGuard;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isNullGuard() {
+            return nullGuard;
         }
     }
 }
