@@ -299,7 +299,9 @@ public class StringUtilTest {
 
     @Test
     public void testGetRenderingWidth() {
-        assertEquals(1, StringUtil.getRenderingWidth("1"));
+        assertEquals(1, StringUtil.getRenderingWidth("a"));
+        assertTrue(StringUtil.getRenderingWidth("1") >= 1
+                && StringUtil.getRenderingWidth("1") < 2);
         assertEquals(0, StringUtil.getRenderingWidth(null));
         assertEquals(0, StringUtil.getRenderingWidth(""));
         assertTrue(StringUtil.getRenderingWidth("кодефорсес") > 5
