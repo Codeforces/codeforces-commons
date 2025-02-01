@@ -25,15 +25,29 @@ public class MethodArgumentsFormatUtilTest extends TestCase {
         User userA = new User(123, true, new Country("Russia"));
         User userB = new User(-32, false, new Country("US"));
         User userC = null;
+        User userNoCountry = new User(0, false, null);
 
         Country countryA = new Country("");
         Country countryB = new Country(null);
         Country countryC = new Country("Страна");
+        Country countryNull = null;
 
         Assert.assertEquals("user=null", MethodArgumentsFormatUtil.format("user=${firstUser}", method, new Object[] {userC, null, 13, countryB}));
         Assert.assertEquals("null13Country{name='null'}", MethodArgumentsFormatUtil.format("${index}${value}${country}", method, new Object[] {userC, null, 13, countryB}));
         Assert.assertEquals("null13", MethodArgumentsFormatUtil.format("${index}${value}${country.name}", method, new Object[] {userC, null, 13, countryA}));
         Assert.assertEquals("null13Страна", MethodArgumentsFormatUtil.format("${index}${value}${country.name}", method, new Object[] {userC, null, 13, countryC}));
+
+        Assert.assertEquals("userId=null", MethodArgumentsFormatUtil.format("userId=${firstUser?.id}", method, new Object[] {userC, 32, 13, countryB}));
+        Assert.assertThrows(NullPointerException.class, () -> MethodArgumentsFormatUtil.format("userId=${firstUser.id}", method, new Object[] {userC, 32, 13, countryB}));
+        Assert.assertEquals("countryNameLength=null", MethodArgumentsFormatUtil.format("countryNameLength=${country?.name?.length}", method, new Object[] {userC, 32, 13, countryNull}));
+        Assert.assertEquals("countryNameLength=null", MethodArgumentsFormatUtil.format("countryNameLength=${country?.name.length}", method, new Object[] {userC, 32, 13, countryNull}));
+        Assert.assertEquals("countryNameLength=null", MethodArgumentsFormatUtil.format("countryNameLength=${country?.name?.length}", method, new Object[] {userC, 32, 13, countryB}));
+        Assert.assertThrows(NullPointerException.class, () -> MethodArgumentsFormatUtil.format("countryNameLength=${country.name?.length}", method, new Object[] {userC, 32, 13, countryNull}));
+        Assert.assertThrows(NullPointerException.class, () -> MethodArgumentsFormatUtil.format("countryNameLength=${country?.name.length}", method, new Object[] {userC, 32, 13, countryB}));
+
+        Assert.assertEquals("test=null", MethodArgumentsFormatUtil.format("test=${firstUser?.country}", method, new Object[] {userNoCountry, 1, 1, countryA}));
+        Assert.assertEquals("test=null", MethodArgumentsFormatUtil.format("test=${firstUser?.country}", method, new Object[] {null, 1, 1, countryA}));
+        Assert.assertEquals("test=null", MethodArgumentsFormatUtil.format("test=${firstUser.country?.name}", method, new Object[] {userNoCountry, 1, 1, countryA}));
 
         Assert.assertEquals("Cache-user:123,true,Russia and null[32]", MethodArgumentsFormatUtil.format("Cache-user:${firstUser.id},${firstUser.male},${firstUser.country.name} and ${country.name}[${index}]", method, new Object[] {userA, 32, 13, countryB}));
         Assert.assertEquals("Cache-user:-32,false,US and Страна[-1]", MethodArgumentsFormatUtil.format("Cache-user:${firstUser.id},${firstUser.male},${firstUser.country.name} and ${country.name}[${index}]", method, new Object[] {userB, -1, -2, countryC}));
