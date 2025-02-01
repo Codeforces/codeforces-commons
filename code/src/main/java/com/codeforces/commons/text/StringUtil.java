@@ -2023,8 +2023,11 @@ public final class StringUtil {
         if (rectangles == null) {
             return trimToEmpty(s).length();
         }
-        return (int) Math.ceil(Objects.requireNonNull(rectangles.getSecond()).getWidth()
-                / Objects.requireNonNull(rectangles.getFirst()).getWidth() - 1E-7);
+
+        double width = Objects.requireNonNull(rectangles.getSecond()).getWidth();
+        int result = (int) Math.round(width
+                / Objects.requireNonNull(rectangles.getFirst()).getWidth());
+        return result == 0 && width > 0 ? 1 : result;
     }
 
     public static int getRenderingHeight(String s) {
@@ -2032,7 +2035,10 @@ public final class StringUtil {
         if (rectangles == null) {
             return getCharCount(trimToEmpty(s), '\n') + 1;
         }
-        return (int) Math.ceil(Objects.requireNonNull(rectangles.getSecond()).getHeight()
-                / Objects.requireNonNull(rectangles.getFirst()).getHeight() - 1E-7);
+
+        double height = Objects.requireNonNull(rectangles.getSecond()).getHeight();
+        int result = (int) Math.round(height
+                / Objects.requireNonNull(rectangles.getFirst()).getHeight());
+        return result == 0 && height > 0 ? 1 : result;
     }
 }

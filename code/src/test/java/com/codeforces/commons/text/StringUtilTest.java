@@ -1,16 +1,9 @@
 package com.codeforces.commons.text;
 
-import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.text.similarity.SimilarityChecker;
-import com.codeforces.commons.xml.XmlUtilTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.List;
 import java.util.function.Predicate;
@@ -28,6 +21,7 @@ public class StringUtilTest {
             " \r\n\t%c%c%c", StringUtil.ZERO_WIDTH_SPACE, StringUtil.THIN_SPACE, StringUtil.NON_BREAKING_SPACE
     );
 
+    @SuppressWarnings("ConstantValue")
     @Test
     public void testIsEmpty() {
         assertTrue(StringUtil.isEmpty(null));
@@ -300,8 +294,7 @@ public class StringUtilTest {
     @Test
     public void testGetRenderingWidth() {
         assertEquals(1, StringUtil.getRenderingWidth("a"));
-        assertTrue(StringUtil.getRenderingWidth("1") >= 1
-                && StringUtil.getRenderingWidth("1") <= 2);
+        assertEquals(1, StringUtil.getRenderingWidth("1"));
         assertEquals(0, StringUtil.getRenderingWidth(null));
         assertEquals(0, StringUtil.getRenderingWidth(""));
         assertTrue(StringUtil.getRenderingWidth("кодефорсес") > 5
@@ -319,35 +312,6 @@ public class StringUtilTest {
         assertEquals(1, StringUtil.getRenderingHeight("ௌ"));
         assertEquals(1, StringUtil.getRenderingHeight("⸻"));
     }
-
-//    @Test
-//    public void testTopHandles() {
-//        Scanner scanner = new Scanner(getClass().getResourceAsStream("/com/codeforces/commons/text/tophandles.txt"));
-//        List<String> handles = new ArrayList<>(8000);
-//        while (scanner.hasNextLine()) {
-//            String s = scanner.nextLine();
-//            if (StringUtil.isNotBlank(s)) {
-//                s = s.trim();
-//                handles.add(s);
-//            }
-//        }
-//
-//        int cnt = 0;
-//        for (String handle1 : handles) {
-//            for (String handle2 : handles) {
-//                if (!StringUtil.equals(handle1, handle2)) {
-//                    if (StringUtil.isSimilar(handle1, handle2)) {
-//                        System.out.print(handle1);
-//                        System.out.print(" ");
-//                        System.out.println(handle2);
-//                        cnt++;
-//                    }
-//                }
-//            }
-//        }
-//        System.err.println(cnt);
-//        System.err.println((handles.size() - 1) * handles.size() / 2);
-//    }
 
     private static void internalTestUnicodeTr39(String... strings) {
         for (int i = 0; i < strings.length; i++) {
