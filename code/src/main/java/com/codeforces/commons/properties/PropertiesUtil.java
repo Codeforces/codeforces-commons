@@ -31,6 +31,28 @@ public class PropertiesUtil {
         throw new UnsupportedOperationException();
     }
 
+    private static String applyEnv(String value) {
+        if (StringUtil.isNotEmpty(value)) {
+            while (value.contains("{env:")) {
+                int start = value.indexOf("{env:");
+                int end = value.indexOf('}', start);
+                if (end == -1) {
+                    break;
+                }
+
+                String envKey = value.substring(start + 5, end);
+                String envValue = System.getenv(envKey);
+                if (envValue != null) {
+                    value = value.substring(0, start) + envValue + value.substring(end + 1);
+                } else {
+                    value = value.substring(0, start) + value.substring(end + 1);
+                }
+            }
+
+        }
+        return value;
+    }
+
     public static String getProperty(boolean throwOnFileReadError, String propertyName,
                                      String defaultValue, String... resourceNames) throws CantReadResourceException {
         for (String resourceName : resourceNames) {
@@ -51,11 +73,11 @@ public class PropertiesUtil {
 
             String value = properties.getProperty(propertyName);
             if (value != null) {
-                return value;
+                return applyEnv(value);
             }
         }
 
-        return defaultValue;
+        return applyEnv(defaultValue);
     }
 
     public static String getProperty(String propertyName, String defaultValue, String... resourceNames) {
