@@ -1,6 +1,5 @@
 package com.codeforces.commons.reflection;
 
-import com.codeforces.commons.text.Patterns;
 import com.codeforces.commons.text.StringUtil;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -15,6 +14,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -37,6 +37,7 @@ public class MethodArgumentsFormatUtil {
             .expireAfterWrite(1, TimeUnit.HOURS)
             .build(
                     new CacheLoader<Method, Annotation[][]>() {
+                        @SuppressWarnings("NullableProblems")
                         public Annotation[][] load(@NotNull Method method) {
                             return method.getParameterAnnotations();
                         }
@@ -87,7 +88,8 @@ public class MethodArgumentsFormatUtil {
                 }
 
                 if (end < length) {
-                    result.append(getNamedParameterValue(pattern.substring(i + 2, end), namedParameterCount, parameterNames, namedParameterValues));
+                    result.append(getNamedParameterValue(pattern.substring(i + 2, end),
+                            namedParameterCount, parameterNames, namedParameterValues));
                     i = end;
                     continue;
                 }
@@ -125,13 +127,12 @@ public class MethodArgumentsFormatUtil {
         }
 
         if (!found) {
-            throw new IllegalArgumentException("Unable to find parameter named `" + parts[0].getName() + "` (use @Name).");
+            throw new IllegalArgumentException("Unable to find parameter named `"
+                    + parts[0].getName() + "` (use @Name).");
         }
 
-        if (object == null) {
-            if (parts.length == 1) {
-                return "null";
-            }
+        if (object == null && parts.length == 1) {
+            return "null";
         }
 
         for (int i = 1; i < parts.length; i++) {
@@ -139,7 +140,8 @@ public class MethodArgumentsFormatUtil {
                 if (parts[i].isNullGuard()) {
                     return null;
                 }
-                throw new NullPointerException("Parameter `" + parts[0].getName() + "` has null before property `" + parts[i].getName() + "`.");
+                throw new NullPointerException("Parameter `" + parts[0].getName()
+                        + "` has null before property `" + parts[i].getName() + "`.");
             }
             object = getProperty(object, parts[i].getName());
         }
@@ -148,7 +150,8 @@ public class MethodArgumentsFormatUtil {
     }
 
     private static @NotNull ExpressionPart[] parseExpression(String expression) {
-        ArrayList<ExpressionPart> parts = new ArrayList<>();
+        List<ExpressionPart> parts = new ArrayList<>();
+
         int prev = 0;
         boolean hadNullGuard = false;
         for (int i = 0; i < expression.length(); i++) {
@@ -167,6 +170,7 @@ public class MethodArgumentsFormatUtil {
             }
         }
         parts.add(new ExpressionPart(expression.substring(prev), hadNullGuard));
+
         for (ExpressionPart part : parts) {
             if (part.getName().isEmpty()) {
                 throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");
@@ -175,6 +179,7 @@ public class MethodArgumentsFormatUtil {
                 throw new IllegalArgumentException("Expression `" + expression + "` is not formatted properly.");
             }
         }
+
         return parts.toArray(new ExpressionPart[0]);
     }
 
@@ -228,15 +233,14 @@ public class MethodArgumentsFormatUtil {
     }
 
     private static final class ClassAndProperty {
-        private final Class clazz;
+        private final Class<?> clazz;
         private final String property;
 
-        private ClassAndProperty(Class clazz, String property) {
+        private ClassAndProperty(Class<?> clazz, String property) {
             this.clazz = clazz;
             this.property = property;
         }
 
-        @SuppressWarnings("RedundantIfStatement")
         @Override
         public boolean equals(Object o) {
             if (this == o) {
