@@ -11,6 +11,7 @@ import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
 import de.schlichtherle.truezip.file.TVFS;
 import de.schlichtherle.truezip.fs.FsSyncException;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
@@ -28,12 +29,11 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.zip.*;
-
-import static com.codeforces.commons.math.Math.max;
 
 /**
  * @author Mike Mirzayanov
@@ -81,14 +81,15 @@ public final class ZipUtil {
         deflater.setInput(bytes);
         deflater.finish();
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(bytes.length);
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(bytes.length)) {
+            byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 
-        while (!deflater.finished()) {
-            outputStream.write(buffer, 0, deflater.deflate(buffer));
+            while (!deflater.finished()) {
+                outputStream.write(buffer, 0, deflater.deflate(buffer));
+            }
+
+            return outputStream.toByteArray();
         }
-
-        return outputStream.toByteArray();
     }
 
     public static byte[] decompress(byte[] bytes) throws DataFormatException {
@@ -99,15 +100,16 @@ public final class ZipUtil {
         Inflater inflater = new Inflater();
         inflater.setInput(bytes);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 
-        while (!inflater.finished()) {
-            outputStream.write(buffer, 0, inflater.inflate(buffer));
+            while (!inflater.finished()) {
+                outputStream.write(buffer, 0, inflater.inflate(buffer));
+            }
+
+            inflater.end();
+            return outputStream.toByteArray();
         }
-
-        inflater.end();
-        return outputStream.toByteArray();
     }
 
     /**
@@ -161,14 +163,12 @@ public final class ZipUtil {
      */
     public static void zip(File source, File destination, int level, @Nullable FileFilter skipFilter)
             throws IOException {
-        try {
+        try (net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(destination)) {
             ZipParameters parameters = new ZipParameters();
             parameters.setIncludeRootFolder(false);
             parameters.setCompressionLevel(CompressionLevel.values()[level - 1]);
             parameters.setReadHiddenFiles(true);
             parameters.setDefaultFolderPath(source.getAbsolutePath());
-
-            net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(destination);
 
             zipFile.addFiles(deepListFilesInDirectory(source, skipFilter, !parameters.isReadHiddenFiles()), parameters);
         } catch (ZipException e) {
@@ -252,7 +252,7 @@ public final class ZipUtil {
             unzip(zipArchive, destinationDirectory, skipFilter);
         } finally {
             if (zipArchive != null) {
-                FileUtil.deleteTotallyAsync(zipArchive);
+                Files.deleteIfExists(zipArchive.toPath());
             }
         }
     }
@@ -263,9 +263,8 @@ public final class ZipUtil {
 
     public static void unzip(File zipArchive, File destinationDirectory, @Nullable FileFilter skipFilter)
             throws IOException {
-        try {
+        try (net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(zipArchive)) {
             FileUtil.ensureDirectoryExists(destinationDirectory);
-            net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(zipArchive);
 
             int count = 0;
 
@@ -274,7 +273,11 @@ public final class ZipUtil {
                     break;
                 }
 
-                File file = new File(destinationDirectory, fileHeader.getFileName());
+                File file = new File(destinationDirectory, fileHeader.getFileName()).getCanonicalFile();
+                if (!file.getAbsolutePath().startsWith(destinationDirectory.getCanonicalPath())) {
+                    throw new IOException("ZIP entry tries to escape destination directory: " + fileHeader.getFileName());
+                }
+
                 if (skipFilter != null && skipFilter.accept(file)) {
                     continue;
                 }
@@ -282,24 +285,27 @@ public final class ZipUtil {
                 if (fileHeader.isDirectory()) {
                     FileUtil.ensureDirectoryExists(file);
                 } else {
-                    long maxSize = max(fileHeader.getUncompressedSize(), fileHeader.getCompressedSize());
+                    long maxSize = Math.max(fileHeader.getUncompressedSize(), fileHeader.getCompressedSize());
 
                     if (maxSize <= MAX_ZIP_ENTRY_SIZE) {
-                        FileUtil.ensureDirectoryExists(file.getParentFile());
+                        File parentDir = file.getParentFile();
+                        if (!parentDir.exists() && !parentDir.mkdirs()) {
+                            throw new IOException("Failed to create parent directory: " + parentDir.getAbsolutePath());
+                        }
+
+                        Files.deleteIfExists(file.toPath());
                         zipFile.extractFile(fileHeader, destinationDirectory.getAbsolutePath());
                     } else {
-                        throw new IOException(String.format(
-                                "Entry '%s' (%s) is larger than %s.",
+                        throw new IOException(String.format("Entry '%s' (%s) is larger than %s.",
                                 fileHeader.getFileName(), FileUtil.formatSize(maxSize),
-                                FileUtil.formatSize(MAX_ZIP_ENTRY_SIZE)
-                        ));
+                                FileUtil.formatSize(MAX_ZIP_ENTRY_SIZE)));
                     }
                 }
 
                 ++count;
             }
         } catch (ZipException e) {
-            throw new IOException("Can't extract ZIP-file to directory.", e);
+            throw new IOException("Failed to extract ZIP archive: " + zipArchive.getAbsolutePath(), e);
         }
     }
 
@@ -444,16 +450,15 @@ public final class ZipUtil {
         TFile trueZipFile = new TFile(new File(zipFile, zipEntryPath));
         try {
             try {
-                InputStream inputStream;
                 if (trueZipFile.isArchive()) {
                     synchronizeQuietly(trueZipFile);
-                    net.lingala.zip4j.ZipFile internalZipFile = new net.lingala.zip4j.ZipFile(zipFile);
-
-                    inputStream = internalZipFile.getInputStream(internalZipFile.getFileHeader(zipEntryPath));
+                    try (net.lingala.zip4j.ZipFile internalZipFile = new net.lingala.zip4j.ZipFile(zipFile)) {
+                        IoUtil.copy(internalZipFile.getInputStream(internalZipFile.getFileHeader(zipEntryPath)),
+                                outputStream);
+                    }
                 } else {
-                    inputStream = new TFileInputStream(trueZipFile);
+                    IoUtil.copy(new TFileInputStream(trueZipFile), outputStream);
                 }
-                IoUtil.copy(inputStream, outputStream);
             } catch (ZipException e) {
                 throw new IOException("Can't write ZIP-entry bytes.", e);
             }
@@ -468,8 +473,8 @@ public final class ZipUtil {
     }
 
     public static boolean isZipEntryExists(File zipFile, String zipEntryPath) throws IOException {
-        try {
-            return new net.lingala.zip4j.ZipFile(zipFile).getFileHeader(normalizeZipEntryPath(zipEntryPath)) != null;
+        try (ZipFile internalZipFile = new ZipFile(zipFile)) {
+            return internalZipFile.getFileHeader(normalizeZipEntryPath(zipEntryPath)) != null;
         } catch (ZipException e) {
             throw new IOException("Can't check ZIP-entry existence.", e);
         }
@@ -484,16 +489,15 @@ public final class ZipUtil {
      * @throws IOException if any I/O-exception occurred
      */
     public static long getZipEntrySize(File zipFile, String zipEntryPath) throws IOException {
-        try {
-            return new net.lingala.zip4j.ZipFile(zipFile).getFileHeader(normalizeZipEntryPath(zipEntryPath)).getUncompressedSize();
+        try (ZipFile internalZipFile = new ZipFile(zipFile)) {
+            return internalZipFile.getFileHeader(normalizeZipEntryPath(zipEntryPath)).getUncompressedSize();
         } catch (ZipException e) {
             throw new IOException("Can't get ZIP-entry size.", e);
         }
     }
 
     public static ZipArchiveInfo getZipArchiveInfo(File zipFile) throws IOException {
-        try {
-            net.lingala.zip4j.ZipFile internalZipFile = new net.lingala.zip4j.ZipFile(zipFile);
+        try (net.lingala.zip4j.ZipFile internalZipFile = new net.lingala.zip4j.ZipFile(zipFile)) {
             long totalSize = 0;
             long entryCount = 0;
 
@@ -830,6 +834,7 @@ public final class ZipUtil {
             List<?> fileHeaders = internalZipFile.getFileHeaders();
             int headerCount = fileHeaders.size();
 
+            //noinspection NonStrictComparisonCanBeEquality
             if (headerCount <= 0) {
                 return formatEmptyZipFilePlaceholder(zipFile, maxLength, emptyZipFilePlaceholderPattern, charset);
             }
