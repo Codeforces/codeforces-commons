@@ -7,16 +7,17 @@ import com.codeforces.commons.math.RandomUtil;
 import com.google.common.primitives.Ints;
 import de.schlichtherle.truezip.file.TFile;
 import junit.framework.TestCase;
-import org.junit.Assert;
 
 import java.io.*;
 import java.util.*;
+
+import static org.junit.Assert.assertArrayEquals;
 
 /**
  * @author Maxim Shipko (sladethe@gmail.com)
  * Date: 16.09.11
  */
-@SuppressWarnings({"OverlyLongMethod", "CallToPrintStackTrace", "JUnitTestMethodWithNoAssertions"})
+@SuppressWarnings({"OverlyLongMethod", "JUnitTestMethodWithNoAssertions"})
 public class ZipUtilTest extends TestCase {
     private static void prepareFilesForTestZip(File dir) throws IOException {
         FileUtil.writeFile(new File(dir, "files/description"), getBytes("description"));
@@ -36,10 +37,8 @@ public class ZipUtilTest extends TestCase {
     public void testCompressDecompress() throws Exception {
         byte[] plainBytes = RandomUtil.getRandomBytes(10 * Ints.checkedCast(FileUtil.BYTES_PER_MB));
         byte[] compressedBytes = ZipUtil.compress(plainBytes);
-        assertTrue(
-                "Decompressed bytes does not equal to plain bytes.",
-                Arrays.equals(plainBytes, ZipUtil.decompress(compressedBytes))
-        );
+        assertArrayEquals("Decompressed bytes does not equal to plain bytes.",
+                plainBytes, ZipUtil.decompress(compressedBytes));
     }
 
     public void testZipUnzipAndZipRelatedFileUtilOperations() throws Exception {
@@ -167,22 +166,22 @@ public class ZipUtilTest extends TestCase {
             checkZipEntryExists(zipFile, "sabako/sabako");
             checkZipEntryExists(zipFile, "root-sabako");
 
-            Assert.assertArrayEquals(
+            assertArrayEquals(
                     "'ZipUtil.getZipEntryBytes' returned unexpected result for entry 'sabako/sabako'.",
                     dogDogBytes, ZipUtil.getZipEntryBytes(zipFile, "sabako/sabako")
             );
 
-            Assert.assertArrayEquals(
+            assertArrayEquals(
                     "'ZipUtil.getZipEntryBytes' returned unexpected result for entry 'root-sabako'.",
                     rootDogBytes, ZipUtil.getZipEntryBytes(zipFile, "root-sabako")
             );
 
-            Assert.assertArrayEquals(
+            assertArrayEquals(
                     "'FileUtil.getBytes' returned unexpected result for entry 'sabako/sabako'.",
                     dogDogBytes, FileUtil.getBytes(new TFile(zipFile, "sabako/sabako"))
             );
 
-            Assert.assertArrayEquals(
+            assertArrayEquals(
                     "'FileUtil.getBytes' returned unexpected result for entry 'root-sabako'.",
                     rootDogBytes, FileUtil.getBytes(new TFile(zipFile, "root-sabako"))
             );
@@ -272,15 +271,10 @@ public class ZipUtilTest extends TestCase {
             for (int iterationIndex = 1; iterationIndex <= iterationCount; ++iterationIndex) {
                 try {
                     try {
-                        assertTrue(
-                                "Valid archive and inner valid archive have different content.",
-                                Arrays.equals(
-                                        FileUtil.getBytes(validArchive),
-                                        FileUtil.getBytes(new TFile(validInnerArchive, "valid.zip"))
-                                )
-                        );
+                        assertArrayEquals("Valid archive and inner valid archive have different content.",
+                                FileUtil.getBytes(validArchive), FileUtil.getBytes(new TFile(validInnerArchive, "valid.zip")));
                     } catch (IOException e) {
-                        throw new AssertionError(e.toString());
+                        throw new AssertionError(e.toString(), e);
                     }
                 } catch (@SuppressWarnings("ErrorNotRethrown") AssertionError e) {
                     errors.add(e);
