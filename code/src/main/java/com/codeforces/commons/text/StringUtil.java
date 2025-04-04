@@ -3,7 +3,6 @@ package com.codeforces.commons.text;
 import com.codeforces.commons.collection.MapBuilder;
 import com.codeforces.commons.holder.Holders;
 import com.codeforces.commons.io.FileUtil;
-import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.pair.*;
 import com.codeforces.commons.properties.internal.CommonsPropertiesUtil;
 import com.codeforces.commons.reflection.ReflectionUtil;
@@ -11,6 +10,7 @@ import com.codeforces.commons.text.similarity.SimilarityChecker;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.text.translate.CharSequenceTranslator;
@@ -36,14 +36,17 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -1206,24 +1209,45 @@ public final class StringUtil {
         return trim(sb.toString());
     }
 
+    /**
+     * Removes all \r if it really looks like windows encoded text file.
+     *
+     * @param file File to process
+     * @throws IOException On any IO error
+     */
     public static void convertFileToLinuxStyle(File file) throws IOException {
-        byte[] bytes = FileUtil.getBytes(file);
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
+        byte[] content = FileUtil.getBytes(file);
 
-        try {
-            reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), UTF_8));
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), UTF_8));
+        boolean validCrLf = true;
+        int crCount = 0;
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                writer.write(line);
-                writer.write(10);
+        for (int i = 0; i < content.length; i++) {
+            if (content[i] == 0x0D) { // \r
+                crCount++;
+                if (i + 1 >= content.length || content[i + 1] != 0x0A) {
+                    validCrLf = false;
+                    break;
+                }
+            } else if (content[i] == 0x0A) { // \n
+                if (i == 0 || content[i - 1] != 0x0D) {
+                    validCrLf = false;
+                    break;
+                }
             }
-        } finally {
-            IoUtil.closeQuietly(reader, writer);
+        }
+
+        if (validCrLf && crCount > 0) {
+            // Remove all \r (0x0D) bytes
+            ByteArrayOutputStream out = new ByteArrayOutputStream(content.length - crCount);
+            for (byte b : content) {
+                if (b != 0x0D) {
+                    out.write(b);
+                }
+            }
+            FileUtils.writeByteArrayToFile(file, out.toByteArray());
         }
     }
+
 
     /**
      * @param s         Given string.
