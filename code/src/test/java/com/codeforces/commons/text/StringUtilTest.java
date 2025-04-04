@@ -1,9 +1,15 @@
 package com.codeforces.commons.text;
 
+import com.codeforces.commons.io.FileUtil;
+import com.codeforces.commons.io.IoUtil;
 import com.codeforces.commons.text.similarity.SimilarityChecker;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.List;
 import java.util.function.Predicate;
@@ -355,5 +361,46 @@ public class StringUtilTest {
         assertEquals("1\r\n", StringUtil.wellformForWindows("\r\n\r\n  1   \r\n  \r\n  "));
         assertEquals("a b c\r\nd e\r\n", StringUtil.wellformForWindows("\r\n\r\n  a  b     c     \r\n  d      e"));
         assertEquals("a b c\r\n\r\nd e\r\n", StringUtil.wellformForWindows("a b c\r\n\r\nd e\r\n"));
+    }
+
+    @Test
+    public void testConvertFileToLinuxStyle() throws IOException {
+        testConvertFileToLinuxStyle("01");
+        testConvertFileToLinuxStyle("02");
+        testConvertFileToLinuxStyle("03");
+        testConvertFileToLinuxStyle("04");
+        testConvertFileToLinuxStyle("05");
+        testConvertFileToLinuxStyle("06");
+    }
+
+    private void testConvertFileToLinuxStyle(String fileName) throws IOException {
+        byte[] inputBytes = getConvertFileToLinuxStyleResourceBytes(fileName + ".in");
+        byte[] answerBytes = getConvertFileToLinuxStyleResourceBytes(fileName + ".out");
+
+        File inputFile = File.createTempFile("convertFileToLinuxStyle", fileName + ".in");
+        FileUtil.writeFile(inputFile, inputBytes);
+
+        StringUtil.convertFileToLinuxStyle(inputFile);
+        byte[] outputBytes = FileUtil.getBytes(inputFile);
+        FileUtil.deleteTotally(inputFile);
+
+        Assert.assertArrayEquals("Subtest '" + fileName + "' failed.",
+                answerBytes, outputBytes);
+    }
+
+    private static byte[] getConvertFileToLinuxStyleResourceBytes(String resourceName) throws IOException {
+        String resource = "/com/codeforces/commons/text/convertFileToLinuxStyle/" + resourceName;
+
+        InputStream resourceStream = StringUtilTest.class.getResourceAsStream(
+                resource);
+        if (resourceStream == null) {
+            throw new IOException("Can't find resource '" + resource + "'.");
+        }
+
+        try {
+            return IoUtil.toByteArray(resourceStream);
+        } finally {
+            IoUtil.closeQuietly(resourceStream);
+        }
     }
 }
