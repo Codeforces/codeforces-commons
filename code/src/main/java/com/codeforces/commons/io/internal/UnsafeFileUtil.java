@@ -899,9 +899,15 @@ public class UnsafeFileUtil {
 
         private static String initializeTempDir() {
             try {
+                String tempDirParent = CommonsPropertiesUtil.getApplicationTempDirParent();
+                if (tempDirParent != null) {
+                    ensureDirectoryExists(new File(tempDirParent));
+                }
+
                 String tempDirName = CommonsPropertiesUtil.getApplicationTempDirName();
 
-                File dir = File.createTempFile(tempDirName, "");
+                File dir = File.createTempFile(tempDirName, "",
+                        tempDirParent == null ? null : new File(tempDirParent));
                 File temp = new File(dir.getParentFile(), tempDirName);
 
                 if (!dir.delete()) {
