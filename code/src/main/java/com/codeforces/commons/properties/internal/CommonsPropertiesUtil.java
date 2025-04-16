@@ -1,8 +1,12 @@
 package com.codeforces.commons.properties.internal;
 
 import com.codeforces.commons.properties.PropertiesUtil;
+import com.codeforces.commons.text.StringUtil;
 
+import java.io.File;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  * @author Mike Mirzayanov
@@ -30,6 +34,11 @@ public class CommonsPropertiesUtil {
         return PropertyValuesHolder.TEMP_DIR_NAME;
     }
 
+    @Nullable
+    public static String getApplicationTempDirParent() {
+        return PropertyValuesHolder.TEMP_DIR_PARENT;
+    }
+
     public static List<String> getSecurePasswords() {
         return PropertyValuesHolder.SECURE_PASSWORDS;
     }
@@ -52,6 +61,8 @@ public class CommonsPropertiesUtil {
 
     private static final class PropertyValuesHolder {
         private static final String TEMP_DIR_NAME = getProperty("temp-dir.name", "temp");
+        @Nullable
+        private static final String TEMP_DIR_PARENT = StringUtil.trimToNull(getProperty("temp-dir.parent", null));
         private static final List<String> SECURE_PASSWORDS = getListProperty("security.secure-passwords", "");
         private static final List<String> SECURE_HOSTS = getListProperty("security.secure-hosts", "");
         private static final boolean BYPASS_CERTIFICATE_CHECK
