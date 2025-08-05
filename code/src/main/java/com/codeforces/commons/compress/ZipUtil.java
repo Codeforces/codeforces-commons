@@ -22,6 +22,7 @@ import org.apache.commons.io.IOCase;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -30,6 +31,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -40,6 +42,8 @@ import java.util.zip.*;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ZipUtil {
+    private static final Logger logger = Logger.getLogger(ZipUtil.class);
+
     @SuppressWarnings("unused")
     public static final int MINIMAL_COMPRESSION_LEVEL = 0;
     public static final int DEFAULT_COMPRESSION_LEVEL = 5;
@@ -261,7 +265,106 @@ public final class ZipUtil {
         unzip(zipArchive, destinationDirectory, null);
     }
 
+    /**
+     * Unzips a ZIP-archive to the specified directory.
+     *
+     * @param zipArchive          ZIP-archive to unzip
+     * @param destinationDirectory directory to unzip to
+     * @throws IOException if any I/O-exception occurred
+     */
     public static void unzip(File zipArchive, File destinationDirectory, @Nullable FileFilter skipFilter)
+            throws IOException {
+        long startTimeMillis = System.currentTimeMillis();
+        long compressedSize = zipArchive.length();
+        long totalUncompressedSize = 0L;
+
+        FileUtil.ensureDirectoryExists(destinationDirectory);
+        Path destPath = destinationDirectory.toPath().toRealPath();
+
+        int count = 0;
+
+        try (ZipInputStream zis = new ZipInputStream(
+                new BufferedInputStream(Files.newInputStream(zipArchive.toPath())))) {
+            ZipEntry entry;
+
+            while ((entry = zis.getNextEntry()) != null && count < MAX_ZIP_ENTRY_COUNT) {
+                try {
+                    String entryName = entry.getName().replace('\\', '/');
+
+                    File targetFile = new File(destinationDirectory, entryName).getCanonicalFile();
+                    if (!targetFile.getAbsolutePath().startsWith(destPath.toString())) {
+                        throw new IOException("ZIP entry tries to escape destination directory: " + entryName);
+                    }
+
+                    if (skipFilter != null && skipFilter.accept(targetFile)) {
+                        continue; // Entry will be closed in finally block
+                    }
+
+                    if (entry.isDirectory()) {
+                        FileUtil.ensureDirectoryExists(targetFile);
+                    } else {
+                        // Check size if known upfront
+                        long size = entry.getSize();
+                        if (size > MAX_ZIP_ENTRY_SIZE) {
+                            throw new IOException(String.format("Entry '%s' (%s) is larger than %s.",
+                                    entryName, FileUtil.formatSize(size),
+                                    FileUtil.formatSize(MAX_ZIP_ENTRY_SIZE)));
+                        }
+
+                        // Ensure parent dirs exist
+                        File parent = targetFile.getParentFile();
+                        if (!parent.exists() && !parent.mkdirs()) {
+                            throw new IOException("Failed to create parent directory: " + parent);
+                        }
+
+                        Files.deleteIfExists(targetFile.toPath());
+                        Path targetPath = targetFile.toPath();
+
+                        try (OutputStream out = new BufferedOutputStream(
+                                Files.newOutputStream(targetPath))) {
+                            byte[] buffer = new byte[65536]; // 64 KiB buffer
+                            int read;
+                            long totalRead = 0;
+
+                            while ((read = zis.read(buffer)) != -1) {
+                                totalRead += read;
+                                if (totalRead > MAX_ZIP_ENTRY_SIZE) {
+                                    throw new IOException("Extracted data exceeds allowed size for: " + entryName);
+                                }
+                                out.write(buffer, 0, read);
+                            }
+
+                            totalUncompressedSize += totalRead;
+                        } catch (IOException e) {
+                            // Clean up partially created file on error
+                            Files.deleteIfExists(targetPath);
+                            throw e;
+                        }
+                    }
+
+                    ++count;
+                } finally {
+                    // Always close the current entry, even on exceptions
+                    try {
+                        zis.closeEntry();
+                    } catch (IOException e) {
+                        // Log warning but don't mask original exception
+                        // logger.warn("Failed to close ZIP entry", e);
+                    }
+                }
+            }
+        }
+
+        String message = String.format(
+                "Unzipped %d entries from '%s' to '%s' in %d ms. Compressed size: %s, Uncompressed size: %s.",
+                count, zipArchive.getAbsolutePath(), destinationDirectory.getAbsolutePath(),
+                System.currentTimeMillis() - startTimeMillis,
+                FileUtil.formatSize(compressedSize), FileUtil.formatSize(totalUncompressedSize)
+        );
+        logger.info(message);
+    }
+
+    public static void unzip2(File zipArchive, File destinationDirectory, @Nullable FileFilter skipFilter)
             throws IOException {
         try (net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(zipArchive)) {
             FileUtil.ensureDirectoryExists(destinationDirectory);
