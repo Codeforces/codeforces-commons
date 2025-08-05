@@ -22,6 +22,7 @@ import org.apache.commons.io.IOCase;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.NameFileFilter;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -41,6 +42,8 @@ import java.util.zip.*;
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ZipUtil {
+    private static final Logger logger = Logger.getLogger(ZipUtil.class);
+
     @SuppressWarnings("unused")
     public static final int MINIMAL_COMPRESSION_LEVEL = 0;
     public static final int DEFAULT_COMPRESSION_LEVEL = 5;
@@ -271,6 +274,9 @@ public final class ZipUtil {
      */
     public static void unzip(File zipArchive, File destinationDirectory, @Nullable FileFilter skipFilter)
             throws IOException {
+        long startTimeMillis = System.currentTimeMillis();
+        long compressedSize = zipArchive.length();
+        long totalUncompressedSize = 0L;
 
         FileUtil.ensureDirectoryExists(destinationDirectory);
         Path destPath = destinationDirectory.toPath().toRealPath();
@@ -327,6 +333,8 @@ public final class ZipUtil {
                                 }
                                 out.write(buffer, 0, read);
                             }
+
+                            totalUncompressedSize += totalRead;
                         } catch (IOException e) {
                             // Clean up partially created file on error
                             Files.deleteIfExists(targetPath);
@@ -346,6 +354,14 @@ public final class ZipUtil {
                 }
             }
         }
+
+        String message = String.format(
+                "Unzipped %d entries from '%s' to '%s' in %d ms. Compressed size: %s, Uncompressed size: %s.",
+                count, zipArchive.getAbsolutePath(), destinationDirectory.getAbsolutePath(),
+                System.currentTimeMillis() - startTimeMillis,
+                FileUtil.formatSize(compressedSize), FileUtil.formatSize(totalUncompressedSize)
+        );
+        logger.info(message);
     }
 
     public static void unzip2(File zipArchive, File destinationDirectory, @Nullable FileFilter skipFilter)
