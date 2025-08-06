@@ -272,8 +272,8 @@ public final class ZipUtil {
      * @param destinationDirectory directory to unzip to
      * @throws IOException if any I/O-exception occurred
      */
-    public static void unzip(File zipArchive, File destinationDirectory, @Nullable FileFilter skipFilter)
-            throws IOException {
+    public static void unzipUseZipInputStream(File zipArchive, File destinationDirectory,
+                                              @Nullable FileFilter skipFilter) throws IOException {
         long startTimeMillis = System.currentTimeMillis();
         long compressedSize = zipArchive.length();
         long totalUncompressedSize = 0L;
@@ -364,7 +364,7 @@ public final class ZipUtil {
         logger.info(message);
     }
 
-    public static void unzip2(File zipArchive, File destinationDirectory, @Nullable FileFilter skipFilter)
+    public static void unzip(File zipArchive, File destinationDirectory, @Nullable FileFilter skipFilter)
             throws IOException {
         try (net.lingala.zip4j.ZipFile zipFile = new net.lingala.zip4j.ZipFile(zipArchive)) {
             FileUtil.ensureDirectoryExists(destinationDirectory);
@@ -377,7 +377,7 @@ public final class ZipUtil {
                 }
 
                 File file = new File(destinationDirectory, fileHeader.getFileName()).getCanonicalFile();
-                if (!file.getAbsolutePath().startsWith(destinationDirectory.getCanonicalPath())) {
+                if (!file.toPath().normalize().startsWith(destinationDirectory.toPath().normalize())) {
                     throw new IOException("ZIP entry tries to escape destination directory: " + fileHeader.getFileName());
                 }
 
@@ -392,8 +392,12 @@ public final class ZipUtil {
 
                     if (maxSize <= MAX_ZIP_ENTRY_SIZE) {
                         File parentDir = file.getParentFile();
-                        if (!parentDir.exists() && !parentDir.mkdirs()) {
-                            throw new IOException("Failed to create parent directory: " + parentDir.getAbsolutePath());
+
+                        try {
+                            Files.createDirectories(parentDir.toPath());
+                        } catch (Exception e) {
+                            throw new IOException("Failed to create parent directory: '"
+                                    + parentDir.getAbsolutePath() + "'.", e);
                         }
 
                         Files.deleteIfExists(file.toPath());
