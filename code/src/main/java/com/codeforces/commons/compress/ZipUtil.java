@@ -377,7 +377,7 @@ public final class ZipUtil {
                 }
 
                 File file = new File(destinationDirectory, fileHeader.getFileName()).getCanonicalFile();
-                if (!file.toPath().normalize().startsWith(destinationDirectory.toPath().normalize())) {
+                if (!file.getAbsolutePath().startsWith(destinationDirectory.getCanonicalPath())) {
                     throw new IOException("ZIP entry tries to escape destination directory: " + fileHeader.getFileName());
                 }
 
@@ -392,12 +392,8 @@ public final class ZipUtil {
 
                     if (maxSize <= MAX_ZIP_ENTRY_SIZE) {
                         File parentDir = file.getParentFile();
-
-                        try {
-                            Files.createDirectories(parentDir.toPath());
-                        } catch (Exception e) {
-                            throw new IOException("Failed to create parent directory: '"
-                                    + parentDir.getAbsolutePath() + "'.", e);
+                        if (!parentDir.exists() && !parentDir.mkdirs()) {
+                            throw new IOException("Failed to create parent directory: " + parentDir.getAbsolutePath());
                         }
 
                         Files.deleteIfExists(file.toPath());
