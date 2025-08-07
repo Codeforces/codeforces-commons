@@ -18,6 +18,33 @@ import java.util.*;
  */
 public class XmlUtilTest {
     @Test
+    public void testXxe() throws Exception {
+        File tempDir = null;
+
+        try {
+            tempDir = FileUtil.createTemporaryDirectory("test-xml");
+            File testFile = new File(tempDir, "xxe.xml");
+            FileUtil.writeFile(testFile, getBytes("xxe.xml"));
+
+            try {
+                XmlUtil.toMap(FileUtil.readFile(testFile));
+                Assert.fail("XXE vulnerability is detected (1).");
+            } catch (Exception ignored) {
+                // Expected exception due to XXE vulnerability.
+            }
+
+            try {
+                XmlUtil.extractFromXml(testFile, "/a/b", String.class);
+                Assert.fail("XXE vulnerability is detected (2).");
+            } catch (Exception ignored) {
+                // Expected exception due to XXE vulnerability.
+            }
+        } finally {
+            FileUtil.deleteTotallyAsync(tempDir);
+        }
+    }
+
+    @Test
     public void testIsNode() throws IOException {
         File tempDir = null;
 
