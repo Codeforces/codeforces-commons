@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class XmlUtil {
     private static final Pattern EXTRA_XML_EMPTY_LINES_PATTERN = Pattern.compile("(>\r?\n)(\\s*\r?\n)(\\s*<)");
+    private static final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY;
 
     private static final Lock factoryLock = new ReentrantLock();
     private static final Lock expressionLock = new ReentrantLock();
@@ -97,7 +98,7 @@ public final class XmlUtil {
      * Checks if xml contains a node specified by xPath.
      *
      * @param xmlInputStream XML to be scanned.
-     * @param xPath XPath expression.
+     * @param xPath          XPath expression.
      * @return {@code true} if only if node exists.
      */
     public static boolean isNode(@Nonnull InputStream xmlInputStream, @Nonnull String xPath) {
@@ -114,21 +115,14 @@ public final class XmlUtil {
      * Checks if xml contains a node specified by xPath.
      *
      * @param xmlFile XML file to be scanned.
-     * @param xPath XPath expression.
+     * @param xPath   XPath expression.
      * @return {@code true} if only if node exists.
      * @throws IOException on IO error.
      */
     public static boolean isNode(@Nonnull File xmlFile, @Nonnull String xPath) throws IOException {
         byte[] inputBytes = FileUtil.getBytes(xmlFile);
         InputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
-
-        try {
-            internalExtractFromXml(xmlInputStream, xPath, Node.class);
-        } catch (IOException ignored) {
-            return false;
-        }
-
-        return true;
+        return isNode(xmlInputStream, xPath);
     }
 
     /**
@@ -139,19 +133,15 @@ public final class XmlUtil {
      * @throws IOException In case of I/O error.
      */
     public static void writeXml(@Nonnull File xmlFile, @Nonnull Document document) throws IOException {
-        FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Nullable
-            @Override
-            public Void run() throws IOException {
-                try {
-                    internalWriteXml(new FileOutputStream(xmlFile), document);
-                } catch (FileNotFoundException e) {
-                    throw new IOException(
-                            "Can't find file '" + xmlFile.getName() + "' while writing XML document.", e
-                    );
-                }
-                return null;
+        FileUtil.executeIoOperation((ThreadUtil.Operation<Void>) () -> {
+            try {
+                internalWriteXml(new FileOutputStream(xmlFile), document);
+            } catch (FileNotFoundException e) {
+                throw new IOException(
+                        "Can't find file '" + xmlFile.getName() + "' while writing XML document.", e
+                );
             }
+            return null;
         });
     }
 
@@ -163,13 +153,9 @@ public final class XmlUtil {
      * @throws IOException In case of I/O error.
      */
     public static void writeXml(OutputStream xmlOutputStream, @Nonnull Document document) throws IOException {
-        FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Nullable
-            @Override
-            public Void run() throws IOException {
-                internalWriteXml(xmlOutputStream, document);
-                return null;
-            }
+        FileUtil.executeIoOperation((ThreadUtil.Operation<Void>) () -> {
+            internalWriteXml(xmlOutputStream, document);
+            return null;
         }, 1);
     }
 
@@ -182,29 +168,25 @@ public final class XmlUtil {
      * @throws IOException In case of I/O error.
      */
     public static void updateXml(@Nonnull File xmlFile, String xPath, String value) throws IOException {
-        FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Nullable
-            @Override
-            public Void run() throws IOException {
-                try {
-                    byte[] inputBytes = FileUtil.getBytes(xmlFile);
-                    ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
-                    ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+        FileUtil.executeIoOperation((ThreadUtil.Operation<Void>) () -> {
+            try {
+                byte[] inputBytes = FileUtil.getBytes(xmlFile);
+                ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
+                ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
 
-                    internalUpdateXml(xmlInputStream, xmlOutputStream, xPath, value);
+                internalUpdateXml(xmlInputStream, xmlOutputStream, xPath, value);
 
-                    byte[] outputBytes = xmlOutputStream.toByteArray();
-                    if (!Arrays.equals(inputBytes, outputBytes)) {
-                        FileUtil.writeFile(xmlFile, outputBytes);
-                    }
-                } catch (IOException e) {
-                    throw new IOException(String.format(
-                            "Can't find, read or update file '%s' while evaluating XPath '%s'.",
-                            xmlFile.getName(), xPath
-                    ), e);
+                byte[] outputBytes = xmlOutputStream.toByteArray();
+                if (!Arrays.equals(inputBytes, outputBytes)) {
+                    FileUtil.writeFile(xmlFile, outputBytes);
                 }
-                return null;
+            } catch (IOException e) {
+                throw new IOException(String.format(
+                        "Can't find, read or update file '%s' while evaluating XPath '%s'.",
+                        xmlFile.getName(), xPath
+                ), e);
             }
+            return null;
         });
     }
 
@@ -220,13 +202,9 @@ public final class XmlUtil {
     public static void updateXml(
             InputStream xmlInputStream, OutputStream xmlOutputStream, String xPath, String value)
             throws IOException {
-        FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Nullable
-            @Override
-            public Void run() throws IOException {
-                internalUpdateXml(xmlInputStream, xmlOutputStream, xPath, value);
-                return null;
-            }
+        FileUtil.executeIoOperation((ThreadUtil.Operation<Void>) () -> {
+            internalUpdateXml(xmlInputStream, xmlOutputStream, xPath, value);
+            return null;
         }, 1);
     }
 
@@ -240,29 +218,25 @@ public final class XmlUtil {
      */
     public static void updateText(@Nonnull File xmlFile, String xPath, @Nullable String value)
             throws IOException {
-        FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Nullable
-            @Override
-            public Void run() throws IOException {
-                try {
-                    byte[] inputBytes = FileUtil.getBytes(xmlFile);
-                    ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
-                    ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+        FileUtil.executeIoOperation((ThreadUtil.Operation<Void>) () -> {
+            try {
+                byte[] inputBytes = FileUtil.getBytes(xmlFile);
+                ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
+                ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
 
-                    internalUpdateText(xmlInputStream, xmlOutputStream, xPath, value);
+                internalUpdateText(xmlInputStream, xmlOutputStream, xPath, value);
 
-                    byte[] outputBytes = xmlOutputStream.toByteArray();
-                    if (!Arrays.equals(inputBytes, outputBytes)) {
-                        FileUtil.writeFile(xmlFile, outputBytes);
-                    }
-                } catch (IOException e) {
-                    throw new IOException(String.format(
-                            "Can't find, read or update file '%s' while evaluating XPath '%s'.",
-                            xmlFile.getName(), xPath
-                    ), e);
+                byte[] outputBytes = xmlOutputStream.toByteArray();
+                if (!Arrays.equals(inputBytes, outputBytes)) {
+                    FileUtil.writeFile(xmlFile, outputBytes);
                 }
-                return null;
+            } catch (IOException e) {
+                throw new IOException(String.format(
+                        "Can't find, read or update file '%s' while evaluating XPath '%s'.",
+                        xmlFile.getName(), xPath
+                ), e);
             }
+            return null;
         });
     }
 
@@ -279,13 +253,9 @@ public final class XmlUtil {
     public static void updateText(
             InputStream xmlInputStream, OutputStream xmlOutputStream, String xPath,
             @Nullable String value) throws IOException {
-        FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Nullable
-            @Override
-            public Void run() throws IOException {
-                internalUpdateText(xmlInputStream, xmlOutputStream, xPath, value);
-                return null;
-            }
+        FileUtil.executeIoOperation((ThreadUtil.Operation<Void>) () -> {
+            internalUpdateText(xmlInputStream, xmlOutputStream, xPath, value);
+            return null;
         }, 1);
     }
 
@@ -311,32 +281,28 @@ public final class XmlUtil {
             @Nonnull File xmlFile, @Nonnull String parentElementXPath, @Nonnull String elementName,
             @Nonnull Map<String, String> filterAttributes, @Nullable Map<String, String> newAttributes,
             @Nullable Set<String> obsoleteAttributes) throws IOException {
-        FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Nullable
-            @Override
-            public Void run() throws IOException {
-                try {
-                    byte[] inputBytes = FileUtil.getBytes(xmlFile);
-                    ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
-                    ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
+        FileUtil.executeIoOperation((ThreadUtil.Operation<Void>) () -> {
+            try {
+                byte[] inputBytes = FileUtil.getBytes(xmlFile);
+                ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(inputBytes);
+                ByteArrayOutputStream xmlOutputStream = new ByteArrayOutputStream();
 
-                    internalEnsureXmlElementExists(
-                            false, xmlInputStream, xmlOutputStream,
-                            parentElementXPath, elementName, filterAttributes, newAttributes, obsoleteAttributes
-                    );
+                internalEnsureXmlElementExists(
+                        false, xmlInputStream, xmlOutputStream,
+                        parentElementXPath, elementName, filterAttributes, newAttributes, obsoleteAttributes
+                );
 
-                    byte[] outputBytes = xmlOutputStream.toByteArray();
-                    if (outputBytes.length > 0) {
-                        FileUtil.writeFile(xmlFile, outputBytes);
-                    }
-                } catch (IOException e) {
-                    throw new IOException(String.format(
-                            "Can't find, read or update file '%s' while evaluating XPath '%s'.",
-                            xmlFile.getName(), parentElementXPath
-                    ), e);
+                byte[] outputBytes = xmlOutputStream.toByteArray();
+                if (outputBytes.length > 0) {
+                    FileUtil.writeFile(xmlFile, outputBytes);
                 }
-                return null;
+            } catch (IOException e) {
+                throw new IOException(String.format(
+                        "Can't find, read or update file '%s' while evaluating XPath '%s'.",
+                        xmlFile.getName(), parentElementXPath
+                ), e);
             }
+            return null;
         });
     }
 
@@ -364,18 +330,14 @@ public final class XmlUtil {
             @Nonnull String parentElementXPath, @Nonnull String elementName,
             @Nonnull Map<String, String> filterAttributes, @Nullable Map<String, String> newAttributes,
             @Nullable Set<String> obsoleteAttributes) throws IOException {
-        FileUtil.executeIoOperation(new ThreadUtil.Operation<Void>() {
-            @Nullable
-            @Override
-            public Void run() throws IOException {
-                internalEnsureXmlElementExists(
-                        true,
-                        xmlInputStream, xmlOutputStream,
-                        parentElementXPath, elementName,
-                        filterAttributes, newAttributes, obsoleteAttributes
-                );
-                return null;
-            }
+        FileUtil.executeIoOperation((ThreadUtil.Operation<Void>) () -> {
+            internalEnsureXmlElementExists(
+                    true,
+                    xmlInputStream, xmlOutputStream,
+                    parentElementXPath, elementName,
+                    filterAttributes, newAttributes, obsoleteAttributes
+            );
+            return null;
         }, 1);
     }
 
@@ -468,7 +430,7 @@ public final class XmlUtil {
             }
             return (T) result;
         } catch (XPathException e) {
-            String xmlString = new String(xmlBytes, StandardCharsets.UTF_8.name());
+            String xmlString = new String(xmlBytes, StandardCharsets.UTF_8);
             throw new IOException("Can't get xpath \"" + xPath + "\" from \""
                     + StringUtil.shrinkTo(xmlString, 128) + "\".", e);
         } finally {
@@ -897,25 +859,17 @@ public final class XmlUtil {
     }
 
     public static DocumentBuilderFactory newDocumentBuilderFactory() {
-        factoryLock.lock();
-        try {
-            return DocumentBuilderFactory.newInstance();
-        } finally {
-            factoryLock.unlock();
-        }
+        return DOCUMENT_BUILDER_FACTORY;
     }
 
     public static Object evaluateXPath(InputStream xmlInputStream, @Nonnull XPathExpression xPath, QName returnType)
             throws XPathExpressionException {
-        expressionLock.lock();
         try {
-            Object result = xPath.evaluate(new InputSource(xmlInputStream), returnType);
-            if (result == null) {
-                throw new XPathExpressionException("Can't evaluate xmlInputStream xpath '" + xPath + "' [returnType='" + returnType + "'].");
-            }
-            return result;
-        } finally {
-            expressionLock.unlock();
+            DocumentBuilder builder = newDocumentBuilderFactory().newDocumentBuilder();
+            Document document = builder.parse(xmlInputStream);
+            return evaluateXPath(document, xPath, returnType);
+        } catch (Exception e) {
+            throw new XPathExpressionException(e);
         }
     }
 
@@ -949,15 +903,12 @@ public final class XmlUtil {
 
     public static Object evaluateXPath(InputStream xmlInputStream, @Nonnull XPathExpression xPath)
             throws XPathExpressionException {
-        expressionLock.lock();
         try {
-            String result = xPath.evaluate(new InputSource(xmlInputStream));
-            if (result == null) {
-                throw new XPathExpressionException("Can't evaluate input stream xpath '" + xPath + "' [returnType='String.class'].");
-            }
-            return result;
-        } finally {
-            expressionLock.unlock();
+            DocumentBuilder builder = newDocumentBuilderFactory().newDocumentBuilder();
+            Document document = builder.parse(xmlInputStream);
+            return evaluateXPath(document, xPath);
+        } catch (Exception e) {
+            throw new XPathExpressionException(e);
         }
     }
 
@@ -990,10 +941,24 @@ public final class XmlUtil {
     }
 
     public static Map<String, String> toMap(String xml) throws XmlException {
-        SAXParserFactory fabrique = SAXParserFactory.newInstance();
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+
+        try {
+            factory.setNamespaceAware(true);
+            factory.setValidating(false);
+
+            // Secure settings
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        } catch (Exception e) {
+            throw new RuntimeException("Can't set features for SAXParserFactory.", e);
+        }
+
         SAXParser parser;
         try {
-            parser = fabrique.newSAXParser();
+            parser = factory.newSAXParser();
         } catch (Exception e) {
             throw new RuntimeException("Can't create SAX parser.", e);
         }
@@ -1074,9 +1039,30 @@ public final class XmlUtil {
         }
     }
 
+    private static DocumentBuilderFactory setupDocumentBuilderFactory(DocumentBuilderFactory factory) {
+        factory.setNamespaceAware(true); // needed for XPath
+
+        // Safe against XXE
+        try {
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setXIncludeAware(false);
+            factory.setExpandEntityReferences(false);
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException("Can't set features for DocumentBuilderFactory.", e);
+        }
+
+        return factory;
+    }
+
     public static final class XmlException extends Exception {
         private XmlException(String message, Throwable cause) {
             super(message, cause);
         }
+    }
+
+    static {
+        DOCUMENT_BUILDER_FACTORY = setupDocumentBuilderFactory(DocumentBuilderFactory.newInstance());
     }
 }
