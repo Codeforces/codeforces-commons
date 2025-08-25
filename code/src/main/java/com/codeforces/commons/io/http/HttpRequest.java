@@ -63,6 +63,9 @@ public final class HttpRequest {
 
     private long maxSizeBytes = FileUtil.BYTES_PER_GB;
 
+    private static final ThreadLocal<Map<String, Object>> threadLocalSettings
+            = ThreadLocal.withInitial(HashMap::new);
+
     @Nonnull
     public static HttpRequest create(String url, Object... parameters) {
         return new HttpRequest(url, parameters);
@@ -546,8 +549,11 @@ public final class HttpRequest {
     }
 
     @SuppressWarnings("OverlyComplexMethod")
-    private static String[] validateAndEncodeParameters(String url, Object... parameters) {
-        if (!UrlUtil.isValidUrl(url)) {
+    private String[] validateAndEncodeParameters(String url, Object... parameters) {
+        boolean skipIsValidUrlCheck = Boolean.TRUE.equals(
+                threadLocalSettings.get().get("skipIsValidUrlCheck"));
+
+        if (!skipIsValidUrlCheck && !UrlUtil.isValidUrl(url)) {
             throw new IllegalArgumentException('\'' + url + "' is not a valid URL.");
         }
 
@@ -829,6 +835,11 @@ public final class HttpRequest {
             entry.setValue(Collections.unmodifiableList(new ArrayList<>(entry.getValue())));
         }
         return Collections.unmodifiableMap(copy);
+    }
+
+    @SuppressWarnings("unused")
+    public static void putThreadLocalSetting(String key, Object value) {
+        threadLocalSettings.get().put(key, value);
     }
 
     static {
