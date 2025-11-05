@@ -1370,7 +1370,8 @@ public final class StringUtil {
         return cropLines(input, maxLineLength, maxLineNumber, "...", "...");
     }
 
-    public static String cropLines(String input, int maxLineLength, int maxLineNumber, String endOfLineReplacement, String endOfContentReplacement) {
+    public static String cropLines(String input, int maxLineLength, int maxLineNumber,
+                                   String endOfLineReplacement, String endOfContentReplacement) {
         if (isEmpty(input)) {
             return input;
         }
