@@ -884,50 +884,54 @@ public class UnsafeFileUtil {
 
     @Nonnull
     public static String readFileCropped(File file, int maxLineCount, int maxLineLength) throws IOException {
-        if (maxLineCount <= 0) {
-            return "";
-        }
-
-        List<String> lines;
-        boolean moreLinesExist;
-
-        // 1. Read one line more than the limit (maxLineCount + 1)
-        // try-with-resources ensures the underlying file handle/buffer is closed immediately.
-        try (Stream<String> linesStream = Files.lines(file.toPath())) {
-
-            // Collect up to maxLineCount + 1 lines. The .limit() operation short-circuits reading.
-            lines = linesStream
-                    .limit(maxLineCount + 1)
-                    // Apply line-level cropping/shrinking
-                    .map(line -> StringUtil.shrinkTo(line, maxLineLength))
-                    .collect(Collectors.toList());
-        }
-
-        // 2. Check if the (maxLineCount + 1)-th line was present
-        if (lines.size() > maxLineCount) {
-            moreLinesExist = true;
-            // Remove the extra line so it's not included in the output
-            lines.remove(maxLineCount);
-        } else {
-            moreLinesExist = false;
-        }
-
-        // 3. Assemble the final result string
-        String lineSeparator = System.lineSeparator();
-
-        // Join the processed lines
-        String result = String.join(lineSeparator, lines);
-
-        // Conditionally append the ellipsis line if the file had more content
-        if (moreLinesExist) {
-            // Append line separator only if there are existing lines
-            if (!result.isEmpty()) {
-                result += lineSeparator;
+        try {
+            if (maxLineCount <= 0) {
+                return "";
             }
-            result += "...";
-        }
 
-        return result;
+            List<String> lines;
+            boolean moreLinesExist;
+
+            // 1. Read one line more than the limit (maxLineCount + 1)
+            // try-with-resources ensures the underlying file handle/buffer is closed immediately.
+            try (Stream<String> linesStream = Files.lines(file.toPath())) {
+
+                // Collect up to maxLineCount + 1 lines. The .limit() operation short-circuits reading.
+                lines = linesStream
+                        .limit(maxLineCount + 1)
+                        // Apply line-level cropping/shrinking
+                        .map(line -> StringUtil.shrinkTo(line, maxLineLength))
+                        .collect(Collectors.toList());
+            }
+
+            // 2. Check if the (maxLineCount + 1)-th line was present
+            if (lines.size() > maxLineCount) {
+                moreLinesExist = true;
+                // Remove the extra line so it's not included in the output
+                lines.remove(maxLineCount);
+            } else {
+                moreLinesExist = false;
+            }
+
+            // 3. Assemble the final result string
+            String lineSeparator = System.lineSeparator();
+
+            // Join the processed lines
+            String result = String.join(lineSeparator, lines);
+
+            // Conditionally append the ellipsis line if the file had more content
+            if (moreLinesExist) {
+                // Append line separator only if there are existing lines
+                if (!result.isEmpty()) {
+                    result += lineSeparator;
+                }
+                result += "...";
+            }
+
+            return result;
+        } catch (Exception e) {
+            return "<binary file of length " + file.length() + " bytes>";
+        }
     }
 
     @SuppressWarnings({"FinalizeDeclaration", "DeserializableClassInSecureContext"})
