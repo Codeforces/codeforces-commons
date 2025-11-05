@@ -283,6 +283,27 @@ public class FileUtil {
     }
 
     /**
+     * Reads a file, limiting the number of lines read and cropping each line
+     * if its length exceeds the maximum.
+     * <p>
+     * This implementation is efficient because it uses Files.lines() for
+     * lazy, buffered, line-by-line processing, avoiding loading the entire
+     * file into memory. The .limit() operation short-circuits reading,
+     * stopping disk access as soon as maxLineCount is reached.
+     *
+     * @param file          File to be read.
+     * @param maxLineCount  Maximum number of lines to read.
+     * @param maxLineLength Maximum length of each line to crop to.
+     * @return String containing file data in cropped form.
+     * @throws IOException if can't read file (e.g., file doesn't exist, is a directory, or permission issues).
+     */
+    @Nonnull
+    public static String readFileCropped(File file, int maxLineCount, int maxLineLength) throws IOException {
+        return Objects.requireNonNull(executeIoOperation(()
+                -> UnsafeFileUtil.readFileCropped(file, maxLineCount, maxLineLength)));
+    }
+
+    /**
      * Writes new file into filesystem. Overwrite existing if exists.
      * Creates parent directory if needed.
      *
@@ -1049,7 +1070,7 @@ public class FileUtil {
     /**
      * Set executable permission for file.
      *
-     * @param file File to set permission.
+     * @param file       File to set permission.
      * @param executable {@code true} to set executable permission.
      */
     public static void setExecutable(@Nonnull File file, boolean executable) {
