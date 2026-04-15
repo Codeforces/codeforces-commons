@@ -1399,6 +1399,23 @@ public final class StringUtil {
         return result.toString();
     }
 
+    /**
+     * Return string with line breaks replaced with "\n" and cropped to 32 characters if needed.
+     *
+     * @param s String to process.
+     * @return Processed string or {@code null} if {@code s} is {@code null}.
+     */
+    @Contract(value = "null -> null", pure = true)
+    @Nullable
+    public static String toLog(@Nullable String s) {
+        if (s == null) {
+            return null;
+        }
+
+        return shrinkTo(Patterns.LINE_BREAK_PATTERN.matcher(s)
+                .replaceAll("\\\\n"), 32);
+    }
+
     @Contract("null -> false")
     public static boolean containsRussianLetters(@Nullable String s) {
         if (s == null) {
