@@ -50,7 +50,7 @@ public final class HttpResponse {
     }
 
     /**
-     * @return HTTP response code or {@code -1} if an exception has occured
+     * @return HTTP response code or {@code -1} if an exception has occurred
      * @see #getIoException()
      */
     public int getCode() {

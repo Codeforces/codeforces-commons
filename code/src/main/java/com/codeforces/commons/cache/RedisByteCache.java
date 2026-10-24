@@ -132,7 +132,7 @@ public class RedisByteCache extends ByteCache {
                         return item.bytes;
                     }
                 } catch (IOException e) {
-                    logger.error("Can't get " + section + '/' + key + " to the Redis.", e);
+                    logger.error("Can't get " + section + '/' + key + " from the Redis.", e);
                 }
             }
 
