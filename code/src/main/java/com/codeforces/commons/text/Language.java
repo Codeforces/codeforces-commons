@@ -25,6 +25,8 @@ public enum Language {
     BULGARIAN("bg", "bg"),
     CATALAN("ca", "ca"),
     CHINESE("zh", "zh"),
+    CHINESE_MAINLAND("zh-CN", "zh"),
+    CHINESE_TAIWAN("zh-TW", "zh"),
     CROATIAN("hr", "hr"),
     CZECH("cs", "cs"),
     DANISH("da", "da"),
@@ -171,7 +173,7 @@ public enum Language {
             Language language = languages[languageIndex];
             if (language != OTHER) {
                 languageByIetfTagModifiableMap.put(language.ietfTag, language);
-                languageByIso6391CodeModifiableMap.put(language.iso6391Code, language);
+                languageByIso6391CodeModifiableMap.putIfAbsent(language.iso6391Code, language);
             }
         }
 
